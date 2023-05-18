@@ -1,0 +1,31 @@
+distro = "void"
+repository = "void-base"
+tag = "0.1.0"
+
+[from]
+repository = "ghcr.io/void-linux/void-linux"
+tag = "20230204RC01-full-x86_64"
+
+[user]
+create = true
+
+[security]
+special-files = [
+  "/usr/bin/chage",
+  "/usr/bin/chfn",
+  "/usr/bin/chsh",
+  "/usr/bin/expiry",
+  "/usr/bin/gpasswd",
+  "/usr/bin/mount",
+  "/usr/bin/newgidmap",
+  "/usr/bin/newgrp",
+  "/usr/bin/newuidmap",
+  "/usr/bin/passwd",
+  "/usr/bin/sg",
+  "/usr/bin/su",
+  "/usr/bin/umount",
+  "/usr/bin/unix_chkpwd",
+  "/usr/bin/wall",
+  "/usr/bin/write",
+  "/usr/bin/xbps-uchroot",
+]

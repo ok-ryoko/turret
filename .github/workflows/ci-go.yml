@@ -1,0 +1,45 @@
+name: ci-go
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.golangci.yml'
+      - 'go.mod'
+      - 'cmd/**.go'
+      - 'pkg/**.go'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.golangci.yml'
+      - 'go.mod'
+      - 'cmd/**.go'
+      - 'pkg/**.go'
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on:
+      - ubuntu-22.04
+
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '^1.20.2'
+
+      - name: Print Go environment
+        run: go env
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.52.2
+          args: --verbose

@@ -1,0 +1,10 @@
+distro = "alpine"
+repository = "turret/alpine-base"
+tag = "0.1.0"
+
+[from]
+repository = "docker.io/library/alpine"
+tag = "3.17.3"
+
+[user]
+create = true

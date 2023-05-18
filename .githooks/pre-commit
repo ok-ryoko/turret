@@ -1,0 +1,81 @@
+#!/bin/sh -
+
+set -o errexit
+set -o nounset
+
+log() {
+	lvl="$1"; msg="$2"
+	if [ "$lvl" = 'error' ]
+	then exec 3>&2
+	else exec 3>&1; fi
+	printf 'pre-commit: %s: %s\n' "$lvl" "$msg" >&3
+	exec 3>&-
+}
+
+log_fatal() {
+	msg="$1"
+	log 'error' "$msg"
+	exit 1
+}
+
+filter_lines() {
+	lines="$1"; patterns="$2"
+	printf '%s' "$(
+		(echo "$lines" | grep -e "$patterns") \
+			|| echo ""
+	)"
+}
+
+if git rev-parse --verify HEAD > /dev/null 2>&1
+then against=HEAD
+else against=$(git hash-object -t tree /dev/null); fi
+
+FILES=$(git diff --staged --name-only "$against")
+if [ -z "$FILES" ]; then exit 0; fi
+
+GO_PATTERN='^\.golangci\.yml$\|^go\.mod$|^cmd/.*\.go$\|^pkg/.*\.go$'
+GO_FILES=$(filter_lines "$FILES" "$GO_PATTERN")
+if [ -n "$GO_FILES" ]; then
+	command -v make > /dev/null \
+		|| log_fatal 'Make not found'
+
+	command -v go > /dev/null \
+		|| log_fatal 'Go not found'
+
+	log 'info' 'checking Go source code...'
+	make --quiet check \
+		|| log_fatal 'failed checking Go module'
+
+	log 'info' 'building Go source code...'
+	make --quiet build \
+		|| log_fatal 'failed building Go module'
+fi
+
+SHELL_PATTERN='^\.githooks/.*$'
+SHELL_SCRIPTS=$(filter_lines "$FILES" "$SHELL_PATTERN")
+if [ -n "$SHELL_SCRIPTS" ]; then
+	log 'info' 'linting shell scripts...'
+
+	command -v shellcheck > /dev/null \
+		|| log_fatal 'ShellCheck not found'
+
+	# shellcheck disable=SC2086
+	shellcheck --shell=sh $SHELL_SCRIPTS \
+		|| log_fatal 'found problem(s) in shell script(s)'
+fi
+
+YAML_PATTERN='^.*\.yml$\|^\.yamllint$'
+YAML_FILES=$(filter_lines "$FILES" "$YAML_PATTERN")
+if [ -n "$YAML_FILES" ]; then
+	log 'info' 'linting YAML files...'
+
+	command -v yamllint > /dev/null \
+		|| log_fatal 'yamllint not found'
+
+	# shellcheck disable=SC2086
+	yamllint --no-warnings $YAML_FILES \
+		|| log_fatal 'found problem(s) in YAML file(s)'
+fi
+
+log 'info' 'OK!'
+exit 0

@@ -1,0 +1,30 @@
+distro = "arch"
+repository = "turret/arch-base"
+tag = "0.1.0"
+
+[from]
+repository = "docker.io/library/archlinux"
+tag = "base-20230514.0.150299"
+
+[user]
+create = true
+
+[security]
+special-files = [
+  "/usr/bin/chage",
+  "/usr/bin/chfn",
+  "/usr/bin/chsh",
+  "/usr/bin/expiry",
+  "/usr/bin/gpasswd",
+  "/usr/bin/ksu",
+  "/usr/bin/mount",
+  "/usr/bin/newgrp",
+  "/usr/bin/passwd",
+  "/usr/bin/sg",
+  "/usr/bin/su",
+  "/usr/bin/umount",
+  "/usr/bin/unix_chkpwd",
+  "/usr/bin/wall",
+  "/usr/bin/write",
+  "/usr/lib/dbus-1.0/dbus-daemon-launch-helper",
+]

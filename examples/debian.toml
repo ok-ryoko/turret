@@ -1,0 +1,26 @@
+distro = "debian"
+repository = "debian-base"
+tag = "0.1.0"
+
+[from]
+repository = "docker.io/library/debian"
+tag = "11.7-slim"
+
+[user]
+create = true
+
+[security]
+special-files = [
+  "/bin/mount",
+  "/bin/su",
+  "/bin/umount",
+  "/sbin/unix_chkpwd",
+  "/usr/bin/chage",
+  "/usr/bin/chfn",
+  "/usr/bin/chsh",
+  "/usr/bin/expiry",
+  "/usr/bin/gpasswd",
+  "/usr/bin/newgrp",
+  "/usr/bin/passwd",
+  "/usr/bin/wall",
+]
