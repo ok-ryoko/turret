@@ -9,8 +9,6 @@
 
 <h2 align="center">Turret</h2>
 
----
-
 Turret is a command-line utility that produces rootless [OCI] images of independent [GNU/Linux] distributions from [TOML] specification files (specs). Turret is also a high-level interface over [Buildah].
 
 ## Compatible GNU/Linux distros
