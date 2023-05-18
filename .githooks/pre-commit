@@ -33,7 +33,7 @@ else against=$(git hash-object -t tree /dev/null); fi
 FILES=$(git diff --staged --name-only "$against")
 if [ -z "$FILES" ]; then exit 0; fi
 
-GO_PATTERN='^\.golangci\.yml$\|^go\.mod$|^cmd/.*\.go$\|^pkg/.*\.go$'
+GO_PATTERN='^\.golangci\.yml$\|^go\.mod$\|^cmd/.*\.go$\|^pkg/.*\.go$'
 GO_FILES=$(filter_lines "$FILES" "$GO_PATTERN")
 if [ -n "$GO_FILES" ]; then
 	command -v make > /dev/null \
