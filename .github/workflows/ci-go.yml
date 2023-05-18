@@ -20,6 +20,8 @@ on:
       - 'cmd/**.go'
       - 'pkg/**.go'
 
+  workflow_dispatch:
+
 permissions:
   contents: read
 
