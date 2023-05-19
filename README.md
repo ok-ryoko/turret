@@ -170,7 +170,7 @@ Consider using [Distrobox], [Toolbox] or a dedicated virtual or physical machine
 
 ## License
 
-Turret is free and open source software dual-licensed under the [MIT license] and [Apache 2.0 license].
+Turret is free and open source software licensed under the [Apache 2.0 license].
 
 ## Acknowledgements
 
