@@ -185,7 +185,7 @@ The following resources have been instrumental in preparing this repository for 
 - [the tokio contributing guidelines][tokio contributing guidelines]
 
 [Alpine]: https://www.alpinelinux.org
-[Apache 2.0 license]: ./LICENSE-APACHE.txt
+[Apache 2.0 license]: ./LICENSE
 [Arch]: https://archlinux.org
 [Buildah]: https://github.com/containers/buildah
 [containers.conf]: https://github.com/containers/common/blob/main/docs/containers.conf.5.md
@@ -203,7 +203,6 @@ The following resources have been instrumental in preparing this repository for 
 [GNU/Linux]: https://www.gnu.org/
 [Inkscape]: https://inkscape.org/
 [issue tracker]: https://github.com/ok-ryoko/turret/issues
-[MIT license]: ./LICENSE-MIT.txt
 [Neovim]: https://neovim.io
 [OCI]: https://opencontainers.org/
 [Open Source Guides]: https://opensource.guide/
