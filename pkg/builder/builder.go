@@ -86,6 +86,8 @@ type TurretBuilder struct {
 
 // CommonOptions holds common options for every step of a build
 type CommonOptions struct {
+	// Environment variables to set
+	Env []string
 	// Whether to log the output and error streams of container processes
 	LogCommands bool
 }
@@ -281,6 +283,10 @@ func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
 		Quiet:            true,
 	}
 
+	if len(b.CommonOptions.Env) > 0 {
+		options.Env = append(options.Env, b.CommonOptions.Env...)
+	}
+
 	if b.CommonOptions.LogCommands {
 		options.Logger = b.Logger
 		options.Quiet = false
@@ -455,6 +461,7 @@ func New(
 			},
 		}
 	case Debian:
+		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 		tb = &DebianTurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,
