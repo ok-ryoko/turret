@@ -29,6 +29,13 @@ body:
 
   - type: textarea
     attributes:
+      label: Spec
+      description: Paste your spec here, if applicable. Please take care to remove all sensitive information.
+    validations:
+      required: false
+
+  - type: textarea
+    attributes:
       label: Expected behavior or outcome
       description: What is supposed to happen when someone follows the steps above?
     validations:
@@ -44,7 +51,7 @@ body:
   - type: textarea
     attributes:
       label: Supporting information
-      description: Include relevant supporting details such as your Go version number, operating system, CPU architecture, whether you are using AppArmor or SELinux on the host, etc. Please disclose only the facts about your environment that you feel comfortable sharing.
+      description: Include relevant supporting details such as your Go version number, host operating system, CPU architecture, whether you are using AppArmor or SELinux on the host, etc. Please disclose only the facts about your environment that you feel comfortable sharing.
     validations:
       required: false
 
