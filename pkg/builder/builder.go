@@ -396,21 +396,53 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 	return nil
 }
 
-// UnsetSpecialBits removes SUID and SGID bits from files and directories in
-// the working container;
-// assumes the availability of the chmod(1) utility;
-// does nothing if `files` is empty
-func (b *TurretBuilder) UnsetSpecialBits(files []string) error {
-	if len(files) == 0 {
-		return nil
+// UnsetSpecialBits removes the SUID/SGID bit from files in the working container;
+// assumes the availability of the chmod(1) and find(1) utilities;
+// searches only real file systems and doesn't search /home
+func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
+	findCmd := []string{
+		"find", "/",
+		"-xdev",
+		"!", "(", "-wholename", "/home", "-prune", ")",
+		"-perm", "/u=s,g=s",
 	}
 
-	cmd := []string{"chmod", "-s"}
-	cmd = append(cmd, files...)
+	var buf bytes.Buffer
+	findRo := b.defaultRunOptions()
+	findRo.Stdout = &buf
 
-	ro := b.defaultRunOptions()
+	if err := b.run(findCmd, findRo); err != nil {
+		return fmt.Errorf("%w", err)
+	}
 
-	if err := b.run(cmd, ro); err != nil {
+	specialFiles := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	for i, s := range specialFiles {
+		specialFiles[i] = strings.TrimSpace(s)
+	}
+
+	if len(excludes) > 0 {
+		excludeSet := map[string]bool{}
+		for _, e := range excludes {
+			excludeSet[e] = true
+		}
+
+		var specialFilesReduced []string
+		for _, s := range specialFiles {
+			if _, ok := excludeSet[s]; ok {
+				continue
+			}
+			specialFilesReduced = append(specialFilesReduced, s)
+		}
+
+		specialFiles = specialFilesReduced
+	}
+
+	chmodCmd := []string{"chmod", "-s"}
+	chmodCmd = append(chmodCmd, specialFiles...)
+
+	chmodRo := b.defaultRunOptions()
+
+	if err := b.run(chmodCmd, chmodRo); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 

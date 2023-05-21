@@ -325,6 +325,15 @@ func DefaultUser() User {
 
 // Security holds security-related options for the working container
 type Security struct {
-	// List of files from which the SUID or SGID bit should be removed
-	SpecialFiles []string `toml:"special-files"`
+	// Options for handling files with a SUID/SGID bit
+	SpecialFiles SpecialFiles `toml:"special-files"`
+}
+
+// SpecialFiles holds options for handling SUID/SGID bits
+type SpecialFiles struct {
+	// Whether to remove all SUID/SGID bits automatically
+	RemoveS bool `toml:"remove-s"`
+
+	// Whether to preserve the SUID/SGID bit on one or more files
+	Excludes []string
 }

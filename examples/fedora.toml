@@ -4,19 +4,10 @@ tag = "0.1.0"
 
 [from]
 repository = "registry.fedoraproject.org/fedora"
-tag = "37-x86_64"
+tag = "38-x86_64"
 
 [user]
 create = true
 
-[security]
-special-files = [
-  "/usr/bin/chage",
-  "/usr/bin/gpasswd",
-  "/usr/bin/mount",
-  "/usr/bin/newgrp",
-  "/usr/bin/sudo",
-  "/usr/bin/umount",
-  "/usr/sbin/pam_timestamp_check",
-  "/usr/sbin/unix_chkpwd",
-]
+[security.special-files]
+remove-s = true

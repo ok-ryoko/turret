@@ -199,8 +199,8 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				logger.Debugln("file copy step succeeded")
 			}
 
-			if len(spec.Security.SpecialFiles) > 0 {
-				if err = b.UnsetSpecialBits(spec.Security.SpecialFiles); err != nil {
+			if spec.Security.SpecialFiles.RemoveS {
+				if err = b.UnsetSpecialBits(spec.Security.SpecialFiles.Excludes); err != nil {
 					return fmt.Errorf("removing SUID and SGID bits on binaries: %w", err)
 				}
 				logger.Debugln("SUID/SGID bit removal step succeeded")
