@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"turret/pkg/builder"
+	"github.com/ok-ryoko/turret/pkg/builder"
 
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"

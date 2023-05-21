@@ -30,6 +30,14 @@ Turret is pre-release software and must be built from source.
 
 ### Instructions
 
+To try Turret out:
+
+```sh
+go install https://github.com/ok-ryoko/turret/cmd/turret@latest
+```
+
+To work on Turret:
+
 ```sh
 git clone https://github.com/ok-ryoko/turret
 cd turret

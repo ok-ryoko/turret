@@ -1,4 +1,4 @@
-module turret
+module github.com/ok-ryoko/turret
 
 go 1.20
 
