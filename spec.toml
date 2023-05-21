@@ -1,0 +1,115 @@
+# Turret spec reference
+
+# distro is the GNU/Linux distro in the base image;
+# one of "alpine", "arch", "debian", "fedora", "opensuse" and "void";
+# required;
+# case-insensitive
+#
+#distro = ""
+
+# Name for the image that we'll be committing;
+# required;
+# will be resolved with respect to `localhost`
+#
+#repository = ""
+
+# Tag for the image that we'll be committing;
+# if blank, only `latest` will be created
+#
+#tag = ""
+
+# Whether to upgrade the packages already installed in the base image
+#
+#upgrade = false
+
+# List of packages to install using the distro's canonical package manager
+#
+#packages = []
+
+# Whether to clean the package caches after upgrading and installing packages
+#
+#clean = false
+
+# Association between destination paths in the working container to one or more
+# source paths in the directory;
+# each list of sources will be copied to the respective destination path
+#
+#copy = {}
+
+# Environment variables to set before committing the image
+#
+#env = {}
+
+# Annotations to set before committing the image
+#
+#annotations = {}
+
+# Whether to preserve the image history and file timestamps
+#
+#keep-history = false
+
+[from]
+
+# Name of the base image; must contain the fully qualified registry, e.g.,
+# registry.fedoraproject.org/fedora;
+# required
+#
+#repository = ""
+
+# Tag of the base image;
+# required
+#
+#tag = ""
+
+[user]
+
+# Whether to create an unprivileged user
+#
+#create = false
+
+# User's unique human-readable identifier;
+# must contain only digits, letters, hyphens, periods and underscores;
+# can't start or end with a special character;
+# can't consist entirely of numbers;
+# can't be equal to "." or ".."
+#
+#name = "user"
+
+# User's unique numeric identifier;
+# can't be less than 1000;
+# can't be greater than 60000
+#
+#uid = 1000
+
+# Whether to create a user group that has the same name as the user and whose
+# GID is equal to the user's UID
+#
+#user-group = false
+
+# List of additional groups of which the user should be a member
+#
+#groups = []
+
+# GECOS field text (usually a generic descriptor or full name)
+#
+#comment = ""
+
+# User's login shell;
+# can be an absolute path or a PATH-resolvable command;
+# typically used to set a non-standard interactive shell such as zsh or fish
+#
+#login-shell = ""
+
+[security.special-files]
+
+# Whether to automatically unset the special bit on any files in the working
+# container that have one;
+# only real file systems are checked;
+# /home isn't checked
+#
+#remove-s = false
+
+# List of absolute paths to files whose SUID/SGID bit should be preserved (a
+# file need not possess a special bit to be listed)
+#
+#excludes = []
