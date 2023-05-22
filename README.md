@@ -26,7 +26,95 @@ Turret is pre-release software and must be built from source.
 
 ### Requirements
 
-[Go][download and install Go] 1.20 or newer
+- [Go][download and install Go] 1.20 or newer
+- [GNU Compiler Collection] (GCC)
+- [pkg-config]
+- [Btrfs] library development headers (libbtrfs)
+- [Linux Kernel Device Mapper] library development headers (libdevmapper)
+- [GnuPG Made Easy] library development headers (libgpgme)
+
+#### Alpine
+
+> *Tested on [docker.io/library/alpine:3.18.0]*
+
+```sh
+apk add \
+    btrfs-progs-dev \
+    gcc \
+    go \
+    gpgme-dev \
+    lvm2-dev \
+    pkgconf
+```
+
+#### Arch
+
+> *Tested on [docker.io/library/archlinux:base-20230514.0.150299]*
+
+```sh
+pacman -Sy \
+    btrfs-progs \
+    device-mapper \
+    gcc \
+    go \
+    gpgme \
+    pkgconf
+```
+
+#### Debian
+
+> *Tested on [docker.io/library/golang:1.20.4-bullseye]*
+
+```sh
+apt update
+apt install -y \
+    libbtrfs-dev \
+    libdevmapper-dev \
+    libgpgme11-dev
+```
+
+#### Fedora
+
+> *Tested on [registry.fedoraproject.org/fedora:38-x86_64]*
+
+```sh
+dnf -y install \
+    btrfs-progs-devel \
+    device-mapper-devel \
+    gcc \
+    golang \
+    gpgme-devel \
+    pkgconf
+```
+
+#### openSUSE
+
+> *Tested on [registry.opensuse.org/opensuse/leap:15.5]*
+
+```sh
+zypper in -y \
+    device-mapper-devel \
+    gcc \
+    go1.20 \
+    libbtrfs-devel \
+    libgpgme-devel \
+    pkg-config
+```
+
+#### Void
+
+> *Tested on [ghcr.io/void-linux/void-linux:20230204RC01-full-x86_64]*
+
+```sh
+xbps-install -Syu
+xbps-install -Sy \
+    device-mapper-devel \
+    gcc \
+    go \
+    gpgme-devel \
+    libbtrfs-devel \
+    pkg-config
+```
 
 ### Instructions
 
@@ -195,6 +283,7 @@ The following resources have been instrumental in preparing this repository for 
 [Alpine]: https://www.alpinelinux.org
 [Apache 2.0 license]: ./LICENSE
 [Arch]: https://archlinux.org
+[Btrfs]: https://wiki.archlinux.org/title/Btrfs
 [Buildah]: https://github.com/containers/buildah
 [containers.conf]: https://github.com/containers/common/blob/main/docs/containers.conf.5.md
 [Containers]: https://github.com/containers
@@ -209,16 +298,26 @@ The following resources have been instrumental in preparing this repository for 
 [github/docs]: https://github.com/github/docs
 [GNU Compiler Collection]: https://gcc.gnu.org
 [GNU/Linux]: https://www.gnu.org/
+[GnuPG Made Easy]: https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git
 [Inkscape]: https://inkscape.org/
 [issue tracker]: https://github.com/ok-ryoko/turret/issues
+[Linux Kernel Device Mapper]: https://sourceware.org/dm/
 [Neovim]: https://neovim.io
 [OCI]: https://opencontainers.org/
 [Open Source Guides]: https://opensource.guide/
 [openSUSE]: https://www.opensuse.org
 [our code of conduct]: ./CODE_OF_CONDUCT.md
+[pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 [Podman]: https://github.com/containers/podman
 [Red Hat]: https://redhatofficial.github.io/#!/main
 [tokio contributing guidelines]: https://github.com/tokio-rs/tokio/blob/d7d5d05333f7970c2d75bfb20371450b5ad838d7/CONTRIBUTING.md
 [TOML]: https://toml.io/
 [Toolbox]: https://github.com/containers/toolbox
 [Void]: https://voidlinux.org
+
+[docker.io/library/alpine:3.18.0]: https://hub.docker.com/layers/library/alpine/3.18.0/images/sha256-c0669ef34cdc14332c0f1ab0c2c01acb91d96014b172f1a76f3a39e63d1f0bda?context=explore
+[docker.io/library/archlinux:base-20230514.0.150299]: https://hub.docker.com/layers/library/archlinux/base-20230514.0.150299/images/sha256-f081f7f60b83cfeaff651e4ca03e4d23bf6ce6a5045594ea9b983aa686acb817?context=explore
+[docker.io/library/golang:1.20.4-bullseye]: https://hub.docker.com/layers/library/golang/1.20.4-bullseye/images/sha256-5099ad46335916ab90a4ce5ead4e01cb6eefc2f0296ef9f04af61b3e60f96c78?context=explore
+[ghcr.io/void-linux/void-linux:20230204RC01-full-x86_64]: https://github.com/void-linux/void-docker/pkgs/container/void-linux/68157358?tag=20230204RC01-full-x86_64
+[registry.fedoraproject.org/fedora:38-x86_64]: https://registry.fedoraproject.org/repo/fedora/tags/
+[registry.opensuse.org/opensuse/leap:15.5]: https://build.opensuse.org/package/show/openSUSE:Containers:Leap/15.5
