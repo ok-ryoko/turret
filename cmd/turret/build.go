@@ -55,6 +55,12 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				Value:   false,
 			},
 			&cli.BoolFlag{
+				Name:    "pull",
+				Aliases: []string{"p"},
+				Usage:   "Pull the base image from remote storage if it doesn't exist locally",
+				Value:   false,
+			},
+			&cli.BoolFlag{
 				Name:    "quiet",
 				Aliases: []string{"q"},
 				Usage:   "Print nothing (overriding alias for --verbosity 0)",
@@ -135,6 +141,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				ctx,
 				distro,
 				baseRef,
+				cCtx.Bool("pull"),
 				store,
 				logger,
 				commonOptions,

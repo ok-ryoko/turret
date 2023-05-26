@@ -454,6 +454,7 @@ func New(
 	ctx context.Context,
 	distro GNULinuxDistro,
 	image string,
+	pull bool,
 	store storage.Store,
 	logger *logrus.Logger,
 	options CommonOptions,
@@ -463,6 +464,9 @@ func New(
 		FromImage:    image,
 		Isolation:    buildah.IsolationOCIRootless,
 		PullPolicy:   buildah.PullNever,
+	}
+	if pull {
+		bo.PullPolicy = buildah.PullIfMissing
 	}
 	if options.LogCommands {
 		bo.Logger = logger
