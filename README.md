@@ -35,7 +35,7 @@ Turret is pre-release software and must be built from source.
 
 #### Alpine
 
-> *Tested on [docker.io/library/alpine:3.18.0]*
+*Tested using [alpine-virt-3.17.3-x86_64.iso] and [docker.io/library/alpine:3.18.0]*
 
 ```sh
 apk add \
@@ -49,7 +49,7 @@ apk add \
 
 #### Arch
 
-> *Tested on [docker.io/library/archlinux:base-20230514.0.150299]*
+*Tested using [Arch-Linux-x86_64-basic-20230524.153446.qcow2] and [docker.io/library/archlinux:base-20230514.0.150299]*
 
 ```sh
 pacman -Sy \
@@ -63,19 +63,29 @@ pacman -Sy \
 
 #### Debian
 
-> *Tested on [docker.io/library/golang:1.20.4-bullseye]*
+*Tested using [debian-live-11.7.0-amd64-standard.iso]*
 
 ```sh
-apt update
-apt install -y \
+apt update && apt install -y \
+    gcc \
+    golang-1.20 \
     libbtrfs-dev \
     libdevmapper-dev \
-    libgpgme11-dev
+    libgpgme-dev
+```
+
+*Tested using [docker.io/library/golang:1.20.4-bullseye]*
+
+```sh
+apt update && apt install -y \
+    libbtrfs-dev \
+    libdevmapper-dev \
+    libgpgme-dev
 ```
 
 #### Fedora
 
-> *Tested on [registry.fedoraproject.org/fedora:38-x86_64]*
+*Tested using [Fedora-Server-KVM-38-1.6.x86_64.qcow2] and [registry.fedoraproject.org/fedora:38-x86_64]*
 
 ```sh
 dnf -y install \
@@ -89,7 +99,7 @@ dnf -y install \
 
 #### openSUSE
 
-> *Tested on [registry.opensuse.org/opensuse/leap:15.5]*
+*Tested using [openSUSE-Tumbleweed-Minimal-VM.x86_64-kvm-and-xen.qcow2] and [registry.opensuse.org/opensuse/leap:15.5]*
 
 ```sh
 zypper in -y \
@@ -103,10 +113,9 @@ zypper in -y \
 
 #### Void
 
-> *Tested on [ghcr.io/void-linux/void-linux:20230204RC01-full-x86_64]*
+*Tested using [void-live-x86_64-20221001-base.iso] and [ghcr.io/void-linux/void-linux:20230204RC01-full-x86_64]*
 
 ```sh
-xbps-install -Syu
 xbps-install -Sy \
     device-mapper-devel \
     gcc \
