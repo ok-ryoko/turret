@@ -135,6 +135,64 @@ ls -hl ./cmd/turret/build/turret
 
 ## Building OCI images with Turret
 
+### Requirements
+
+- OCI container runtime, e.g., [crun], [runc] 1.0-rc6 or later
+- [containers-common]
+- [shadow-utils]
+
+> Make sure to [configure][configure-xdg-runtime-dir] the `XDG_RUNTIME_DIR` environment variable if it’s not already set. You’ll otherwise encounter permission errors writing to */run*.
+
+#### Alpine
+
+*Tested using [alpine-virt-3.17.3-x86_64.iso]*
+
+```sh
+apk add containers-common runc shadow-subids
+```
+
+#### Arch
+
+*Tested using [Arch-Linux-x86_64-basic-20230524.153446.qcow2]*
+
+```sh
+pacman -Sy containers-common crun shadow
+```
+
+#### Debian
+
+*Tested using [debian-live-11.7.0-amd64-standard.iso]*
+
+```sh
+apt install -y crun golang-github-containers-common uidmap
+```
+
+#### Fedora
+
+*Tested using [Fedora-Server-KVM-38-1.6.x86_64.qcow2]*
+
+```sh
+dnf -y install containers-common crun shadow-utils-subid
+```
+
+#### openSUSE
+
+*Tested using [openSUSE-Tumbleweed-Minimal-VM.x86_64-kvm-and-xen.qcow2]*
+
+```sh
+zypper in -y cni libcontainers-common runc shadow
+```
+
+#### Void Linux
+
+*Tested using [void-live-x86_64-20221001-base.iso]*
+
+```sh
+xbps-install -Sy containers.image containers.storage runc shadow
+```
+
+### Example
+
 Create a spec, e.g., *example.toml*, containing the following data:
 
 ```toml
@@ -285,8 +343,11 @@ The following resources have been instrumental in preparing this repository for 
 [Arch]: https://archlinux.org
 [Btrfs]: https://wiki.archlinux.org/title/Btrfs
 [Buildah]: https://github.com/containers/buildah
+[configure-xdg-runtime-dir]: https://wiki.alpinelinux.org/wiki/Wayland#XDG_RUNTIME_DIR
+[containers-common]: https://github.com/containers/common
 [containers.conf]: https://github.com/containers/common/blob/main/docs/containers.conf.5.md
 [Containers]: https://github.com/containers
+[crun]: https://github.com/containers/crun
 [Debian]: https://www.debian.org
 [discussions]: https://github.com/ok-ryoko/turret/discussions
 [Distrobox]: https://github.com/89luca89/distrobox
@@ -310,10 +371,19 @@ The following resources have been instrumental in preparing this repository for 
 [pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 [Podman]: https://github.com/containers/podman
 [Red Hat]: https://redhatofficial.github.io/#!/main
+[runc]: https://github.com/opencontainers/runc
+[shadow-utils]: https://github.com/shadow-maint/shadow
 [tokio contributing guidelines]: https://github.com/tokio-rs/tokio/blob/d7d5d05333f7970c2d75bfb20371450b5ad838d7/CONTRIBUTING.md
 [TOML]: https://toml.io/
 [Toolbox]: https://github.com/containers/toolbox
 [Void]: https://voidlinux.org
+
+[alpine-virt-3.17.3-x86_64.iso]: https://dl-cdn.alpinelinux.org/alpine/v3.17/releases/x86_64/
+[Arch-Linux-x86_64-basic-20230524.153446.qcow2]: https://gitlab.archlinux.org/archlinux/arch-boxes/-/packages
+[debian-live-11.7.0-amd64-standard.iso]: https://cdimage.debian.org/debian-cd/11.7.0-live/amd64/iso-hybrid/
+[Fedora-Server-KVM-38-1.6.x86_64.qcow2]: https://mirror.datacenter.by/pub/fedoraproject.org/linux/releases/38/Server/x86_64/images/
+[openSUSE-Tumbleweed-Minimal-VM.x86_64-kvm-and-xen.qcow2]: https://download.opensuse.org/tumbleweed/appliances/
+[void-live-x86_64-20221001-base.iso]: https://repo-default.voidlinux.org/live/20221001/
 
 [docker.io/library/alpine:3.18.0]: https://hub.docker.com/layers/library/alpine/3.18.0/images/sha256-c0669ef34cdc14332c0f1ab0c2c01acb91d96014b172f1a76f3a39e63d1f0bda?context=explore
 [docker.io/library/archlinux:base-20230514.0.150299]: https://hub.docker.com/layers/library/archlinux/base-20230514.0.150299/images/sha256-f081f7f60b83cfeaff651e4ca03e4d23bf6ce6a5045594ea9b983aa686acb817?context=explore
