@@ -29,14 +29,8 @@ type Spec struct {
 	// Reference for the base image
 	From BaseImage
 
-	// Whether to upgrade the packages already installed in the base image
-	Upgrade bool
-
-	// List of packages to install using the distro's canonical package manager
-	Packages []string
-
-	// Whether to clean package caches
-	Clean bool
+	// Instructions for the distro's canonical package manager
+	Packages Packages
 
 	// Sole unprivileged user in the working container
 	User User
@@ -80,12 +74,12 @@ func (s *Spec) Validate() error {
 		return fmt.Errorf("incomplete base image specification (missing repository or tag)")
 	}
 
-	if len(s.Packages) > 0 {
+	if len(s.Packages.Install) > 0 {
 		re, err := regexp.Compile(s.Distro.RePackageName())
 		if err != nil {
 			return fmt.Errorf("compiling regular expression: %w", err)
 		}
-		for _, p := range s.Packages {
+		for _, p := range s.Packages.Install {
 			if !re.MatchString(p) {
 				return fmt.Errorf("invalid package name '%s'", p)
 			}
@@ -152,9 +146,7 @@ func NewSpec() Spec {
 		Repository:  "",
 		Tag:         "",
 		From:        BaseImage{},
-		Upgrade:     false,
-		Packages:    []string{},
-		Clean:       false,
+		Packages:    Packages{},
 		User:        DefaultUser(),
 		Copy:        map[string][]string{},
 		Env:         map[string]string{},
@@ -284,6 +276,18 @@ type BaseImage struct {
 // Reference returns the reference of the image in the repository:tag format
 func (i BaseImage) Reference() string {
 	return fmt.Sprintf("%s:%s", i.Repository, i.Tag)
+}
+
+// Packages contains instructions for the distro's canonical package manager
+type Packages struct {
+	// Whether to upgrade pre-installed packages
+	Upgrade bool
+
+	// List of packages to install
+	Install []string
+
+	// Whether to clean package caches after upgrading or installing packages
+	Clean bool
 }
 
 // User holds information about a Linux user

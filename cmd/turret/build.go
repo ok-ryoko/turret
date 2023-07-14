@@ -159,7 +159,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}()
 			logger.Debugf("created %s Linux Turret builder", distroString)
 
-			if spec.Upgrade {
+			if spec.Packages.Upgrade {
 				logger.Debugln("upgrading packages...")
 				if err = b.UpgradePackages(); err != nil {
 					return fmt.Errorf("upgrading packages: %w", err)
@@ -167,15 +167,15 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				logger.Debugln("upgrade step succeeded")
 			}
 
-			if len(spec.Packages) > 0 {
+			if len(spec.Packages.Install) > 0 {
 				logger.Debugln("installing packages...")
-				if err = b.InstallPackages(spec.Packages); err != nil {
+				if err = b.InstallPackages(spec.Packages.Install); err != nil {
 					return fmt.Errorf("installing packages: %w", err)
 				}
 				logger.Debugln("package installation step succeeded")
 			}
 
-			if spec.Clean {
+			if spec.Packages.Clean {
 				if err = b.CleanPackageCaches(); err != nil {
 					return fmt.Errorf("cleaning package caches: %w", err)
 				}

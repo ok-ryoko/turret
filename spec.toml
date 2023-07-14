@@ -18,18 +18,6 @@
 #
 #tag = ""
 
-# Whether to upgrade the packages already installed in the base image
-#
-#upgrade = false
-
-# List of packages to install using the distro's canonical package manager
-#
-#packages = []
-
-# Whether to clean the package caches after upgrading and installing packages
-#
-#clean = false
-
 # Association between destination paths in the working container to one or more
 # source paths in the directory;
 # each list of sources will be copied to the respective destination path
@@ -60,6 +48,20 @@
 # required
 #
 #tag = ""
+
+[packages]
+
+# Whether to upgrade pre-installed packages
+#
+#upgrade = false
+
+# List of packages to install
+#
+#install = []
+
+# Whether to clean package caches after upgrading or installing packages
+#
+#clean = false
 
 [user]
 
