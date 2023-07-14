@@ -256,10 +256,48 @@ func (b *TurretBuilder) CreateUser(name string, distro GNULinuxDistro, options C
 	useraddCmd = append(useraddCmd, name)
 
 	uao := b.defaultRunOptions()
+
+	// CAP_DAC_READ_SEARCH and CAP_FSETID are elements of the useradd effective
+	// capability set but are not needed for the operation to succeed
+	//
 	uao.AddCapabilities = []string{
 		"CAP_CHOWN",
+		//
+		// - Change owner of files copied from /etc/skel to /home/user
+		// - Change owner of /var/spool/mail/user
+
 		"CAP_DAC_OVERRIDE",
+		//
+		// - Open /etc/shadow and /etc/gshadow
+		// - Open files copied from /etc/skel to /home/user
+
 		"CAP_FOWNER",
+		//
+		// - Change owner and mode of temporary files when updating the passwd,
+		// shadow, gshadow, group, subuid and subgid files in /etc
+		// - Change owner and mode of /home/user and /var/spool/mail/user
+		// - Change owner of, set extended attributes on and update timestamps
+		// of files copied from /etc/skel to /home/user
+	}
+
+	// If the sss_cache command is available, then useradd will fork into
+	// sss_cache to invalidate the System Security Services Daemon cache,
+	// an operation that requires additional capabilities
+	//
+	_, err := b.resolveExecutable("sss_cache", distro)
+	if err != nil {
+		b.Logger.Debugln("sss_cache not found; skipping cache invalidation")
+	} else {
+		uao.AddCapabilities = append(
+			uao.AddCapabilities,
+			"CAP_SETGID",
+			//
+			// sss_cache needs to set the effective GID to 0 (root)
+
+			"CAP_SETUID",
+			//
+			// sss_cache needs to set the effective UID to 0 (root)
+		)
 	}
 
 	if err := b.run(useraddCmd, uao); err != nil {

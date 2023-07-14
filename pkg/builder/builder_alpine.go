@@ -42,11 +42,19 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro GNULinuxDistro, opt
 
 	adduserCmd = append(adduserCmd, name)
 
+	// CAP_DAC_OVERRIDE and CAP_FSETID are elements of the useradd effective
+	// capability set but are not needed for the operation to succeed
+	//
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = []string{
 		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
+		//
+		// Change owner of /home/user
+
 		"CAP_FOWNER",
+		//
+		// Change mode and owner of /home/user as well as temporary files when
+		// editing /etc/passwd, /etc/shadow and /etc/group
 	}
 
 	if err := b.run(adduserCmd, ro); err != nil {
