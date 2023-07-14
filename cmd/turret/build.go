@@ -131,7 +131,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				return fmt.Errorf("image %s already exists", localRef)
 			}
 
-			distro := spec.Distro.GNULinuxDistro
+			distro := spec.Distro.LinuxDistro
 			distroString := distro.String()
 			baseRef := spec.From.Reference()
 			commonOptions := builder.CommonOptions{
@@ -190,7 +190,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					Comment:    spec.User.Comment,
 					LoginShell: spec.User.LoginShell,
 				}
-				if err = b.CreateUser(spec.User.Name, spec.Distro.GNULinuxDistro, createUserOptions); err != nil {
+				if err = b.CreateUser(spec.User.Name, spec.Distro.LinuxDistro, createUserOptions); err != nil {
 					return fmt.Errorf("creating unprivileged user: %w", err)
 				}
 				logger.Debugf("created unprivileged user '%s'", spec.User.Name)

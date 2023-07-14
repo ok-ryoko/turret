@@ -22,7 +22,7 @@ func (b *VoidTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *VoidTurretBuilder) Distro() GNULinuxDistro {
+func (b *VoidTurretBuilder) Distro() LinuxDistro {
 	return Void
 }
 

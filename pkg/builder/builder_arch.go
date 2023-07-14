@@ -22,7 +22,7 @@ func (b *ArchTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *ArchTurretBuilder) Distro() GNULinuxDistro {
+func (b *ArchTurretBuilder) Distro() LinuxDistro {
 	return Arch
 }
 

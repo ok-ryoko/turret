@@ -27,7 +27,7 @@ func newApp(logger *logrus.Logger) *cli.App {
 	return &cli.App{
 		Name:           "Turret",
 		HelpName:       "turret",
-		Usage:          "Build rootless OCI images of GNU/Linux distros declaratively",
+		Usage:          "Build rootless OCI images of Linux-based distros declaratively",
 		Version:        "0.1.0",
 		DefaultCommand: "help",
 		Commands: []*cli.Command{

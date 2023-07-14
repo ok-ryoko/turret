@@ -17,7 +17,7 @@ func (b *AlpineTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *AlpineTurretBuilder) CreateUser(name string, distro GNULinuxDistro, options CreateUserOptions) error {
+func (b *AlpineTurretBuilder) CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -74,7 +74,7 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro GNULinuxDistro, opt
 	return nil
 }
 
-func (b *AlpineTurretBuilder) Distro() GNULinuxDistro {
+func (b *AlpineTurretBuilder) Distro() LinuxDistro {
 	return Alpine
 }
 

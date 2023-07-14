@@ -17,8 +17,8 @@ const (
 
 // Spec holds the options for the build and defines the structure of spec files
 type Spec struct {
-	// GNU/Linux distro for this image; must match the distro in the base image
-	Distro GNULinuxDistroWrapper
+	// Linux-based distro for this image; must match the distro in the base image
+	Distro LinuxDistroWrapper
 
 	// Fully qualified name for the image we're building
 	Repository string
@@ -62,7 +62,7 @@ func (s *Spec) Fill() {
 
 // Validate asserts that the spec is suitable for ingestion by a builder
 func (s *Spec) Validate() error {
-	if (s.Distro == GNULinuxDistroWrapper{0}) {
+	if (s.Distro == LinuxDistroWrapper{0}) {
 		return fmt.Errorf("missing distro")
 	}
 
@@ -142,7 +142,7 @@ func (s *Spec) Validate() error {
 // NewSpec generates a default but invalid spec
 func NewSpec() Spec {
 	return Spec{
-		Distro:      GNULinuxDistroWrapper{0},
+		Distro:      LinuxDistroWrapper{0},
 		Repository:  "",
 		Tag:         "",
 		From:        BaseImage{},
@@ -156,12 +156,12 @@ func NewSpec() Spec {
 	}
 }
 
-// GNULinuxDistro is an identifier for an independent GNU/Linux distribution;
+// LinuxDistro is an identifier for an independent Linux-based distribution;
 // the zero value represents an unknown distribution
-type GNULinuxDistro int
+type LinuxDistro int
 
 const (
-	Alpine GNULinuxDistro = 1 << iota
+	Alpine LinuxDistro = 1 << iota
 	Arch
 	Debian
 	Fedora
@@ -170,7 +170,7 @@ const (
 )
 
 // DefaultShell returns the known default login shell for the distro
-func (d GNULinuxDistro) DefaultShell() string {
+func (d LinuxDistro) DefaultShell() string {
 	var s string
 	switch d {
 	case Alpine:
@@ -193,7 +193,7 @@ func (d GNULinuxDistro) DefaultShell() string {
 
 // RePackageName returns a regular expression to match valid package names for
 // the distro's canonical packaging ecosystem
-func (d GNULinuxDistro) RePackageName() string {
+func (d LinuxDistro) RePackageName() string {
 	var p string
 	switch d {
 	case Alpine:
@@ -215,7 +215,7 @@ func (d GNULinuxDistro) RePackageName() string {
 }
 
 // String returns a string containing the stylized name of the distro
-func (d GNULinuxDistro) String() string {
+func (d LinuxDistro) String() string {
 	var s string
 	switch d {
 	case Alpine:
@@ -236,19 +236,19 @@ func (d GNULinuxDistro) String() string {
 	return s
 }
 
-// GNULinuxDistroWrapper wraps GNULinuxDistro to facilitate its parsing
-type GNULinuxDistroWrapper struct {
-	GNULinuxDistro
+// LinuxDistroWrapper wraps LinuxDistro to facilitate its parsing
+type LinuxDistroWrapper struct {
+	LinuxDistro
 }
 
 // UnmarshalText decodes the distro from a string
-func (d *GNULinuxDistroWrapper) UnmarshalText(text []byte) error {
+func (d *LinuxDistroWrapper) UnmarshalText(text []byte) error {
 	var err error
-	d.GNULinuxDistro, err = parseDistroString(string(text))
+	d.LinuxDistro, err = parseDistroString(string(text))
 	return err
 }
 
-func parseDistroString(s string) (GNULinuxDistro, error) {
+func parseDistroString(s string) (LinuxDistro, error) {
 	d, ok := distroStringMap[strings.ToLower(s)]
 	if !ok {
 		return 0, fmt.Errorf("unsupported distro: %s", s)
@@ -257,7 +257,7 @@ func parseDistroString(s string) (GNULinuxDistro, error) {
 }
 
 var (
-	distroStringMap = map[string]GNULinuxDistro{
+	distroStringMap = map[string]LinuxDistro{
 		"alpine":   Alpine,
 		"arch":     Arch,
 		"fedora":   Fedora,

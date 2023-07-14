@@ -22,7 +22,7 @@ func (b *FedoraTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *FedoraTurretBuilder) Distro() GNULinuxDistro {
+func (b *FedoraTurretBuilder) Distro() LinuxDistro {
 	return Fedora
 }
 

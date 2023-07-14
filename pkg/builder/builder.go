@@ -22,7 +22,7 @@ import (
 )
 
 // TurretBuilderInterface is the interface implemented by a Turret builder for
-// a particular GNU/Linux distro
+// a particular Linux-based distro
 type TurretBuilderInterface interface {
 	// CleanPackageCaches cleans the package cache in the working container
 	// using the distro's canonical package manager
@@ -49,11 +49,11 @@ type TurretBuilderInterface interface {
 	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
 
 	// CreateUser creates the sole unprivileged user of the working container
-	CreateUser(name string, distro GNULinuxDistro, options CreateUserOptions) error
+	CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error
 
-	// Distro returns a representation of the GNU/Linux distribution for which this
+	// Distro returns a representation of the Linux-based distribution for which this
 	// builder is specialized
-	Distro() GNULinuxDistro
+	Distro() LinuxDistro
 
 	// InstallPackages installs one or more packages in the working container
 	// using the distro's canonical package manager
@@ -215,7 +215,7 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container;
 // asserts that `name` is a nonempty string
-func (b *TurretBuilder) CreateUser(name string, distro GNULinuxDistro, options CreateUserOptions) error {
+func (b *TurretBuilder) CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -351,7 +351,7 @@ func (b *TurretBuilder) Remove() error {
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise;
 // assumes the availability of the `command` shell built-in
-func (b *TurretBuilder) resolveExecutable(executable string, distro GNULinuxDistro) (string, error) {
+func (b *TurretBuilder) resolveExecutable(executable string, distro LinuxDistro) (string, error) {
 	shell := distro.DefaultShell()
 	cmd := []string{shell}
 	if filepath.Base(shell) == "bash" {
@@ -490,7 +490,7 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 // New creates a Turret builder
 func New(
 	ctx context.Context,
-	distro GNULinuxDistro,
+	distro LinuxDistro,
 	image string,
 	pull bool,
 	store storage.Store,

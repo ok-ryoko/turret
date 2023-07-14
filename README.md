@@ -9,9 +9,9 @@
 
 <h2 align="center">Turret</h2>
 
-Turret is a command-line utility that produces rootless [OCI] images of independent [GNU/Linux] distributions from [TOML] specification files (specs). Turret is also a high-level interface over [Buildah].
+Turret is a command-line utility that produces rootless [OCI] images of independent [Linux]-based distributions from [TOML] specification files (specs). Turret is also a high-level interface over [Buildah].
 
-## Compatible GNU/Linux distros
+## Compatible Linux-based distros
 
 - [Alpine]
 - [Arch]
@@ -367,11 +367,11 @@ The following resources have been instrumental in preparing this repository for 
 [GitHub documentation]: https://docs.github.com/en
 [github/docs]: https://github.com/github/docs
 [GNU Compiler Collection]: https://gcc.gnu.org
-[GNU/Linux]: https://www.gnu.org/
 [GnuPG Made Easy]: https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git
 [Inkscape]: https://inkscape.org/
 [issue tracker]: https://github.com/ok-ryoko/turret/issues
 [Linux Kernel Device Mapper]: https://sourceware.org/dm/
+[Linux]: https://kernel.org/
 [Neovim]: https://neovim.io
 [OCI]: https://opencontainers.org/
 [Open Source Guides]: https://opensource.guide/
