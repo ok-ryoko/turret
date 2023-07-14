@@ -38,7 +38,8 @@ func (b *ArchTurretBuilder) InstallPackages(packages []string) error {
 	ro.AddCapabilities = []string{
 		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
+		"CAP_FOWNER",
+		"CAP_SYS_CHROOT",
 	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
@@ -63,7 +64,8 @@ func (b *ArchTurretBuilder) UpgradePackages() error {
 	ro.AddCapabilities = []string{
 		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
+		"CAP_FOWNER",
+		"CAP_SYS_CHROOT",
 	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 

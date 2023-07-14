@@ -87,11 +87,6 @@ func (b *AlpineTurretBuilder) InstallPackages(packages []string) error {
 	cmd = append(cmd, packages...)
 
 	ro := b.defaultRunOptions()
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(cmd, ro); err != nil {
@@ -105,11 +100,6 @@ func (b *AlpineTurretBuilder) UpgradePackages() error {
 	cmd := []string{"apk", "--no-cache", "--no-progress", "upgrade"}
 
 	ro := b.defaultRunOptions()
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(cmd, ro); err != nil {

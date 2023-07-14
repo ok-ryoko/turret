@@ -35,11 +35,6 @@ func (b *OpenSUSETurretBuilder) InstallPackages(packages []string) error {
 	cmd = append(cmd, packages...)
 
 	ro := b.defaultRunOptions()
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(cmd, ro); err != nil {
@@ -53,11 +48,6 @@ func (b *OpenSUSETurretBuilder) UpgradePackages() error {
 	cmd := []string{"zypper", "--non-interactive", "patch"}
 
 	ro := b.defaultRunOptions()
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(cmd, ro); err != nil {

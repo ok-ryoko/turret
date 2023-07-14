@@ -16,6 +16,11 @@ type DebianTurretBuilder struct {
 func (b *DebianTurretBuilder) CleanPackageCaches() error {
 	cmd := []string{"apt", "clean"}
 	ro := b.defaultRunOptions()
+	ro.AddCapabilities = []string{
+		"CAP_CHOWN",
+		"CAP_DAC_OVERRIDE",
+		"CAP_FOWNER",
+	}
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf("cleaning apt package cache: %w", err)
 	}
@@ -34,6 +39,13 @@ func (b *DebianTurretBuilder) InstallPackages(packages []string) error {
 	updateCmd := []string{"apt", "update"}
 
 	ro := b.defaultRunOptions()
+	ro.AddCapabilities = []string{
+		"CAP_CHOWN",
+		"CAP_DAC_OVERRIDE",
+		"CAP_FOWNER",
+		"CAP_SETGID",
+		"CAP_SETUID",
+	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(updateCmd, ro); err != nil {
@@ -42,12 +54,6 @@ func (b *DebianTurretBuilder) InstallPackages(packages []string) error {
 
 	installCmd := []string{"apt", "--yes", "install"}
 	installCmd = append(installCmd, packages...)
-
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 
 	if err := b.run(installCmd, ro); err != nil {
 		return fmt.Errorf("installing apt packages: %w", err)
@@ -60,6 +66,13 @@ func (b *DebianTurretBuilder) UpgradePackages() error {
 	updateCmd := []string{"apt", "--quiet", "update"}
 
 	ro := b.defaultRunOptions()
+	ro.AddCapabilities = []string{
+		"CAP_CHOWN",
+		"CAP_DAC_OVERRIDE",
+		"CAP_FOWNER",
+		"CAP_SETGID",
+		"CAP_SETUID",
+	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
 	if err := b.run(updateCmd, ro); err != nil {
@@ -67,12 +80,6 @@ func (b *DebianTurretBuilder) UpgradePackages() error {
 	}
 
 	upgradeCmd := []string{"apt", "--yes", "upgrade"}
-
-	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
-		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
-	}
 
 	if err := b.run(upgradeCmd, ro); err != nil {
 		return fmt.Errorf("upgrading apt packages: %w", err)

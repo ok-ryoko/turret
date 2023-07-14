@@ -36,9 +36,7 @@ func (b *VoidTurretBuilder) InstallPackages(packages []string) error {
 
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
 	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
@@ -54,9 +52,7 @@ func (b *VoidTurretBuilder) UpgradePackages() error {
 
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = []string{
-		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",
-		"CAP_SETFCAP",
 	}
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 
