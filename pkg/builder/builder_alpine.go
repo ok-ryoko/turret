@@ -6,6 +6,8 @@ package builder
 import (
 	"fmt"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 )
 
@@ -17,7 +19,7 @@ func (b *AlpineTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *AlpineTurretBuilder) CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error {
+func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.LinuxDistro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -74,8 +76,8 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro LinuxDistro, option
 	return nil
 }
 
-func (b *AlpineTurretBuilder) Distro() LinuxDistro {
-	return Alpine
+func (b *AlpineTurretBuilder) Distro() linux.LinuxDistro {
+	return linux.Alpine
 }
 
 func (b *AlpineTurretBuilder) InstallPackages(packages []string) error {

@@ -14,6 +14,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
 	"github.com/containers/storage"
@@ -49,11 +51,11 @@ type TurretBuilderInterface interface {
 	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
 
 	// CreateUser creates the sole unprivileged user of the working container
-	CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error
+	CreateUser(name string, distro linux.LinuxDistro, options CreateUserOptions) error
 
 	// Distro returns a representation of the Linux-based distribution for which this
 	// builder is specialized
-	Distro() LinuxDistro
+	Distro() linux.LinuxDistro
 
 	// InstallPackages installs one or more packages in the working container
 	// using the distro's canonical package manager
@@ -215,7 +217,7 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container;
 // asserts that `name` is a nonempty string
-func (b *TurretBuilder) CreateUser(name string, distro LinuxDistro, options CreateUserOptions) error {
+func (b *TurretBuilder) CreateUser(name string, distro linux.LinuxDistro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -351,7 +353,7 @@ func (b *TurretBuilder) Remove() error {
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise;
 // assumes the availability of the `command` shell built-in
-func (b *TurretBuilder) resolveExecutable(executable string, distro LinuxDistro) (string, error) {
+func (b *TurretBuilder) resolveExecutable(executable string, distro linux.LinuxDistro) (string, error) {
 	shell := distro.DefaultShell()
 	cmd := []string{shell}
 	if filepath.Base(shell) == "bash" {
@@ -490,7 +492,7 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 // New creates a Turret builder
 func New(
 	ctx context.Context,
-	distro LinuxDistro,
+	distro linux.LinuxDistro,
 	image string,
 	pull bool,
 	store storage.Store,
@@ -518,7 +520,7 @@ func New(
 
 	var tb TurretBuilderInterface
 	switch distro {
-	case Alpine:
+	case linux.Alpine:
 		tb = &AlpineTurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,
@@ -526,7 +528,7 @@ func New(
 				CommonOptions: options,
 			},
 		}
-	case Arch:
+	case linux.Arch:
 		tb = &ArchTurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,
@@ -534,7 +536,7 @@ func New(
 				CommonOptions: options,
 			},
 		}
-	case Debian:
+	case linux.Debian:
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 		tb = &DebianTurretBuilder{
 			TurretBuilder: TurretBuilder{
@@ -543,7 +545,7 @@ func New(
 				CommonOptions: options,
 			},
 		}
-	case Fedora:
+	case linux.Fedora:
 		tb = &FedoraTurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,
@@ -551,7 +553,7 @@ func New(
 				CommonOptions: options,
 			},
 		}
-	case OpenSUSE:
+	case linux.OpenSUSE:
 		tb = &OpenSUSETurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,
@@ -559,7 +561,7 @@ func New(
 				CommonOptions: options,
 			},
 		}
-	case Void:
+	case linux.Void:
 		tb = &VoidTurretBuilder{
 			TurretBuilder: TurretBuilder{
 				Builder:       b,

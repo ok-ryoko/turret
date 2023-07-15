@@ -6,6 +6,8 @@ package builder
 import (
 	"fmt"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 )
 
@@ -22,8 +24,8 @@ func (b *VoidTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *VoidTurretBuilder) Distro() LinuxDistro {
-	return Void
+func (b *VoidTurretBuilder) Distro() linux.LinuxDistro {
+	return linux.Void
 }
 
 func (b *VoidTurretBuilder) InstallPackages(packages []string) error {

@@ -6,6 +6,8 @@ package builder
 import (
 	"fmt"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 )
 
@@ -22,8 +24,8 @@ func (b *FedoraTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *FedoraTurretBuilder) Distro() LinuxDistro {
-	return Fedora
+func (b *FedoraTurretBuilder) Distro() linux.LinuxDistro {
+	return linux.Fedora
 }
 
 func (b *FedoraTurretBuilder) InstallPackages(packages []string) error {

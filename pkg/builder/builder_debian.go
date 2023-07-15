@@ -6,6 +6,8 @@ package builder
 import (
 	"fmt"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 )
 
@@ -27,8 +29,8 @@ func (b *DebianTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *DebianTurretBuilder) Distro() LinuxDistro {
-	return Debian
+func (b *DebianTurretBuilder) Distro() linux.LinuxDistro {
+	return linux.Debian
 }
 
 func (b *DebianTurretBuilder) InstallPackages(packages []string) error {

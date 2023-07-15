@@ -6,6 +6,8 @@ package builder
 import (
 	"fmt"
 
+	"github.com/ok-ryoko/turret/pkg/linux"
+
 	"github.com/containers/buildah"
 )
 
@@ -22,8 +24,8 @@ func (b *OpenSUSETurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *OpenSUSETurretBuilder) Distro() LinuxDistro {
-	return OpenSUSE
+func (b *OpenSUSETurretBuilder) Distro() linux.LinuxDistro {
+	return linux.OpenSUSE
 }
 
 func (b *OpenSUSETurretBuilder) InstallPackages(packages []string) error {
