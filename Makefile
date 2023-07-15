@@ -1,6 +1,6 @@
 .PHONY: setup
 setup:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3
 
 .PHONY: fmt
 fmt:
