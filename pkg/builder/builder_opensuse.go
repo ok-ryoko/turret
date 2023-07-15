@@ -24,7 +24,7 @@ func (b *OpenSUSETurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *OpenSUSETurretBuilder) Distro() linux.LinuxDistro {
+func (b *OpenSUSETurretBuilder) Distro() linux.Distro {
 	return linux.OpenSUSE
 }
 

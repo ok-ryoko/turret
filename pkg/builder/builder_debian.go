@@ -29,7 +29,7 @@ func (b *DebianTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *DebianTurretBuilder) Distro() linux.LinuxDistro {
+func (b *DebianTurretBuilder) Distro() linux.Distro {
 	return linux.Debian
 }
 

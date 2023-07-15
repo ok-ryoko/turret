@@ -24,7 +24,7 @@ func (b *VoidTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *VoidTurretBuilder) Distro() linux.LinuxDistro {
+func (b *VoidTurretBuilder) Distro() linux.Distro {
 	return linux.Void
 }
 

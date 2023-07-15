@@ -51,11 +51,11 @@ type TurretBuilderInterface interface {
 	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
 
 	// CreateUser creates the sole unprivileged user of the working container
-	CreateUser(name string, distro linux.LinuxDistro, options CreateUserOptions) error
+	CreateUser(name string, distro linux.Distro, options CreateUserOptions) error
 
 	// Distro returns a representation of the Linux-based distribution for which this
 	// builder is specialized
-	Distro() linux.LinuxDistro
+	Distro() linux.Distro
 
 	// InstallPackages installs one or more packages in the working container
 	// using the distro's canonical package manager
@@ -217,7 +217,7 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container;
 // asserts that `name` is a nonempty string
-func (b *TurretBuilder) CreateUser(name string, distro linux.LinuxDistro, options CreateUserOptions) error {
+func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -353,7 +353,7 @@ func (b *TurretBuilder) Remove() error {
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise;
 // assumes the availability of the `command` shell built-in
-func (b *TurretBuilder) resolveExecutable(executable string, distro linux.LinuxDistro) (string, error) {
+func (b *TurretBuilder) resolveExecutable(executable string, distro linux.Distro) (string, error) {
 	shell := distro.DefaultShell()
 	cmd := []string{shell}
 	if filepath.Base(shell) == "bash" {
@@ -492,7 +492,7 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 // New creates a Turret builder
 func New(
 	ctx context.Context,
-	distro linux.LinuxDistro,
+	distro linux.Distro,
 	image string,
 	pull bool,
 	store storage.Store,

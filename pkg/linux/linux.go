@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-// LinuxDistro is an identifier for an independent Linux-based distribution;
+// Distro is an identifier for an independent Linux-based distribution;
 // the zero value represents an unknown distribution
-type LinuxDistro int
+type Distro int
 
 const (
-	Alpine LinuxDistro = 1 << iota
+	Alpine Distro = 1 << iota
 	Arch
 	Debian
 	Fedora
@@ -22,7 +22,7 @@ const (
 )
 
 // DefaultShell returns the known default login shell for the distro
-func (d LinuxDistro) DefaultShell() string {
+func (d Distro) DefaultShell() string {
 	var s string
 	switch d {
 	case Alpine:
@@ -45,7 +45,7 @@ func (d LinuxDistro) DefaultShell() string {
 
 // RePackageName returns a regular expression to match valid package names for
 // the distro's canonical packaging ecosystem
-func (d LinuxDistro) RePackageName() string {
+func (d Distro) RePackageName() string {
 	var p string
 	switch d {
 	case Alpine:
@@ -67,7 +67,7 @@ func (d LinuxDistro) RePackageName() string {
 }
 
 // String returns a string containing the stylized name of the distro
-func (d LinuxDistro) String() string {
+func (d Distro) String() string {
 	var s string
 	switch d {
 	case Alpine:
@@ -88,19 +88,19 @@ func (d LinuxDistro) String() string {
 	return s
 }
 
-// LinuxDistroWrapper wraps LinuxDistro to facilitate its parsing
-type LinuxDistroWrapper struct {
-	LinuxDistro
+// DistroWrapper wraps Distro to facilitate its parsing
+type DistroWrapper struct {
+	Distro
 }
 
 // UnmarshalText decodes the distro from a string
-func (d *LinuxDistroWrapper) UnmarshalText(text []byte) error {
+func (d *DistroWrapper) UnmarshalText(text []byte) error {
 	var err error
-	d.LinuxDistro, err = parseDistroString(string(text))
+	d.Distro, err = parseDistroString(string(text))
 	return err
 }
 
-func parseDistroString(s string) (LinuxDistro, error) {
+func parseDistroString(s string) (Distro, error) {
 	d, ok := distroStringMap[strings.ToLower(s)]
 	if !ok {
 		return 0, fmt.Errorf("unsupported distro: %s", s)
@@ -109,7 +109,7 @@ func parseDistroString(s string) (LinuxDistro, error) {
 }
 
 var (
-	distroStringMap = map[string]LinuxDistro{
+	distroStringMap = map[string]Distro{
 		"alpine":   Alpine,
 		"arch":     Arch,
 		"fedora":   Fedora,

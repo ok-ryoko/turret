@@ -24,7 +24,7 @@ func (b *ArchTurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-func (b *ArchTurretBuilder) Distro() linux.LinuxDistro {
+func (b *ArchTurretBuilder) Distro() linux.Distro {
 	return linux.Arch
 }
 

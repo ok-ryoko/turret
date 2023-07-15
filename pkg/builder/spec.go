@@ -19,7 +19,7 @@ const (
 // Spec holds the options for the build and defines the structure of spec files
 type Spec struct {
 	// Linux-based distro for this image; must match the distro in the base image
-	Distro linux.LinuxDistroWrapper
+	Distro linux.DistroWrapper
 
 	// Fully qualified name for the image we're building
 	Repository string
@@ -63,7 +63,7 @@ func (s *Spec) Fill() {
 
 // Validate asserts that the spec is suitable for ingestion by a builder
 func (s *Spec) Validate() error {
-	if (s.Distro == linux.LinuxDistroWrapper{LinuxDistro: 0}) {
+	if (s.Distro == linux.DistroWrapper{Distro: 0}) {
 		return fmt.Errorf("missing distro")
 	}
 
@@ -143,7 +143,7 @@ func (s *Spec) Validate() error {
 // NewSpec generates a default but invalid spec
 func NewSpec() Spec {
 	return Spec{
-		Distro:      linux.LinuxDistroWrapper{LinuxDistro: 0},
+		Distro:      linux.DistroWrapper{Distro: 0},
 		Repository:  "",
 		Tag:         "",
 		From:        BaseImage{},
