@@ -17,6 +17,7 @@ type Distro int
 const (
 	Alpine Distro = 1 << iota
 	Arch
+	Chimera
 	Debian
 	Fedora
 	OpenSUSE
@@ -31,6 +32,8 @@ func (d Distro) DefaultShell() string {
 		s = "/bin/ash"
 	case Arch, Debian, Fedora, OpenSUSE:
 		s = "/bin/bash"
+	case Chimera:
+		s = "/bin/sh"
 	case Void:
 		s = "/bin/dash"
 	default:
@@ -43,7 +46,7 @@ func (d Distro) DefaultShell() string {
 func (d Distro) DefaultPackageManager() packagemanager.PackageManager {
 	var p packagemanager.PackageManager
 	switch d {
-	case Alpine:
+	case Alpine, Chimera:
 		p = packagemanager.APK
 	case Arch:
 		p = packagemanager.Pacman
@@ -69,6 +72,8 @@ func (d Distro) String() string {
 		s = "Alpine"
 	case Arch:
 		s = "Arch"
+	case Chimera:
+		s = "Chimera"
 	case Debian:
 		s = "Debian"
 	case Fedora:
@@ -102,6 +107,8 @@ func parseDistroString(s string) (Distro, error) {
 		d = Alpine
 	case "arch":
 		d = Arch
+	case "chimera":
+		d = Chimera
 	case "debian":
 		d = Debian
 	case "fedora":

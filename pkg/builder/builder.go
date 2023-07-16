@@ -624,6 +624,15 @@ func New(
 				CommonOptions:                options,
 			},
 		}
+	case linux.Chimera:
+		tb = &ChimeraTurretBuilder{
+			TurretBuilder: TurretBuilder{
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
+			},
+		}
 	case linux.Debian:
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 		tb = &DebianTurretBuilder{

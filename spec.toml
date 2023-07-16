@@ -1,7 +1,7 @@
 # Turret spec reference
 
 # distro is the Linux-based distro in the base image;
-# one of "alpine", "arch", "debian", "fedora", "opensuse" and "void";
+# one of "alpine", "arch", "chimera", "debian", "fedora", "opensuse" and "void";
 # required;
 # case-insensitive
 #
