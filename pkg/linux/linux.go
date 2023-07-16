@@ -29,13 +29,7 @@ func (d Distro) DefaultShell() string {
 	switch d {
 	case Alpine:
 		s = "/bin/ash"
-	case Arch:
-		s = "/bin/bash"
-	case Debian:
-		s = "/bin/bash"
-	case Fedora:
-		s = "/bin/bash"
-	case OpenSUSE:
+	case Arch, Debian, Fedora, OpenSUSE:
 		s = "/bin/bash"
 	case Void:
 		s = "/bin/dash"

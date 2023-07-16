@@ -51,14 +51,10 @@ func (p PackageManager) RePackageName() string {
 		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
 	case APT:
 		r = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
-	case DNF:
+	case DNF, XBPS, Zypper:
 		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
 	case Pacman:
 		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
-	case XBPS:
-		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
-	case Zypper:
-		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
 	default:
 		r = ""
 	}
