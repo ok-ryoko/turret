@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
+	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
 )
 
 const (
@@ -56,6 +57,12 @@ type Spec struct {
 
 // Fill populates the spec using runtime information
 func (s *Spec) Fill() {
+	if s.Packages.Manager.PackageManager == 0 {
+		s.Packages.Manager = packagemanager.PackageManagerWrapper{
+			PackageManager: s.Distro.DefaultPackageManager(),
+		}
+	}
+
 	if s.User.LoginShell == "" {
 		s.User.LoginShell = s.Distro.DefaultShell()
 	}
@@ -67,6 +74,10 @@ func (s *Spec) Validate() error {
 		return fmt.Errorf("missing distro")
 	}
 
+	if s.Packages.Manager.PackageManager == 0 {
+		return fmt.Errorf("missing package manager")
+	}
+
 	if s.Repository == "" {
 		return fmt.Errorf("missing image name")
 	}
@@ -76,7 +87,7 @@ func (s *Spec) Validate() error {
 	}
 
 	if len(s.Packages.Install) > 0 {
-		re, err := regexp.Compile(s.Distro.RePackageName())
+		re, err := regexp.Compile(s.Packages.Manager.RePackageName())
 		if err != nil {
 			return fmt.Errorf("compiling regular expression: %w", err)
 		}
@@ -170,6 +181,10 @@ func (i BaseImage) Reference() string {
 
 // Packages contains instructions for the distro's canonical package manager
 type Packages struct {
+	// Package manager for this image; must match the package manager in the
+	// base image
+	Manager packagemanager.PackageManagerWrapper
+
 	// Whether to upgrade pre-installed packages
 	Upgrade bool
 

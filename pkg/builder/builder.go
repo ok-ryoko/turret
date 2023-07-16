@@ -15,6 +15,7 @@ import (
 	"unicode"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
+	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -26,7 +27,7 @@ import (
 // TurretBuilderInterface is the interface implemented by a Turret builder for
 // a particular Linux-based distro
 type TurretBuilderInterface interface {
-	// CleanPackageCaches cleans the package cache in the working container
+	// CleanPackageCaches cleans the package caches in the working container
 	// using the distro's canonical package manager
 	CleanPackageCaches() error
 
@@ -76,6 +77,9 @@ type TurretBuilderInterface interface {
 
 // TurretBuilder provides a high-level API over Buildah
 type TurretBuilder struct {
+	// The package manager command factory
+	PackageManagerCommandFactory packagemanager.CommandFactory
+
 	// Pointer to the underlying Buildah Builder instance
 	Builder *buildah.Builder
 
@@ -84,6 +88,22 @@ type TurretBuilder struct {
 
 	// Pointer to the underlying logger
 	Logger *logrus.Logger
+}
+
+// CleanPackageCaches cleans the package caches in the working container
+// using the distro's canonical package manager
+func (b *TurretBuilder) CleanPackageCaches() error {
+	cmd, capabilities := b.PackageManagerCommandFactory.NewCleanCacheCmd()
+	ro := b.defaultRunOptions()
+	ro.AddCapabilities = capabilities
+	if err := b.run(cmd, ro); err != nil {
+		return fmt.Errorf(
+			"cleaning %s package cache: %w",
+			b.PackageManagerCommandFactory.PackageManager().String(),
+			err,
+		)
+	}
+	return nil
 }
 
 // CommonOptions holds common options for every step of a build
@@ -335,6 +355,36 @@ func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
 	return options
 }
 
+// InstallPackages installs one or more packages in the working container
+// using the distro's canonical package manager
+func (b *TurretBuilder) InstallPackages(packages []string) error {
+	if b.PackageManagerCommandFactory.PackageManager() == packagemanager.APT {
+		cmd, capabilities := b.PackageManagerCommandFactory.NewInstallCmd(packages)
+		ro := b.defaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		if err := b.run(cmd, ro); err != nil {
+			return fmt.Errorf(
+				"updating %s package index: %w",
+				b.PackageManagerCommandFactory.PackageManager().String(),
+				err,
+			)
+		}
+	}
+	cmd, capabilities := b.PackageManagerCommandFactory.NewInstallCmd(packages)
+	ro := b.defaultRunOptions()
+	ro.AddCapabilities = capabilities
+	ro.ConfigureNetwork = buildah.NetworkEnabled
+	if err := b.run(cmd, ro); err != nil {
+		return fmt.Errorf(
+			"installing %s packages: %w",
+			b.PackageManagerCommandFactory.PackageManager().String(),
+			err,
+		)
+	}
+	return nil
+}
+
 // Remove removes the working container and destroys this builder, which should
 // not be used afterwards
 func (b *TurretBuilder) Remove() error {
@@ -489,10 +539,41 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 	return nil
 }
 
+// UpgradePackages upgrades the packages in the working container using the
+// distro's canonical package manager
+func (b *TurretBuilder) UpgradePackages() error {
+	if b.PackageManagerCommandFactory.PackageManager() == packagemanager.APT {
+		cmd, capabilities := b.PackageManagerCommandFactory.NewUpdateIndexCmd()
+		ro := b.defaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		if err := b.run(cmd, ro); err != nil {
+			return fmt.Errorf(
+				"updating %s package index: %w",
+				b.PackageManagerCommandFactory.PackageManager().String(),
+				err,
+			)
+		}
+	}
+	cmd, capabilities := b.PackageManagerCommandFactory.NewUpgradeCmd()
+	ro := b.defaultRunOptions()
+	ro.AddCapabilities = capabilities
+	ro.ConfigureNetwork = buildah.NetworkEnabled
+	if err := b.run(cmd, ro); err != nil {
+		return fmt.Errorf(
+			"cleaning %s package cache: %w",
+			b.PackageManagerCommandFactory.PackageManager().String(),
+			err,
+		)
+	}
+	return nil
+}
+
 // New creates a Turret builder
 func New(
 	ctx context.Context,
 	distro linux.Distro,
+	packageManager packagemanager.PackageManager,
 	image string,
 	pull bool,
 	store storage.Store,
@@ -518,55 +599,66 @@ func New(
 	}
 	logger.Debugf("created working container from image '%s'", image)
 
+	p, err := packagemanager.New(packageManager)
+	if err != nil {
+		return nil, fmt.Errorf("creating package manager: %w", err)
+	}
+
 	var tb TurretBuilderInterface
 	switch distro {
 	case linux.Alpine:
 		tb = &AlpineTurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	case linux.Arch:
 		tb = &ArchTurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	case linux.Debian:
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 		tb = &DebianTurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	case linux.Fedora:
 		tb = &FedoraTurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	case linux.OpenSUSE:
 		tb = &OpenSUSETurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	case linux.Void:
 		tb = &VoidTurretBuilder{
 			TurretBuilder: TurretBuilder{
-				Builder:       b,
-				Logger:        logger,
-				CommonOptions: options,
+				Builder:                      b,
+				PackageManagerCommandFactory: p,
+				Logger:                       logger,
+				CommonOptions:                options,
 			},
 		}
 	default:

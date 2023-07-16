@@ -51,6 +51,12 @@
 
 [packages]
 
+# manager is the package manager in the base image;
+# one of "apk", "apt", "dnf", "pacman", "xbps" and "zypper";
+# case-insensitive
+#
+#manager = ""
+
 # Whether to upgrade pre-installed packages
 #
 #upgrade = false

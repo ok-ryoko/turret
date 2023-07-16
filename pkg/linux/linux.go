@@ -6,6 +6,8 @@ package linux
 import (
 	"fmt"
 	"strings"
+
+	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
 )
 
 // Distro is an identifier for an independent Linux-based distribution;
@@ -43,25 +45,24 @@ func (d Distro) DefaultShell() string {
 	return s
 }
 
-// RePackageName returns a regular expression to match valid package names for
-// the distro's canonical packaging ecosystem
-func (d Distro) RePackageName() string {
-	var p string
+// DefaultPackageManager returns the canonical package manager for the distro
+func (d Distro) DefaultPackageManager() packagemanager.PackageManager {
+	var p packagemanager.PackageManager
 	switch d {
 	case Alpine:
-		p = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
+		p = packagemanager.APK
 	case Arch:
-		p = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
+		p = packagemanager.Pacman
 	case Debian:
-		p = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
+		p = packagemanager.APT
 	case Fedora:
-		p = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
+		p = packagemanager.DNF
 	case OpenSUSE:
-		p = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
+		p = packagemanager.Zypper
 	case Void:
-		p = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
+		p = packagemanager.XBPS
 	default:
-		p = ""
+		p = 0
 	}
 	return p
 }

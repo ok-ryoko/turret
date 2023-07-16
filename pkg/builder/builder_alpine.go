@@ -7,16 +7,10 @@ import (
 	"fmt"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
-
-	"github.com/containers/buildah"
 )
 
 type AlpineTurretBuilder struct {
 	TurretBuilder
-}
-
-func (b *AlpineTurretBuilder) CleanPackageCaches() error {
-	return nil
 }
 
 func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, options CreateUserOptions) error {
@@ -78,35 +72,4 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, optio
 
 func (b *AlpineTurretBuilder) Distro() linux.Distro {
 	return linux.Alpine
-}
-
-func (b *AlpineTurretBuilder) InstallPackages(packages []string) error {
-	if len(packages) == 0 {
-		return nil
-	}
-
-	cmd := []string{"apk", "--no-cache", "--no-progress", "add"}
-	cmd = append(cmd, packages...)
-
-	ro := b.defaultRunOptions()
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-
-	if err := b.run(cmd, ro); err != nil {
-		return fmt.Errorf("adding apk packages: %w", err)
-	}
-
-	return nil
-}
-
-func (b *AlpineTurretBuilder) UpgradePackages() error {
-	cmd := []string{"apk", "--no-cache", "--no-progress", "upgrade"}
-
-	ro := b.defaultRunOptions()
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-
-	if err := b.run(cmd, ro); err != nil {
-		return fmt.Errorf("upgrading apk packages: %w", err)
-	}
-
-	return nil
 }

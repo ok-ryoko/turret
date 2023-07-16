@@ -133,6 +133,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 
 			distro := spec.Distro.Distro
 			distroString := distro.String()
+			packageManager := spec.Packages.Manager.PackageManager
 			baseRef := spec.From.Reference()
 			commonOptions := builder.CommonOptions{
 				LogCommands: v >= 4,
@@ -140,6 +141,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			b, err := builder.New(
 				ctx,
 				distro,
+				packageManager,
 				baseRef,
 				cCtx.Bool("pull"),
 				store,
