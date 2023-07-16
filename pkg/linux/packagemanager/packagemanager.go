@@ -78,23 +78,25 @@ func (p *PackageManagerWrapper) UnmarshalText(text []byte) error {
 }
 
 func parsePackageManagerString(s string) (PackageManager, error) {
-	p, ok := packageManagerStringMap[strings.ToLower(s)]
-	if !ok {
+	var p PackageManager
+	switch strings.ToLower(s) {
+	case "apk":
+		p = APK
+	case "apt":
+		p = APT
+	case "dnf":
+		p = DNF
+	case "pacman":
+		p = Pacman
+	case "xbps":
+		p = XBPS
+	case "zypper":
+		p = Zypper
+	default:
 		return 0, fmt.Errorf("unsupported package manager: %s", s)
 	}
 	return p, nil
 }
-
-var (
-	packageManagerStringMap = map[string]PackageManager{
-		"apk":    APK,
-		"apt":    APT,
-		"dnf":    DNF,
-		"pacman": Pacman,
-		"xbps":   XBPS,
-		"zypper": Zypper,
-	}
-)
 
 // PackageManagerCommandFactory provides a simple layer of abstraction over
 // common package manager commands

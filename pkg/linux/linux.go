@@ -102,20 +102,22 @@ func (d *DistroWrapper) UnmarshalText(text []byte) error {
 }
 
 func parseDistroString(s string) (Distro, error) {
-	d, ok := distroStringMap[strings.ToLower(s)]
-	if !ok {
+	var d Distro
+	switch strings.ToLower(s) {
+	case "alpine":
+		d = Alpine
+	case "arch":
+		d = Arch
+	case "debian":
+		d = Debian
+	case "fedora":
+		d = Fedora
+	case "opensuse":
+		d = OpenSUSE
+	case "void":
+		d = Void
+	default:
 		return 0, fmt.Errorf("unsupported distro: %s", s)
 	}
 	return d, nil
 }
-
-var (
-	distroStringMap = map[string]Distro{
-		"alpine":   Alpine,
-		"arch":     Arch,
-		"fedora":   Fedora,
-		"debian":   Debian,
-		"opensuse": OpenSUSE,
-		"void":     Void,
-	}
-)
