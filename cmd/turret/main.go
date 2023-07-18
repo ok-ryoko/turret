@@ -41,6 +41,6 @@ func newApp(logger *logrus.Logger) *cli.App {
 				Email: "ryoko@kyomu.jp.net",
 			},
 		},
-		Copyright: "(c) 2023 OK Ryoko",
+		Copyright: "Copyright 2023 OK Ryoko",
 	}
 }
