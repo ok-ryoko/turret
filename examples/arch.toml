@@ -7,7 +7,7 @@ repository = "docker.io/library/archlinux"
 tag = "base-20230514.0.150299"
 
 [user]
-create = true
+name = "user"
 
 [security.special-files]
 remove-s = true

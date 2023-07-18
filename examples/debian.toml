@@ -7,7 +7,7 @@ repository = "docker.io/library/debian"
 tag = "11.7-slim"
 
 [user]
-create = true
+name = "user"
 
 [security.special-files]
 remove-s = true

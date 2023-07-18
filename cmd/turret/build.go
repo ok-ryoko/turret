@@ -184,9 +184,9 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				logger.Debugln("package cache cleaning step succeeded")
 			}
 
-			if spec.User.Create {
+			if spec.User != nil {
 				createUserOptions := builder.CreateUserOptions{
-					UID:        spec.User.UID,
+					ID:         spec.User.ID,
 					UserGroup:  spec.User.UserGroup,
 					Groups:     spec.User.Groups,
 					Comment:    spec.User.Comment,
@@ -225,7 +225,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				LoginShell:  spec.User.LoginShell,
 				UserName:    spec.User.Name,
 			}
-			b.Configure(spec.User.Create, configureOptions)
+			b.Configure(spec.User != nil, configureOptions)
 			logger.Debugln("configured image")
 
 			logger.Debugln("committing image...")
@@ -299,7 +299,7 @@ func createSpec(p string, hash bool) (builder.Spec, string, error) {
 	d := toml.NewDecoder(r)
 	d.DisallowUnknownFields()
 
-	spec := builder.NewSpec()
+	spec := builder.Spec{}
 	if err = d.Decode(&spec); err != nil {
 		return builder.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
 	}

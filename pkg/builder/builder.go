@@ -242,6 +242,8 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 		return fmt.Errorf("blank user name")
 	}
 
+	useraddCmd := []string{"useradd", "--create-home"}
+
 	if options.LoginShell != distro.DefaultShell() {
 		shell, err := b.resolveExecutable(options.LoginShell, distro)
 		if err != nil {
@@ -249,12 +251,17 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 		}
 		options.LoginShell = shell
 	}
+	useraddCmd = append(useraddCmd, "--shell", options.LoginShell)
 
-	useraddCmd := []string{
-		"useradd",
-		"--create-home",
-		"--uid", fmt.Sprintf("%d", options.UID),
-		"--shell", options.LoginShell,
+	if options.ID != 0 {
+		if options.ID < 1000 || options.ID > 60000 {
+			return fmt.Errorf("UID %d outside allowed range [1000-60000]", options.ID)
+		}
+		useraddCmd = append(
+			useraddCmd,
+			"--uid",
+			fmt.Sprintf("%d", options.ID),
+		)
 	}
 
 	userGroupFlag := "--no-user-group"
@@ -330,7 +337,7 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 }
 
 type CreateUserOptions struct {
-	UID        uint
+	ID         uint
 	UserGroup  bool
 	Groups     []string
 	Comment    string

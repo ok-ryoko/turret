@@ -7,7 +7,7 @@ repository = "registry.opensuse.org/opensuse/leap"
 tag = "15.5"
 
 [user]
-create = true
+name = "user"
 
 [security.special-files]
 remove-s = true

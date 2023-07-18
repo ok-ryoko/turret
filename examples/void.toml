@@ -7,7 +7,7 @@ repository = "ghcr.io/void-linux/void-linux"
 tag = "20230204RC01-full-x86_64"
 
 [user]
-create = true
+name = "user"
 
 [security.special-files]
 remove-s = true

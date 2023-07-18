@@ -7,7 +7,7 @@ repository = "registry.fedoraproject.org/fedora"
 tag = "38-x86_64"
 
 [user]
-create = true
+name = "user"
 
 [security.special-files]
 remove-s = true

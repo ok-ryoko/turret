@@ -71,10 +71,6 @@
 
 [user]
 
-# Whether to create an unprivileged user
-#
-#create = false
-
 # User's unique human-readable identifier;
 # must contain only digits, letters, hyphens, periods and underscores;
 # can't start or end with a special character;
@@ -84,10 +80,10 @@
 #name = "user"
 
 # User's unique numeric identifier;
-# can't be less than 1000;
-# can't be greater than 60000
+# either 0 or an integer from 1000 to 60000, inclusive;
+# the default value of 0 tells the program to determine the UID automatically
 #
-#uid = 1000
+#id = 0
 
 # Whether to create a user group that has the same name as the user and whose
 # GID is equal to the user's UID

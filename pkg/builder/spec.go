@@ -35,7 +35,7 @@ type Spec struct {
 	Packages Packages
 
 	// Sole unprivileged user in the working container
-	User User
+	User *User
 
 	// Map of destination paths in the working container's file system to
 	// sources in the end user's home directory
@@ -63,8 +63,10 @@ func (s *Spec) Fill() {
 		}
 	}
 
-	if s.User.LoginShell == "" {
-		s.User.LoginShell = s.Distro.DefaultShell()
+	if s.User != nil {
+		if s.User.LoginShell == "" {
+			s.User.LoginShell = s.Distro.DefaultShell()
+		}
 	}
 }
 
@@ -98,7 +100,7 @@ func (s *Spec) Validate() error {
 		}
 	}
 
-	if s.User.Create {
+	if s.User != nil {
 		re1, err := regexp.Compile(rePOSIXPortableName)
 		if err != nil {
 			return fmt.Errorf("compiling regular expression: %w", err)
@@ -123,8 +125,8 @@ func (s *Spec) Validate() error {
 			}
 		}
 
-		if s.User.UID < 1000 || s.User.UID > 60000 {
-			return fmt.Errorf("UID %d outside allowed range [1000-60000]", s.User.UID)
+		if s.User.ID != 0 && (s.User.ID < 1000 || s.User.ID > 60000) {
+			return fmt.Errorf("UID %d outside allowed range [1000-60000]", s.User.ID)
 		}
 
 		if len(s.User.Groups) > 0 {
@@ -149,23 +151,6 @@ func (s *Spec) Validate() error {
 	}
 
 	return nil
-}
-
-// NewSpec generates a default but invalid spec
-func NewSpec() Spec {
-	return Spec{
-		Distro:      linux.DistroWrapper{Distro: 0},
-		Repository:  "",
-		Tag:         "",
-		From:        BaseImage{},
-		Packages:    Packages{},
-		User:        DefaultUser(),
-		Copy:        map[string][]string{},
-		Env:         map[string]string{},
-		Annotations: map[string]string{},
-		KeepHistory: false,
-		Security:    Security{},
-	}
 }
 
 // BaseImage holds the components of the base image reference
@@ -197,14 +182,16 @@ type Packages struct {
 
 // User holds information about a Linux user
 type User struct {
-	// Whether to create this user
-	Create bool
-
 	// Human-readable identifier
 	Name string
 
-	// Numeric identifier from 1000 to 60000, inclusive
-	UID uint `toml:"uid"`
+	// Linux user ID (UID)
+	//
+	// The default value of 0 tells the program to delegate the choice of UID
+	// to the user-space utility responsible for user creation
+	//
+	// If not 0, then it must be an integer between 1000 and 60000, inclusive
+	ID uint `toml:"id"`
 
 	// Whether to create a user group
 	UserGroup bool `toml:"user-group"`
@@ -217,19 +204,6 @@ type User struct {
 
 	// Login shell; must be a PATH-resolvable executable
 	LoginShell string `toml:"login-shell"`
-}
-
-// DefaultUser returns a minimally configured Linux user
-func DefaultUser() User {
-	return User{
-		Create:     false,
-		Name:       "user",
-		UID:        1000,
-		UserGroup:  false,
-		Groups:     []string{},
-		Comment:    "",
-		LoginShell: "",
-	}
 }
 
 // Security holds security-related options for the working container
