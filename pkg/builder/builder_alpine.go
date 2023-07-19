@@ -18,13 +18,19 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, optio
 		return fmt.Errorf("blank user name")
 	}
 
-	adduserCmd := []string{"adduser", "-D", "-G", "users"}
+	adduserCmd := []string{"adduser", "-D"}
 
-	shell, err := b.resolveExecutable(options.LoginShell, distro)
-	if err != nil {
-		return fmt.Errorf("resolving login shell: %w", err)
+	if !options.UserGroup {
+		adduserCmd = append(adduserCmd, "-G", "users")
 	}
-	options.LoginShell = shell
+
+	if options.LoginShell != distro.DefaultShell() {
+		shell, err := b.resolveExecutable(options.LoginShell, distro)
+		if err != nil {
+			return fmt.Errorf("resolving login shell: %w", err)
+		}
+		options.LoginShell = shell
+	}
 	adduserCmd = append(adduserCmd, "-s", options.LoginShell)
 
 	if options.ID != 0 {
