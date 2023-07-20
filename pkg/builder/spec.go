@@ -55,7 +55,8 @@ type Spec struct {
 	Security Security
 }
 
-// Fill populates the spec using runtime information
+// Fill populates empty optional fields in the spec using information encoded
+// by required fields
 func (s *Spec) Fill() {
 	if s.Packages.Manager.PackageManager == 0 {
 		s.Packages.Manager = packagemanager.PackageManagerWrapper{
@@ -153,21 +154,21 @@ func (s *Spec) Validate() error {
 	return nil
 }
 
-// BaseImage holds the components of the base image reference
+// BaseImage holds the components of the reference to the base image
 type BaseImage struct {
 	Repository string
 	Tag        string
 }
 
-// Reference returns the reference of the image in the repository:tag format
+// Reference returns the repository:tag string representation of the
+// reference to the base image
 func (i BaseImage) Reference() string {
 	return fmt.Sprintf("%s:%s", i.Repository, i.Tag)
 }
 
 // Packages contains instructions for the distro's canonical package manager
 type Packages struct {
-	// Package manager for this image; must match the package manager in the
-	// base image
+	// Identity of the package manager in the working container
 	Manager packagemanager.PackageManagerWrapper
 
 	// Whether to upgrade pre-installed packages
@@ -199,7 +200,7 @@ type User struct {
 	// Groups to which to add the user
 	Groups []string
 
-	// GECOS field text
+	// GECOS field text commonly used to store a full display name
 	Comment string
 
 	// Login shell; must be a PATH-resolvable executable

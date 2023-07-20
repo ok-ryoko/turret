@@ -24,11 +24,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TurretBuilderInterface is the interface implemented by a Turret builder for
+// TurretBuilderInterface is the interface implemented by a TurretBuilder for
 // a particular Linux-based distro
 type TurretBuilderInterface interface {
 	// CleanPackageCaches cleans the package caches in the working container
-	// using the distro's canonical package manager
 	CleanPackageCaches() error
 
 	// Commit commits an image from the working container to storage and returns
@@ -54,33 +53,32 @@ type TurretBuilderInterface interface {
 	// CreateUser creates the sole unprivileged user of the working container
 	CreateUser(name string, distro linux.Distro, options CreateUserOptions) error
 
-	// Distro returns a representation of the Linux-based distribution for which this
-	// builder is specialized
+	// Distro returns a unique representation of the Linux-based distribution
+	// for which this builder implements TurretBuilderInterface
 	Distro() linux.Distro
 
 	// InstallPackages installs one or more packages in the working container
-	// using the distro's canonical package manager
 	InstallPackages(packages []string) error
 
-	// Remove removes the working container and destroys this builder, which should
-	// not be used afterwards
+	// Remove removes the working container and destroys this builder, which
+	// should not be used afterwards
 	Remove() error
 
-	// UnsetSpecialBits removes SUID and SGID bits from files in the working
-	// container
+	// UnsetSpecialBits removes the SUID/SGID bit from files in real filesystems
+	// mounted in the working container
 	UnsetSpecialBits(files []string) error
 
-	// UpgradePackages upgrades the packages in the working container using the
-	// distro's canonical package manager
+	// UpgradePackages upgrades the packages in the working container
 	UpgradePackages() error
 }
 
-// TurretBuilder provides a high-level API over Buildah
+// TurretBuilder provides a high-level front end for Buildah for configuring
+// and building container images of diverse Linux-based distros
 type TurretBuilder struct {
-	// The package manager command factory
+	// Object that manufactures commands for a particular package manager
 	PackageManagerCommandFactory packagemanager.CommandFactory
 
-	// Pointer to the underlying Buildah Builder instance
+	// Pointer to the underlying Buildah builder instance
 	Builder *buildah.Builder
 
 	// Common options available to all build steps
@@ -91,7 +89,6 @@ type TurretBuilder struct {
 }
 
 // CleanPackageCaches cleans the package caches in the working container
-// using the distro's canonical package manager
 func (b *TurretBuilder) CleanPackageCaches() error {
 	cmd, capabilities := b.PackageManagerCommandFactory.NewCleanCacheCmd()
 	ro := b.defaultRunOptions()
@@ -108,15 +105,17 @@ func (b *TurretBuilder) CleanPackageCaches() error {
 
 // CommonOptions holds common options for every step of a build
 type CommonOptions struct {
-	// Environment variables to set
+	// Environment variables to set when running a command in the working
+	// container, represented as a slice of "KEY=VALUE"s
 	Env []string
+
 	// Whether to log the output and error streams of container processes
 	LogCommands bool
 }
 
-// Commit commits an image from the working container to storage and returns
-// the ID of the newly created image;
-// asserts that `ref` is a nonempty string
+// Commit commits an image from the working container to storage, asserting
+// that `repository` and `tag` are nonempty strings, and returns the ID of the
+// newly created image
 func (b *TurretBuilder) Commit(
 	ctx context.Context,
 	store storage.Store,
@@ -164,7 +163,7 @@ type CommitOptions struct {
 	Latest      bool
 }
 
-// Configure sets runtime properties and metadata for the working container
+// Configure sets metadata and runtime parameters for the working container
 func (b *TurretBuilder) Configure(user bool, options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
@@ -196,9 +195,11 @@ func (b *TurretBuilder) ContainerID() string {
 	return buildah.GetBuildInfo(b.Builder).ContainerID
 }
 
-// CopyFiles copies files from the end user's home directory to the working
-// container's file system;
-// does nothing if `copyMap` is empty
+// CopyFiles copies one or more files from the end user's home directory to the
+// working container's file system, assuming `destSourcesMap` is a nonempty map
+// of destinations in the working container to sources on the host. Sources are
+// resolved with respect to the end user's home directory on the host;
+// destinations are absolute paths in the working container's filesystem.
 func (b *TurretBuilder) CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error {
 	if len(destSourcesMap) == 0 {
 		return nil
@@ -235,8 +236,8 @@ type CopyFilesOptions struct {
 	UserName string
 }
 
-// CreateUser creates the sole unprivileged user of the working container;
-// asserts that `name` is a nonempty string
+// CreateUser creates the sole unprivileged user of the working container,
+// asserting that `name` is a nonempty string
 func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
@@ -363,7 +364,6 @@ func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
 }
 
 // InstallPackages installs one or more packages in the working container
-// using the distro's canonical package manager
 func (b *TurretBuilder) InstallPackages(packages []string) error {
 	if b.PackageManagerCommandFactory.PackageManager() == packagemanager.APT {
 		cmd, capabilities := b.PackageManagerCommandFactory.NewInstallCmd(packages)
@@ -392,8 +392,8 @@ func (b *TurretBuilder) InstallPackages(packages []string) error {
 	return nil
 }
 
-// Remove removes the working container and destroys this builder, which should
-// not be used afterwards
+// Remove removes the working container and destroys this TurretBuilder, which
+// should not be used afterwards
 func (b *TurretBuilder) Remove() error {
 	err := b.Builder.Delete()
 	if err != nil {
@@ -408,8 +408,8 @@ func (b *TurretBuilder) Remove() error {
 }
 
 // resolveExecutable returns the absolute path of an executable in the working
-// container if it can be found and an error otherwise;
-// assumes the availability of the `command` shell built-in
+// container if it can be found and an error otherwise, assuming `command` can
+// be resolved
 func (b *TurretBuilder) resolveExecutable(executable string, distro linux.Distro) (string, error) {
 	shell := distro.DefaultShell()
 	cmd := []string{shell}
@@ -493,9 +493,9 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 	return nil
 }
 
-// UnsetSpecialBits removes the SUID/SGID bit from files in the working container;
-// assumes the availability of the chmod(1) and find(1) utilities;
-// searches only real file systems and doesn't search /home
+// UnsetSpecialBits removes the SUID/SGID bit from files in the working container,
+// assuming the availability of the chmod(1) and find(1) core utilities and
+// searching only real file systems, excluding the /home directory
 func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 	findCmd := []string{
 		"find", "/",
@@ -546,8 +546,7 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 	return nil
 }
 
-// UpgradePackages upgrades the packages in the working container using the
-// distro's canonical package manager
+// UpgradePackages upgrades the packages in the working container
 func (b *TurretBuilder) UpgradePackages() error {
 	if b.PackageManagerCommandFactory.PackageManager() == packagemanager.APT {
 		cmd, capabilities := b.PackageManagerCommandFactory.NewUpdateIndexCmd()
@@ -576,7 +575,8 @@ func (b *TurretBuilder) UpgradePackages() error {
 	return nil
 }
 
-// New creates a Turret builder
+// New creates a new TurretBuilder for a given combination of a Linux-based
+// distro and package manager
 func New(
 	ctx context.Context,
 	distro linux.Distro,

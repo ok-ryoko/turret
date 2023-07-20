@@ -10,8 +10,8 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
 )
 
-// Distro is an identifier for an independent Linux-based distribution;
-// the zero value represents an unknown distribution
+// Distro is a unique identifier for an independent Linux-based distribution;
+// the zero value represents an unknown distro
 type Distro int
 
 const (
@@ -88,7 +88,7 @@ func (d Distro) String() string {
 	return s
 }
 
-// DistroWrapper wraps Distro to facilitate its parsing
+// DistroWrapper wraps Distro to facilitate its parsing from serialized data
 type DistroWrapper struct {
 	Distro
 }

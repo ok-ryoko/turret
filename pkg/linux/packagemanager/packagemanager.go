@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// PackageManager is an identifier for a package manager for Linux-based
+// PackageManager is a unique identifier for a package manager for Linux-based
 // distros; the zero value represents an unknown package manager
 type PackageManager int
 
@@ -21,6 +21,7 @@ const (
 	Zypper
 )
 
+// String returns a string containing the stylized name of the package manager
 func (p PackageManager) String() string {
 	var s string
 	switch p {
@@ -61,7 +62,8 @@ func (p PackageManager) RePackageName() string {
 	return r
 }
 
-// PackageManagerWrapper wraps PackageManager to facilitate its parsing
+// PackageManagerWrapper wraps PackageManager to facilitate its parsing from
+// serialized data
 type PackageManagerWrapper struct {
 	PackageManager
 }
@@ -94,8 +96,8 @@ func parsePackageManagerString(s string) (PackageManager, error) {
 	return p, nil
 }
 
-// PackageManagerCommandFactory provides a simple layer of abstraction over
-// common package manager commands
+// CommandFactory provides a simple layer of abstraction over common package
+// manager commands
 type CommandFactory interface {
 	// NewCleanCacheCmd returns (1) a command that cleans the package cache and
 	// (2) the Linux capabilities needed by that command
@@ -122,6 +124,7 @@ type CommandFactory interface {
 	PackageManager() PackageManager
 }
 
+// New creates a new CommandFactory that manufactures package manager commands
 func New(p PackageManager) (CommandFactory, error) {
 	var result CommandFactory
 	switch p {
