@@ -53,10 +53,6 @@ type TurretBuilderInterface interface {
 	// CreateUser creates the sole unprivileged user of the working container
 	CreateUser(name string, distro linux.Distro, options CreateUserOptions) error
 
-	// Distro returns a unique representation of the Linux-based distribution
-	// for which this builder implements TurretBuilderInterface
-	Distro() linux.Distro
-
 	// InstallPackages installs one or more packages in the working container
 	InstallPackages(packages []string) error
 
@@ -566,25 +562,7 @@ func New(
 	switch distro {
 	case linux.Alpine:
 		tb = &AlpineTurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
-		}
-	case linux.Arch:
-		tb = &ArchTurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
-		}
-	case linux.Chimera:
-		tb = &ChimeraTurretBuilder{
-			TurretBuilder: TurretBuilder{
+			TurretBuilder{
 				Builder:        b,
 				PackageManager: p,
 				Logger:         logger,
@@ -593,40 +571,23 @@ func New(
 		}
 	case linux.Debian:
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
-		tb = &DebianTurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
+		tb = &TurretBuilder{
+			Builder:        b,
+			PackageManager: p,
+			Logger:         logger,
+			CommonOptions:  options,
 		}
-	case linux.Fedora:
-		tb = &FedoraTurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
-		}
-	case linux.OpenSUSE:
-		tb = &OpenSUSETurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
-		}
-	case linux.Void:
-		tb = &VoidTurretBuilder{
-			TurretBuilder: TurretBuilder{
-				Builder:        b,
-				PackageManager: p,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
+	case
+		linux.Arch,
+		linux.Chimera,
+		linux.Fedora,
+		linux.OpenSUSE,
+		linux.Void:
+		tb = &TurretBuilder{
+			Builder:        b,
+			PackageManager: p,
+			Logger:         logger,
+			CommonOptions:  options,
 		}
 	default:
 		return nil, fmt.Errorf("unrecognized distro")
