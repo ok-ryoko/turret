@@ -69,6 +69,18 @@ func (s *Spec) Fill() {
 			s.User.LoginShell = s.Distro.DefaultShell()
 		}
 	}
+
+	if s.Annotations == nil {
+		s.Annotations = map[string]string{}
+	}
+
+	if s.Copy == nil {
+		s.Copy = map[string][]string{}
+	}
+
+	if s.Env == nil {
+		s.Env = map[string]string{}
+	}
 }
 
 // Validate asserts that the spec is suitable for ingestion by a builder.
