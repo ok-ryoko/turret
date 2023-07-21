@@ -25,13 +25,13 @@ import (
 )
 
 // TurretBuilderInterface is the interface implemented by a TurretBuilder for
-// a particular Linux-based distro
+// a particular Linux-based distro.
 type TurretBuilderInterface interface {
-	// CleanPackageCaches cleans the package caches in the working container
+	// CleanPackageCaches cleans the package caches in the working container.
 	CleanPackageCaches() error
 
 	// Commit commits an image from the working container to storage and returns
-	// the ID of the newly created image
+	// the ID of the newly created image.
 	Commit(
 		ctx context.Context,
 		store storage.Store,
@@ -40,36 +40,36 @@ type TurretBuilderInterface interface {
 		options CommitOptions,
 	) (string, error)
 
-	// Configure sets runtime properties and metadata for the working container
+	// Configure sets runtime properties and metadata for the working container.
 	Configure(user bool, options ConfigureOptions)
 
-	// ContainerID returns the ID of the working container
+	// ContainerID returns the ID of the working container.
 	ContainerID() string
 
 	// CopyFiles copies files from the end user's home directory to the working
-	// container's file system
+	// container's file system.
 	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
 
-	// CreateUser creates the sole unprivileged user of the working container
+	// CreateUser creates the sole unprivileged user of the working container.
 	CreateUser(name string, distro linux.Distro, options CreateUserOptions) error
 
-	// InstallPackages installs one or more packages in the working container
+	// InstallPackages installs one or more packages in the working container.
 	InstallPackages(packages []string) error
 
 	// Remove removes the working container and destroys this builder, which
-	// should not be used afterwards
+	// should not be used afterwards.
 	Remove() error
 
 	// UnsetSpecialBits removes the SUID/SGID bit from files in real filesystems
-	// mounted in the working container
+	// mounted in the working container.
 	UnsetSpecialBits(files []string) error
 
-	// UpgradePackages upgrades the packages in the working container
+	// UpgradePackages upgrades the packages in the working container.
 	UpgradePackages() error
 }
 
 // TurretBuilder provides a high-level front end for Buildah for configuring
-// and building container images of diverse Linux-based distros
+// and building container images of diverse Linux-based distros.
 type TurretBuilder struct {
 	// Pointer to the underlying Buildah builder instance
 	Builder *buildah.Builder
@@ -84,7 +84,7 @@ type TurretBuilder struct {
 	Logger *logrus.Logger
 }
 
-// CleanPackageCaches cleans the package caches in the working container
+// CleanPackageCaches cleans the package caches in the working container.
 func (b *TurretBuilder) CleanPackageCaches() error {
 	if err := b.PackageManager.CleanCaches(b); err != nil {
 		return fmt.Errorf("%w", err)
@@ -92,7 +92,7 @@ func (b *TurretBuilder) CleanPackageCaches() error {
 	return nil
 }
 
-// CommonOptions holds common options for every step of a build
+// CommonOptions holds common options for every step of a build.
 type CommonOptions struct {
 	// Environment variables to set when running a command in the working
 	// container, represented as a slice of "KEY=VALUE"s
@@ -104,7 +104,7 @@ type CommonOptions struct {
 
 // Commit commits an image from the working container to storage, asserting
 // that `repository` and `tag` are nonempty strings, and returns the ID of the
-// newly created image
+// newly created image.
 func (b *TurretBuilder) Commit(
 	ctx context.Context,
 	store storage.Store,
@@ -135,16 +135,16 @@ func (b *TurretBuilder) Commit(
 		co.OmitHistory = false
 	}
 
-	ref := fmt.Sprintf("%s:%s", repository, tag)
-	storageRef, err := is.Transport.ParseStoreReference(store, ref)
+	imageRef := fmt.Sprintf("%s:%s", repository, tag)
+	storageRef, err := is.Transport.ParseStoreReference(store, imageRef)
 	if err != nil {
 		return "", fmt.Errorf("parsing image reference: %w", err)
 	}
-	imageId, _, _, err := b.Builder.Commit(ctx, storageRef, co)
+	imageID, _, _, err := b.Builder.Commit(ctx, storageRef, co)
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
-	return imageId, nil
+	return imageID, nil
 }
 
 type CommitOptions struct {
@@ -152,14 +152,14 @@ type CommitOptions struct {
 	Latest      bool
 }
 
-// Configure sets metadata and runtime parameters for the working container
+// Configure sets metadata and runtime parameters for the working container.
 func (b *TurretBuilder) Configure(user bool, options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
 	if user {
-		b.Builder.SetUser(options.UserName)
 		b.Builder.SetEntrypoint([]string{"/bin/sh", "-c"})
 		b.Builder.SetCmd([]string{options.LoginShell})
+		b.Builder.SetUser(options.UserName)
 		b.Builder.SetWorkDir(filepath.Join("/home", options.UserName))
 	}
 
@@ -179,7 +179,7 @@ type ConfigureOptions struct {
 	UserName    string
 }
 
-// ContainerID returns the ID of the working container
+// ContainerID returns the ID of the working container.
 func (b *TurretBuilder) ContainerID() string {
 	return buildah.GetBuildInfo(b.Builder).ContainerID
 }
@@ -194,7 +194,7 @@ func (b *TurretBuilder) CopyFiles(destSourcesMap map[string][]string, options Co
 		return nil
 	}
 
-	hostUserHomeDir, err := os.UserHomeDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("getting current user's home directory: %w", err)
 	}
@@ -204,16 +204,14 @@ func (b *TurretBuilder) CopyFiles(destSourcesMap map[string][]string, options Co
 			srcs[i] = fmt.Sprintf("!%s", s)
 		}
 		excludes := append([]string{"*"}, srcs...)
-
 		ao := buildah.AddAndCopyOptions{
 			Chown:          options.UserName,
-			ContextDir:     hostUserHomeDir,
+			ContextDir:     home,
 			Excludes:       excludes,
 			StripSetgidBit: true,
 			StripSetuidBit: true,
 		}
-
-		if err := b.Builder.Add(dest, false, ao, hostUserHomeDir); err != nil {
+		if err := b.Builder.Add(dest, false, ao, home); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
@@ -226,7 +224,7 @@ type CopyFilesOptions struct {
 }
 
 // CreateUser creates the sole unprivileged user of the working container,
-// asserting that `name` is a nonempty string
+// asserting that `name` is a nonempty string.
 func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
@@ -277,7 +275,7 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 	uao := b.defaultRunOptions()
 
 	// CAP_DAC_READ_SEARCH and CAP_FSETID are elements of the useradd effective
-	// capability set but are not needed for the operation to succeed
+	// capability set but are not needed for the operation to succeed.
 	//
 	uao.AddCapabilities = []string{
 		"CAP_CHOWN",
@@ -301,7 +299,7 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 
 	// If the sss_cache command is available, then useradd will fork into
 	// sss_cache to invalidate the System Security Services Daemon cache,
-	// an operation that requires additional capabilities
+	// an operation that requires additional capabilities.
 	//
 	_, err := b.resolveExecutable("sss_cache", distro)
 	if err != nil {
@@ -311,11 +309,11 @@ func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options Cre
 			uao.AddCapabilities,
 			"CAP_SETGID",
 			//
-			// sss_cache needs to set the effective GID to 0 (root)
+			// Set the effective GID to 0 (root)
 
 			"CAP_SETUID",
 			//
-			// sss_cache needs to set the effective UID to 0 (root)
+			// Set the effective UID to 0 (root)
 		)
 	}
 
@@ -335,24 +333,24 @@ type CreateUserOptions struct {
 }
 
 func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
-	options := buildah.RunOptions{
+	ro := buildah.RunOptions{
 		ConfigureNetwork: buildah.NetworkDisabled,
 		Quiet:            true,
 	}
 
 	if len(b.CommonOptions.Env) > 0 {
-		options.Env = append(options.Env, b.CommonOptions.Env...)
+		ro.Env = append(ro.Env, b.CommonOptions.Env...)
 	}
 
 	if b.CommonOptions.LogCommands {
-		options.Logger = b.Logger
-		options.Quiet = false
+		ro.Logger = b.Logger
+		ro.Quiet = false
 	}
 
-	return options
+	return ro
 }
 
-// InstallPackages installs one or more packages to the working container
+// InstallPackages installs one or more packages to the working container.
 func (b *TurretBuilder) InstallPackages(packages []string) error {
 	if err := b.PackageManager.Install(b, packages); err != nil {
 		return fmt.Errorf("%w", err)
@@ -361,7 +359,7 @@ func (b *TurretBuilder) InstallPackages(packages []string) error {
 }
 
 // Remove removes the working container and destroys this TurretBuilder, which
-// should not be used afterwards
+// should not be used afterwards.
 func (b *TurretBuilder) Remove() error {
 	err := b.Builder.Delete()
 	if err != nil {
@@ -377,7 +375,7 @@ func (b *TurretBuilder) Remove() error {
 
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise, assuming `command` can
-// be resolved
+// be resolved.
 func (b *TurretBuilder) resolveExecutable(executable string, distro linux.Distro) (string, error) {
 	shell := distro.DefaultShell()
 	cmd := []string{shell}
@@ -398,8 +396,8 @@ func (b *TurretBuilder) resolveExecutable(executable string, distro linux.Distro
 }
 
 // run runs a command in the working container, optionally sanitizing and
-// logging the process's standard output and error streams;
-// strips all ANSI escape codes as well as superfluous whitespace
+// logging the process's standard output and error streams. When sanitizing, it
+// strips all ANSI escape codes as well as superfluous whitespace.
 func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 	var stderrBuf bytes.Buffer
 	if options.Stderr == nil && b.CommonOptions.LogCommands {
@@ -413,8 +411,8 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 
 	defer func() {
 		if b.CommonOptions.LogCommands {
-			re1 := regexp.MustCompile(`([\\x1b|\\u001b]\[[0-9;]*[A-Za-z]?)+`)
-			re2 := regexp.MustCompile(`[[:space:]]+`)
+			reEscape := regexp.MustCompile(`([\\x1b|\\u001b]\[[0-9;]*[A-Za-z]?)+`)
+			reWhitespace := regexp.MustCompile(`[[:space:]]+`)
 
 			if stderrBuf.Len() > 0 {
 				lines := stderrBuf.String()
@@ -425,11 +423,11 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 						}
 						return -1
 					}, l)
-					l = re2.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
+					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
 					if l == "" {
 						continue
 					}
-					l = re1.ReplaceAllLiteralString(l, "")
+					l = reEscape.ReplaceAllLiteralString(l, "")
 					b.Logger.Debugf("%s: stderr: %s", cmd[0], l)
 				}
 			}
@@ -443,11 +441,11 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 						}
 						return -1
 					}, l)
-					l = re2.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
+					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
 					if l == "" {
 						continue
 					}
-					l = re1.ReplaceAllLiteralString(l, "")
+					l = reEscape.ReplaceAllLiteralString(l, "")
 					b.Logger.Debugf("%s: stdout: %s", cmd[0], l)
 				}
 			}
@@ -463,7 +461,7 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 
 // UnsetSpecialBits removes the SUID/SGID bit from files in the working container,
 // assuming the availability of the chmod(1) and find(1) core utilities and
-// searching only real file systems, excluding the /home directory
+// searching only real file systems, excluding the /home directory.
 func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 	findCmd := []string{
 		"find", "/",
@@ -473,16 +471,16 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 	}
 
 	var buf bytes.Buffer
-	findRo := b.defaultRunOptions()
-	findRo.Stdout = &buf
+	fo := b.defaultRunOptions()
+	fo.Stdout = &buf
 
-	if err := b.run(findCmd, findRo); err != nil {
+	if err := b.run(findCmd, fo); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
-	specialFiles := strings.Split(strings.TrimSpace(buf.String()), "\n")
-	for i, s := range specialFiles {
-		specialFiles[i] = strings.TrimSpace(s)
+	targets := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	for i, t := range targets {
+		targets[i] = strings.TrimSpace(t)
 	}
 
 	if len(excludes) > 0 {
@@ -491,30 +489,30 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 			excludeSet[e] = true
 		}
 
-		var specialFilesReduced []string
-		for _, s := range specialFiles {
-			if _, ok := excludeSet[s]; ok {
+		var filteredTargets []string
+		for _, t := range targets {
+			if _, ok := excludeSet[t]; ok {
 				continue
 			}
-			specialFilesReduced = append(specialFilesReduced, s)
+			filteredTargets = append(filteredTargets, t)
 		}
 
-		specialFiles = specialFilesReduced
+		targets = filteredTargets
 	}
 
 	chmodCmd := []string{"chmod", "-s"}
-	chmodCmd = append(chmodCmd, specialFiles...)
+	chmodCmd = append(chmodCmd, targets...)
 
-	chmodRo := b.defaultRunOptions()
+	co := b.defaultRunOptions()
 
-	if err := b.run(chmodCmd, chmodRo); err != nil {
+	if err := b.run(chmodCmd, co); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
 	return nil
 }
 
-// UpgradePackages upgrades the packages in the working container
+// UpgradePackages upgrades the packages in the working container.
 func (b *TurretBuilder) UpgradePackages() error {
 	if err := b.PackageManager.Upgrade(b); err != nil {
 		return fmt.Errorf("%w", err)
@@ -523,12 +521,12 @@ func (b *TurretBuilder) UpgradePackages() error {
 }
 
 // New creates a new TurretBuilder for a given combination of a Linux-based
-// distro and package manager
+// distro and package manager.
 func New(
 	ctx context.Context,
 	distro linux.Distro,
 	packageManager packagemanager.PackageManager,
-	image string,
+	imageRef string,
 	pull bool,
 	store storage.Store,
 	logger *logrus.Logger,
@@ -536,7 +534,7 @@ func New(
 ) (TurretBuilderInterface, error) {
 	bo := buildah.BuilderOptions{
 		Capabilities: []string{},
-		FromImage:    image,
+		FromImage:    imageRef,
 		Isolation:    buildah.IsolationOCIRootless,
 		PullPolicy:   buildah.PullNever,
 	}
@@ -551,9 +549,9 @@ func New(
 	if err != nil {
 		return nil, fmt.Errorf("creating Buildah builder: %w", err)
 	}
-	logger.Debugf("created working container from image '%s'", image)
+	logger.Debugf("created working container from image '%s'", imageRef)
 
-	p, err := NewPackageManager(packageManager)
+	pm, err := NewPackageManager(packageManager)
 	if err != nil {
 		return nil, fmt.Errorf("creating package manager: %w", err)
 	}
@@ -564,7 +562,7 @@ func New(
 		tb = &AlpineTurretBuilder{
 			TurretBuilder{
 				Builder:        b,
-				PackageManager: p,
+				PackageManager: pm,
 				Logger:         logger,
 				CommonOptions:  options,
 			},
@@ -573,7 +571,7 @@ func New(
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 		tb = &TurretBuilder{
 			Builder:        b,
-			PackageManager: p,
+			PackageManager: pm,
 			Logger:         logger,
 			CommonOptions:  options,
 		}
@@ -585,7 +583,7 @@ func New(
 		linux.Void:
 		tb = &TurretBuilder{
 			Builder:        b,
-			PackageManager: p,
+			PackageManager: pm,
 			Logger:         logger,
 			CommonOptions:  options,
 		}

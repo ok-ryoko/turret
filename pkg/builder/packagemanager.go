@@ -11,91 +11,99 @@ import (
 )
 
 // TurretPackageManagerInterface is the interface implemented by a
-// TurretPackageManager for a particular package manager
+// TurretPackageManager for a particular package manager.
 type TurretPackageManagerInterface interface {
-	// CleanCaches cleans the package caches in the working container
+	// CleanCaches cleans the package caches in the working container.
 	CleanCaches(b *TurretBuilder) error
 
-	// Install installs one or more packages to the working container
+	// Install installs one or more packages to the working container.
 	Install(b *TurretBuilder, packages []string) error
 
-	// List lists the packages installed in the working container
+	// List lists the packages installed in the working container.
 	List(b *TurretBuilder) error
 
-	// Upgrade upgrades the packages in the working container
+	// Upgrade upgrades the packages in the working container.
 	Upgrade(b *TurretBuilder) error
 }
 
+// TurretPackageManager provides a high-level front end for Buildah for
+// managing packages in a Linux builder container.
 type TurretPackageManager struct {
 	packagemanager.CommandFactory
 }
 
-func (p *TurretPackageManager) CleanCaches(b *TurretBuilder) error {
-	cmd, capabilities := p.NewCleanCacheCmd()
+// CleanCaches cleans the package caches in the working container.
+func (pm *TurretPackageManager) CleanCaches(b *TurretBuilder) error {
+	cmd, capabilities := pm.NewCleanCacheCmd()
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"cleaning %s package cache: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func (p *TurretPackageManager) Install(b *TurretBuilder, packages []string) error {
-	cmd, capabilities := p.NewInstallCmd(packages)
+// Install installs one or more packages to the working container.
+func (pm *TurretPackageManager) Install(b *TurretBuilder, packages []string) error {
+	cmd, capabilities := pm.NewInstallCmd(packages)
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func (p *TurretPackageManager) List(b *TurretBuilder) error {
-	cmd, capabilities := p.NewListInstalledPackagesCmd()
+// List lists the packages installed in the working container.
+func (pm *TurretPackageManager) List(b *TurretBuilder) error {
+	cmd, capabilities := pm.NewListInstalledPackagesCmd()
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"listing installed %s packages: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func (p *TurretPackageManager) Upgrade(b *TurretBuilder) error {
-	cmd, capabilities := p.NewUpgradeCmd()
+// Upgrade upgrades the packages in the working container.
+func (pm *TurretPackageManager) Upgrade(b *TurretBuilder) error {
+	cmd, capabilities := pm.NewUpgradeCmd()
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func NewPackageManager(p packagemanager.PackageManager) (TurretPackageManagerInterface, error) {
-	cmdFactory, err := packagemanager.New(p)
+// NewPackageManager creates a new TurretPackageManager for a particular
+// package manager.
+func NewPackageManager(pm packagemanager.PackageManager) (TurretPackageManagerInterface, error) {
+	cmdFactory, err := packagemanager.New(pm)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
 	var tpm TurretPackageManagerInterface
-	switch p {
+	switch pm {
 	case packagemanager.APT:
 		tpm = &APTTurretPackageManager{TurretPackageManager{cmdFactory}}
 	case

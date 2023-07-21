@@ -125,19 +125,16 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			if spec.Tag != "" {
 				imageRef = fmt.Sprintf("%s:%s", imageRef, spec.Tag)
 			}
-			localRef := filepath.Join("localhost", imageRef)
+			localRef := fmt.Sprintf("localhost/%s", imageRef)
 
 			if store.Exists(localRef) && !cCtx.Bool("force") {
 				return fmt.Errorf("image %s already exists", localRef)
 			}
 
 			distro := spec.Distro.Distro
-			distroString := distro.String()
 			packageManager := spec.Packages.Manager.PackageManager
 			baseRef := spec.From.Reference()
-			commonOptions := builder.CommonOptions{
-				LogCommands: v >= 4,
-			}
+			commonOptions := builder.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
 				ctx,
 				distro,
@@ -149,7 +146,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				commonOptions,
 			)
 			if err != nil {
-				return fmt.Errorf("creating %s Linux Turret builder: %w", distroString, err)
+				return fmt.Errorf("creating %s Linux Turret builder: %w", distro.String(), err)
 			}
 			defer func() {
 				if !cCtx.Bool("keep") {
@@ -159,7 +156,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					}
 				}
 			}()
-			logger.Debugf("created %s Linux Turret builder", distroString)
+			logger.Debugf("created %s Linux Turret builder", distro.String())
 
 			if spec.Packages.Upgrade {
 				logger.Debugln("upgrading packages...")
@@ -203,19 +200,19 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					UserName: spec.User.Name,
 				}
 				if err = b.CopyFiles(spec.Copy, copyFilesOptions); err != nil {
-					return fmt.Errorf("copying some files in home directory: %w", err)
+					return fmt.Errorf("copying some files from the home directory: %w", err)
 				}
 				logger.Debugln("file copy step succeeded")
 			}
 
 			if spec.Security.SpecialFiles.RemoveS {
 				if err = b.UnsetSpecialBits(spec.Security.SpecialFiles.Excludes); err != nil {
-					return fmt.Errorf("removing SUID and SGID bits on binaries: %w", err)
+					return fmt.Errorf("removing the SUID/SGID bit from files: %w", err)
 				}
 				logger.Debugln("SUID/SGID bit removal step succeeded")
 			}
 
-			if len(digest) > 0 {
+			if digest != "" {
 				spec.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
@@ -233,7 +230,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				KeepHistory: spec.KeepHistory,
 				Latest:      cCtx.Bool("latest"),
 			}
-			imageId, err := b.Commit(
+			imageID, err := b.Commit(
 				ctx,
 				store,
 				fmt.Sprintf("localhost/%s", spec.Repository),
@@ -243,28 +240,27 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			if err != nil {
 				return fmt.Errorf("committing image: %w", err)
 			}
-			logger.Infof("built and committed %s Linux image %s", distroString, imageId)
+			logger.Infof("built and committed %s Linux image %s", distro.String(), imageID)
 
 			return nil
 		},
 	}
 }
 
-// Resolve the absolute path of `p`;
-// assume the path refers to a regular file;
-// assert the path is rooted in both the user's home directory and the current
-// working directory
+// Resolve the absolute path of `p`, assuming `p` refers to a regular file
+// and asserting the absolute path is rooted in both the user's home directory
+// and the current working directory on the host.
 func processPath(p string) (string, error) {
 	p, err := filepath.Abs(p)
 	if err != nil {
 		return "", fmt.Errorf("determining absolute path: %w", err)
 	}
 
-	userHomeDir, err := os.UserHomeDir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("getting user home directory: %w", err)
 	}
-	if !strings.HasPrefix(p, userHomeDir) {
+	if !strings.HasPrefix(p, home) {
 		return "", fmt.Errorf("path isn't a child of the home directory")
 	}
 
@@ -279,9 +275,9 @@ func processPath(p string) (string, error) {
 	return p, nil
 }
 
-// Decode the contents of the TOML file at `p` into a Turret build spec;
-// normalize and validate the spec;
-// optionally, compute the SHA256 digest of the spec file
+// Decode the contents of the TOML file at `p` into a Turret build spec,
+// filling in the missing values, validating the spec, and optionally returning
+// an annotated string representation of the file's SHA256 digest.
 func createSpec(p string, hash bool) (builder.Spec, string, error) {
 	blob, err := os.ReadFile(p)
 	if err != nil {
@@ -299,29 +295,29 @@ func createSpec(p string, hash bool) (builder.Spec, string, error) {
 	d := toml.NewDecoder(r)
 	d.DisallowUnknownFields()
 
-	spec := builder.Spec{}
-	if err = d.Decode(&spec); err != nil {
+	s := builder.Spec{}
+	if err = d.Decode(&s); err != nil {
 		return builder.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
 	}
 
-	spec.Fill()
+	s.Fill()
 
-	if err = spec.Validate(); err != nil {
+	if err = s.Validate(); err != nil {
 		return builder.Spec{}, "", fmt.Errorf("validating spec: %w", err)
 	}
 
-	return spec, digest, nil
+	return s, digest, nil
 }
 
-func setLoggerLevel(logger *logrus.Logger, verbosity uint) {
+func setLoggerLevel(l *logrus.Logger, verbosity uint) {
 	switch verbosity {
 	case 0:
-		logger.SetLevel(logrus.ErrorLevel)
+		l.SetLevel(logrus.ErrorLevel)
 	case 1:
-		logger.SetLevel(logrus.WarnLevel)
+		l.SetLevel(logrus.WarnLevel)
 	case 2:
-		logger.SetLevel(logrus.InfoLevel)
+		l.SetLevel(logrus.InfoLevel)
 	default:
-		logger.SetLevel(logrus.DebugLevel)
+		l.SetLevel(logrus.DebugLevel)
 	}
 }

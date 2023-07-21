@@ -13,54 +13,54 @@ type APTTurretPackageManager struct {
 	TurretPackageManager
 }
 
-func (p *APTTurretPackageManager) Install(b *TurretBuilder, packages []string) error {
-	cmd, capabilities := p.NewUpdateIndexCmd()
+func (pm *APTTurretPackageManager) Install(b *TurretBuilder, packages []string) error {
+	cmd, capabilities := pm.NewUpdateIndexCmd()
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 
-	cmd, capabilities = p.NewInstallCmd(packages)
+	cmd, capabilities = pm.NewInstallCmd(packages)
 	ro = b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func (p *APTTurretPackageManager) Upgrade(b *TurretBuilder) error {
-	cmd, capabilities := p.NewUpdateIndexCmd()
+func (pm *APTTurretPackageManager) Upgrade(b *TurretBuilder) error {
+	cmd, capabilities := pm.NewUpdateIndexCmd()
 	ro := b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}
 
-	cmd, capabilities = p.NewUpgradeCmd()
+	cmd, capabilities = pm.NewUpgradeCmd()
 	ro = b.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
 	if err := b.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
-			p.PackageManager().String(),
+			pm.PackageManager().String(),
 			err,
 		)
 	}

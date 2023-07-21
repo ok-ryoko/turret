@@ -10,8 +10,8 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
 )
 
-// Distro is a unique identifier for an independent Linux-based distribution;
-// the zero value represents an unknown distro
+// Distro is a unique identifier for an independent Linux-based distribution.
+// The zero value represents an unknown distro.
 type Distro int
 
 const (
@@ -24,7 +24,7 @@ const (
 	Void
 )
 
-// DefaultShell returns the known default login shell for the distro
+// DefaultShell returns the known default login shell for the distro.
 func (d Distro) DefaultShell() string {
 	var s string
 	switch d {
@@ -42,7 +42,7 @@ func (d Distro) DefaultShell() string {
 	return s
 }
 
-// DefaultPackageManager returns the canonical package manager for the distro
+// DefaultPackageManager returns the canonical package manager for the distro.
 func (d Distro) DefaultPackageManager() packagemanager.PackageManager {
 	var p packagemanager.PackageManager
 	switch d {
@@ -64,7 +64,7 @@ func (d Distro) DefaultPackageManager() packagemanager.PackageManager {
 	return p
 }
 
-// String returns a string containing the stylized name of the distro
+// String returns a string containing the stylized name of the distro.
 func (d Distro) String() string {
 	var s string
 	switch d {
@@ -88,12 +88,12 @@ func (d Distro) String() string {
 	return s
 }
 
-// DistroWrapper wraps Distro to facilitate its parsing from serialized data
+// DistroWrapper wraps Distro to facilitate its parsing from serialized data.
 type DistroWrapper struct {
 	Distro
 }
 
-// UnmarshalText decodes the distro from a string
+// UnmarshalText decodes the distro from a string.
 func (d *DistroWrapper) UnmarshalText(text []byte) error {
 	var err error
 	d.Distro, err = parseDistroString(string(text))

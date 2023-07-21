@@ -9,7 +9,7 @@ import (
 )
 
 // PackageManager is a unique identifier for a package manager for Linux-based
-// distros; the zero value represents an unknown package manager
+// distros. The zero value represents an unknown package manager.
 type PackageManager int
 
 const (
@@ -21,10 +21,10 @@ const (
 	Zypper
 )
 
-// String returns a string containing the stylized name of the package manager
-func (p PackageManager) String() string {
+// String returns a string containing the stylized name of the package manager.
+func (pm PackageManager) String() string {
 	var s string
-	switch p {
+	switch pm {
 	case APK:
 		s = "APK"
 	case APT:
@@ -44,18 +44,16 @@ func (p PackageManager) String() string {
 }
 
 // RePackageName returns a regular expression to match valid package names for
-// the package manager's ecosystem
-func (p PackageManager) RePackageName() string {
+// the package manager's ecosystem.
+func (pm PackageManager) RePackageName() string {
 	var r string
-	switch p {
-	case APK:
-		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
+	switch pm {
 	case APT:
 		r = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
+	case APK, Pacman:
+		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
 	case DNF, XBPS, Zypper:
 		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
-	case Pacman:
-		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
 	default:
 		r = ""
 	}
@@ -63,71 +61,72 @@ func (p PackageManager) RePackageName() string {
 }
 
 // PackageManagerWrapper wraps PackageManager to facilitate its parsing from
-// serialized data
+// serialized data.
 type PackageManagerWrapper struct {
 	PackageManager
 }
 
-// UnmarshalText decodes the package manager from a string
-func (p *PackageManagerWrapper) UnmarshalText(text []byte) error {
+// UnmarshalText decodes the package manager from a string.
+func (pm *PackageManagerWrapper) UnmarshalText(text []byte) error {
 	var err error
-	p.PackageManager, err = parsePackageManagerString(string(text))
+	pm.PackageManager, err = parsePackageManagerString(string(text))
 	return err
 }
 
 func parsePackageManagerString(s string) (PackageManager, error) {
-	var p PackageManager
+	var pm PackageManager
 	switch strings.ToLower(s) {
 	case "apk":
-		p = APK
+		pm = APK
 	case "apt":
-		p = APT
+		pm = APT
 	case "dnf":
-		p = DNF
+		pm = DNF
 	case "pacman":
-		p = Pacman
+		pm = Pacman
 	case "xbps":
-		p = XBPS
+		pm = XBPS
 	case "zypper":
-		p = Zypper
+		pm = Zypper
 	default:
 		return 0, fmt.Errorf("unsupported package manager: %s", s)
 	}
-	return p, nil
+	return pm, nil
 }
 
 // CommandFactory provides a simple layer of abstraction over common package
-// manager commands
+// manager operations.
 type CommandFactory interface {
 	// NewCleanCacheCmd returns (1) a command that cleans the package cache and
-	// (2) the Linux capabilities needed by that command
+	// (2) the Linux capabilities needed by that command.
 	NewCleanCacheCmd() (cmd, capabilities []string)
 
 	// NewInstallCmd returns (1) a command that installs one or more packages
-	// and (2) the Linux capabilities needed by that command
+	// and (2) the Linux capabilities needed by that command.
 	NewInstallCmd(packages []string) (cmd, capabilities []string)
 
 	// NewListInstalledPackagesCmd returns (1) a command that lists the
-	// installed packages and (2) the Linux capabilities needed by that command
+	// installed packages and (2) the Linux capabilities needed by that command.
 	NewListInstalledPackagesCmd() (cmd, capabilities []string)
 
 	// NewUpdateIndexCmd returns (1) a command that updates the package index
-	// and (2) the Linux capabilities needed by that command
+	// and (2) the Linux capabilities needed by that command.
 	NewUpdateIndexCmd() (cmd, capabilities []string)
 
 	// NewUpgradeCmd returns a command that upgrades the pre-installed packages
-	// and (2) the Linux capabilities needed by that command
+	// and (2) the Linux capabilities needed by that command.
 	NewUpgradeCmd() (cmd, capabilities []string)
 
 	// PackageManager returns a constant representing the package manager for
-	// which this factory makes commands
+	// which this factory makes commands.
 	PackageManager() PackageManager
 }
 
 // New creates a new CommandFactory that manufactures package manager commands
-func New(p PackageManager) (CommandFactory, error) {
+// for execution in a shell.
+func New(pm PackageManager) (CommandFactory, error) {
 	var result CommandFactory
-	switch p {
+	switch pm {
 	case APK:
 		result = &APKPackageManager{}
 	case APT:

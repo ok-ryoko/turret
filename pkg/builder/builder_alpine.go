@@ -53,8 +53,8 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, optio
 	// CAP_DAC_OVERRIDE and CAP_FSETID are elements of the useradd effective
 	// capability set but are not needed for the operation to succeed
 	//
-	ro := b.defaultRunOptions()
-	ro.AddCapabilities = []string{
+	auo := b.defaultRunOptions()
+	auo.AddCapabilities = []string{
 		"CAP_CHOWN",
 		//
 		// Change owner of /home/user
@@ -65,7 +65,7 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, optio
 		// editing /etc/passwd, /etc/shadow and /etc/group
 	}
 
-	if err := b.run(adduserCmd, ro); err != nil {
+	if err := b.run(adduserCmd, auo); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -80,8 +80,4 @@ func (b *AlpineTurretBuilder) CreateUser(name string, distro linux.Distro, optio
 	}
 
 	return nil
-}
-
-func (b *AlpineTurretBuilder) Distro() linux.Distro {
-	return linux.Alpine
 }

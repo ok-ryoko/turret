@@ -17,9 +17,9 @@ const (
 	reReverseUnlimitedFQDN string = `^\.?([0-9A-Za-z]|[0-9A-Za-z][-0-9A-Za-z]*[0-9A-Za-z]\.)*[0-9A-Za-z]$`
 )
 
-// Spec holds the options for the build and defines the structure of spec files
+// Spec holds the options for the build and defines the structure of spec files.
 type Spec struct {
-	// Linux-based distro for this image; must match the distro in the base image
+	// Linux-based distro for this image
 	Distro linux.DistroWrapper
 
 	// Fully qualified name for the image we're building
@@ -56,7 +56,7 @@ type Spec struct {
 }
 
 // Fill populates empty optional fields in the spec using information encoded
-// by required fields
+// by required fields.
 func (s *Spec) Fill() {
 	if s.Packages.Manager.PackageManager == 0 {
 		s.Packages.Manager = packagemanager.PackageManagerWrapper{
@@ -71,9 +71,9 @@ func (s *Spec) Fill() {
 	}
 }
 
-// Validate asserts that the spec is suitable for ingestion by a builder
+// Validate asserts that the spec is suitable for ingestion by a builder.
 func (s *Spec) Validate() error {
-	if (s.Distro == linux.DistroWrapper{Distro: 0}) {
+	if s.Distro.Distro == 0 {
 		return fmt.Errorf("missing distro")
 	}
 
@@ -82,18 +82,15 @@ func (s *Spec) Validate() error {
 	}
 
 	if s.Repository == "" {
-		return fmt.Errorf("missing image name")
+		return fmt.Errorf("missing image repository (name)")
 	}
 
 	if s.From.Repository == "" || s.From.Tag == "" {
-		return fmt.Errorf("incomplete base image specification (missing repository or tag)")
+		return fmt.Errorf("missing base image repository (name) or tag")
 	}
 
 	if len(s.Packages.Install) > 0 {
-		re, err := regexp.Compile(s.Packages.Manager.RePackageName())
-		if err != nil {
-			return fmt.Errorf("compiling regular expression: %w", err)
-		}
+		re := regexp.MustCompile(s.Packages.Manager.RePackageName())
 		for _, p := range s.Packages.Install {
 			if !re.MatchString(p) {
 				return fmt.Errorf("invalid package name '%s'", p)
@@ -102,15 +99,8 @@ func (s *Spec) Validate() error {
 	}
 
 	if s.User != nil {
-		re1, err := regexp.Compile(rePOSIXPortableName)
-		if err != nil {
-			return fmt.Errorf("compiling regular expression: %w", err)
-		}
-
-		re2, err := regexp.Compile(reInvalidName)
-		if err != nil {
-			return fmt.Errorf("compiling regular expression: %w", err)
-		}
+		reProper := regexp.MustCompile(rePOSIXPortableName)
+		reImproper := regexp.MustCompile(reInvalidName)
 
 		if s.User.Name != "" {
 			if s.User.Name == "root" {
@@ -121,7 +111,7 @@ func (s *Spec) Validate() error {
 				return fmt.Errorf("user name '%s' too long (limit: 32 chars)", s.User.Name)
 			}
 
-			if !re1.MatchString(s.User.Name) || re2.MatchString(s.User.Name) {
+			if !reProper.MatchString(s.User.Name) || reImproper.MatchString(s.User.Name) {
 				return fmt.Errorf("invalid user name '%s'", s.User.Name)
 			}
 		}
@@ -132,7 +122,7 @@ func (s *Spec) Validate() error {
 
 		if len(s.User.Groups) > 0 {
 			for _, g := range s.User.Groups {
-				if !re1.MatchString(g) || re2.MatchString(g) {
+				if !reProper.MatchString(g) || reImproper.MatchString(g) {
 					return fmt.Errorf("invalid group name '%s'", g)
 				}
 			}
@@ -140,12 +130,9 @@ func (s *Spec) Validate() error {
 	}
 
 	if len(s.Annotations) > 0 {
-		r, err := regexp.Compile(reReverseUnlimitedFQDN)
-		if err != nil {
-			return fmt.Errorf("compiling regular expression: %w", err)
-		}
+		re := regexp.MustCompile(reReverseUnlimitedFQDN)
 		for k := range s.Annotations {
-			if !r.MatchString(k) {
+			if !re.MatchString(k) {
 				return fmt.Errorf("invalid annotation key '%s'", k)
 			}
 		}
@@ -154,19 +141,19 @@ func (s *Spec) Validate() error {
 	return nil
 }
 
-// BaseImage holds the components of the reference to the base image
+// BaseImage holds the components of the reference to the base image.
 type BaseImage struct {
 	Repository string
 	Tag        string
 }
 
 // Reference returns the repository:tag string representation of the
-// reference to the base image
+// reference to the base image.
 func (i BaseImage) Reference() string {
 	return fmt.Sprintf("%s:%s", i.Repository, i.Tag)
 }
 
-// Packages contains instructions for the distro's canonical package manager
+// Packages contains instructions for the distro's canonical package manager.
 type Packages struct {
 	// Identity of the package manager in the working container
 	Manager packagemanager.PackageManagerWrapper
@@ -181,7 +168,7 @@ type Packages struct {
 	Clean bool
 }
 
-// User holds information about a Linux user
+// User holds information about a Linux user.
 type User struct {
 	// Human-readable identifier
 	Name string
@@ -189,9 +176,9 @@ type User struct {
 	// Linux user ID (UID)
 	//
 	// The default value of 0 tells the program to delegate the choice of UID
-	// to the user-space utility responsible for user creation
+	// to the user-space utility responsible for user creation.
 	//
-	// If not 0, then it must be an integer between 1000 and 60000, inclusive
+	// If not 0, then it must be an integer between 1000 and 60000, inclusive.
 	ID uint `toml:"id"`
 
 	// Whether to create a user group
@@ -207,13 +194,13 @@ type User struct {
 	LoginShell string `toml:"login-shell"`
 }
 
-// Security holds security-related options for the working container
+// Security holds security-related options for the working container.
 type Security struct {
 	// Options for handling files with a SUID/SGID bit
 	SpecialFiles SpecialFiles `toml:"special-files"`
 }
 
-// SpecialFiles holds options for handling SUID/SGID bits
+// SpecialFiles holds options for handling SUID/SGID bits.
 type SpecialFiles struct {
 	// Whether to remove all SUID/SGID bits automatically
 	RemoveS bool `toml:"remove-s"`
