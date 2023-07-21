@@ -13,7 +13,7 @@ import (
 
 const (
 	rePOSIXPortableName    string = `^[0-9A-Za-z]$|^[0-9A-Za-z][-\._0-9A-Za-z]*[0-9A-Za-z]$`
-	reInvalidName          string = `^[0-9]*$|^\.{1,2}$`
+	reInvalidName          string = `^[0-9]+$|^\.{1,2}$`
 	reReverseUnlimitedFQDN string = `^\.?([0-9A-Za-z]|[0-9A-Za-z][-0-9A-Za-z]*[0-9A-Za-z]\.)*[0-9A-Za-z]$`
 )
 

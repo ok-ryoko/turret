@@ -411,7 +411,7 @@ func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
 
 	defer func() {
 		if b.CommonOptions.LogCommands {
-			reEscape := regexp.MustCompile(`([\\x1b|\\u001b]\[[0-9;]*[A-Za-z]?)+`)
+			reEscape := regexp.MustCompile(`((\\x1b|\\u001b)\[[0-9;]*[A-Za-z]?)+`)
 			reWhitespace := regexp.MustCompile(`[[:space:]]+`)
 
 			if stderrBuf.Len() > 0 {
