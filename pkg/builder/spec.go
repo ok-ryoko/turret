@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
-	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
+	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 )
 
 const (
@@ -58,9 +58,9 @@ type Spec struct {
 // Fill populates empty optional fields in the spec using information encoded
 // by required fields.
 func (s *Spec) Fill() {
-	if s.Packages.Manager.PackageManager == 0 {
-		s.Packages.Manager = packagemanager.PackageManagerWrapper{
-			PackageManager: s.Distro.DefaultPackageManager(),
+	if s.Packages.Manager.Manager == 0 {
+		s.Packages.Manager = pckg.ManagerWrapper{
+			Manager: s.Distro.DefaultPackageManager(),
 		}
 	}
 
@@ -89,7 +89,7 @@ func (s *Spec) Validate() error {
 		return fmt.Errorf("missing distro")
 	}
 
-	if s.Packages.Manager.PackageManager == 0 {
+	if s.Packages.Manager.Manager == 0 {
 		return fmt.Errorf("missing package manager")
 	}
 
@@ -168,7 +168,7 @@ func (i BaseImage) Reference() string {
 // Packages contains instructions for the distro's canonical package manager.
 type Packages struct {
 	// Identity of the package manager in the working container
-	Manager packagemanager.PackageManagerWrapper
+	Manager pckg.ManagerWrapper
 
 	// Whether to upgrade pre-installed packages
 	Upgrade bool

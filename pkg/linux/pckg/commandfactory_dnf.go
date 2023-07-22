@@ -1,17 +1,17 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package packagemanager
+package pckg
 
-type DNFPackageManager struct{}
+type DNFCommandFactory struct{}
 
-func (p DNFPackageManager) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (c DNFCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "clean", "all"}
 	capabilities = []string{}
 	return
 }
 
-func (p DNFPackageManager) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--assumeyes", "--setopt=install_weak_deps=False", "install"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -22,17 +22,17 @@ func (p DNFPackageManager) NewInstallCmd(packages []string) (cmd, capabilities [
 	return
 }
 
-func (p DNFPackageManager) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
+func (c DNFCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "list", "--installed"}
 	capabilities = []string{}
 	return
 }
 
-func (p DNFPackageManager) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (c DNFCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (p DNFPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
+func (c DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--assumeyes", "--refresh", "upgrade"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -42,6 +42,6 @@ func (p DNFPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
 	return
 }
 
-func (p DNFPackageManager) PackageManager() PackageManager {
+func (c DNFCommandFactory) PackageManager() Manager {
 	return DNF
 }

@@ -1,17 +1,17 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package packagemanager
+package pckg
 
-type PacmanPackageManager struct{}
+type PacmanCommandFactory struct{}
 
-func (p PacmanPackageManager) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (c PacmanCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--clean", "--clean", "--noconfirm"}
 	capabilities = []string{}
 	return
 }
 
-func (p PacmanPackageManager) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--noconfirm", "--noprogressbar"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -23,17 +23,17 @@ func (p PacmanPackageManager) NewInstallCmd(packages []string) (cmd, capabilitie
 	return
 }
 
-func (p PacmanPackageManager) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
+func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--query"}
 	capabilities = []string{}
 	return
 }
 
-func (p PacmanPackageManager) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (c PacmanCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (p PacmanPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
+func (c PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--sysupgrade", "--refresh", "--noconfirm", "--noprogressbar"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -44,6 +44,6 @@ func (p PacmanPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
 	return
 }
 
-func (p PacmanPackageManager) PackageManager() PackageManager {
+func (c PacmanCommandFactory) PackageManager() Manager {
 	return Pacman
 }

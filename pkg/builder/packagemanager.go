@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/containers/buildah"
-	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
+	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 )
 
 // TurretPackageManagerInterface is the interface implemented by a
@@ -29,7 +29,7 @@ type TurretPackageManagerInterface interface {
 // TurretPackageManager provides a high-level front end for Buildah for
 // managing packages in a Linux builder container.
 type TurretPackageManager struct {
-	packagemanager.CommandFactory
+	pckg.CommandFactory
 }
 
 // CleanCaches cleans the package caches in the working container.
@@ -96,23 +96,23 @@ func (pm *TurretPackageManager) Upgrade(b *TurretBuilder) error {
 
 // NewPackageManager creates a new TurretPackageManager for a particular
 // package manager.
-func NewPackageManager(pm packagemanager.PackageManager) (TurretPackageManagerInterface, error) {
-	cmdFactory, err := packagemanager.New(pm)
+func NewPackageManager(pm pckg.Manager) (TurretPackageManagerInterface, error) {
+	cf, err := pckg.NewCommandFactory(pm)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
 	var tpm TurretPackageManagerInterface
 	switch pm {
-	case packagemanager.APT:
-		tpm = &APTTurretPackageManager{TurretPackageManager{cmdFactory}}
+	case pckg.APT:
+		tpm = &APTTurretPackageManager{TurretPackageManager{cf}}
 	case
-		packagemanager.APK,
-		packagemanager.DNF,
-		packagemanager.Pacman,
-		packagemanager.XBPS,
-		packagemanager.Zypper:
-		tpm = &TurretPackageManager{cmdFactory}
+		pckg.APK,
+		pckg.DNF,
+		pckg.Pacman,
+		pckg.XBPS,
+		pckg.Zypper:
+		tpm = &TurretPackageManager{cf}
 	default:
 		return nil, fmt.Errorf("unrecognized package manager")
 	}

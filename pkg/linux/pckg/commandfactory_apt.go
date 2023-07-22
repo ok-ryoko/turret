@@ -1,11 +1,11 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package packagemanager
+package pckg
 
-type APTPackageManager struct{}
+type APTCommandFactory struct{}
 
-func (p APTPackageManager) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (c APTCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "clean"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -15,7 +15,7 @@ func (p APTPackageManager) NewCleanCacheCmd() (cmd, capabilities []string) {
 	return
 }
 
-func (p APTPackageManager) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "--yes", "install"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -28,13 +28,13 @@ func (p APTPackageManager) NewInstallCmd(packages []string) (cmd, capabilities [
 	return
 }
 
-func (p APTPackageManager) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
+func (c APTCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "list"}
 	capabilities = []string{}
 	return
 }
 
-func (p APTPackageManager) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (c APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "update"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -46,7 +46,7 @@ func (p APTPackageManager) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return
 }
 
-func (p APTPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
+func (c APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "--yes", "upgrade"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -58,6 +58,6 @@ func (p APTPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
 	return
 }
 
-func (p APTPackageManager) PackageManager() PackageManager {
+func (c APTCommandFactory) PackageManager() Manager {
 	return APT
 }

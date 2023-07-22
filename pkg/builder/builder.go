@@ -15,7 +15,7 @@ import (
 	"unicode"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
-	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
+	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -525,7 +525,7 @@ func (b *TurretBuilder) UpgradePackages() error {
 func New(
 	ctx context.Context,
 	distro linux.Distro,
-	packageManager packagemanager.PackageManager,
+	packageManager pckg.Manager,
 	imageRef string,
 	pull bool,
 	store storage.Store,

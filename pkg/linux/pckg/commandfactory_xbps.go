@@ -1,39 +1,39 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package packagemanager
+package pckg
 
-type XBPSPackageManager struct{}
+type XBPSCommandFactory struct{}
 
-func (p XBPSPackageManager) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (c XBPSCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-remove", "--clean-cache", "--yes"}
 	capabilities = []string{}
 	return
 }
 
-func (p XBPSPackageManager) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (c XBPSCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--yes"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
 	return
 }
 
-func (p XBPSPackageManager) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
+func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-query", "--list-pkgs"}
 	capabilities = []string{}
 	return
 }
 
-func (p XBPSPackageManager) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (c XBPSCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (p XBPSPackageManager) NewUpgradeCmd() (cmd, capabilities []string) {
+func (c XBPSCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--sync", "--update", "--yes"}
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
 	return
 }
 
-func (p XBPSPackageManager) PackageManager() PackageManager {
+func (c XBPSCommandFactory) PackageManager() Manager {
 	return XBPS
 }

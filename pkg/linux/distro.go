@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ok-ryoko/turret/pkg/linux/packagemanager"
+	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 )
 
 // Distro is a unique identifier for an independent Linux-based distribution.
@@ -43,25 +43,25 @@ func (d Distro) DefaultShell() string {
 }
 
 // DefaultPackageManager returns the canonical package manager for the distro.
-func (d Distro) DefaultPackageManager() packagemanager.PackageManager {
-	var p packagemanager.PackageManager
+func (d Distro) DefaultPackageManager() pckg.Manager {
+	var pm pckg.Manager
 	switch d {
 	case Alpine, Chimera:
-		p = packagemanager.APK
+		pm = pckg.APK
 	case Arch:
-		p = packagemanager.Pacman
+		pm = pckg.Pacman
 	case Debian:
-		p = packagemanager.APT
+		pm = pckg.APT
 	case Fedora:
-		p = packagemanager.DNF
+		pm = pckg.DNF
 	case OpenSUSE:
-		p = packagemanager.Zypper
+		pm = pckg.Zypper
 	case Void:
-		p = packagemanager.XBPS
+		pm = pckg.XBPS
 	default:
-		p = 0
+		pm = 0
 	}
-	return p
+	return pm
 }
 
 // String returns a string containing the stylized name of the distro.
@@ -94,9 +94,9 @@ type DistroWrapper struct {
 }
 
 // UnmarshalText decodes the distro from a string.
-func (d *DistroWrapper) UnmarshalText(text []byte) error {
+func (dw *DistroWrapper) UnmarshalText(text []byte) error {
 	var err error
-	d.Distro, err = parseDistroString(string(text))
+	dw.Distro, err = parseDistroString(string(text))
 	return err
 }
 
