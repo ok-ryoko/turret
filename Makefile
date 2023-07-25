@@ -10,17 +10,19 @@ SHELL := /bin/sh
 GIT := git
 GO := go
 
-INTERACTIVE := $(shell [ -t 0 ] && echo 1)
-
 .PHONY: all #? Format, check and compile all Go code
 all: fmt check build
 
 .PHONY: setup #? Prepare the development environment
-setup:
-ifdef INTERACTIVE
+setup: setup.formatter setup.linters
 	$(GIT) config --local core.hooksPath .githooks
+
+.PHONY: setup.formatter
+setup.formatter:
 	$(GO) install golang.org/x/tools/cmd/goimports@v0.11.0
-endif
+
+.PHONY: setup.linters
+setup.linters:
 	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.53.3
 
 .PHONY: build #? Compile the principal binary from Go code
@@ -30,22 +32,12 @@ build:
 .PHONY: check #? Assert that all Go code satisfies quality standards
 check: lint
 
-LINTER := $(shell command -v golangci-lint 2> /dev/null)
-
 .PHONY: lint #? Perform static analysis of all Go code
 lint:
-ifndef LINTER
-    $(error 'missing golangci-lint')
-endif
 	golangci-lint run
-
-FORMATTER := $(shell command -v goimports 2> /dev/null)
 
 .PHONY: fmt #? Format all Go code
 fmt:
-ifndef FORMATTER
-    $(error 'missing goimports')
-endif
 	goimports -l -w ./
 
 .PHONY: update #? Update build dependencies to a newer patch or minor release
