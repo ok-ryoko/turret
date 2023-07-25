@@ -6,10 +6,13 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.go]
+[{**.{awk,go},.githooks/**}]
 indent_style = tab
 indent_size = 4
 
-[*.{toml,yml}]
+[**.{toml,yml}]
 indent_style = space
 indent_size = 2
+
+[Makefile]
+indent_size = 4
