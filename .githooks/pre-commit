@@ -1,81 +1,64 @@
 #!/bin/sh -
+#
+# Copyright 2023 OK Ryoko
+# SPDX-License-Identifier: Apache-2.0
 
 set -o errexit
 set -o nounset
 
-log() {
-	lvl="$1"; msg="$2"
-	if [ "$lvl" = 'error' ]
-	then exec 3>&2
-	else exec 3>&1; fi
-	printf 'pre-commit: %s: %s\n' "$lvl" "$msg" >&3
-	exec 3>&-
-}
-
-log_fatal() {
-	msg="$1"
-	log 'error' "$msg"
-	exit 1
-}
-
-filter_lines() {
-	lines="$1"; patterns="$2"
-	printf '%s' "$(
-		(echo "$lines" | grep -e "$patterns") \
-			|| echo ""
+# filter prints the lines in a sequence that match a pattern.
+#
+# Parameters:
+#   $1: pattern, a regular expression string
+#   $2: lines, a string consisting of newline-separated items
+#
+filter() {
+	pattern="$1"; lines="$2"
+	printf '%s\n' "$(
+		echo "${lines}" | { grep -e "${pattern}" || test $? = 1; }
 	)"
 }
 
-if git rev-parse --verify HEAD > /dev/null 2>&1
+# Handle the case where there are no commits in the local repository
+#
+if git rev-parse --verify HEAD >/dev/null 2>&1
 then against=HEAD
-else against=$(git hash-object -t tree /dev/null); fi
+else against="$(git hash-object -t tree /dev/null)"; fi
+readonly against
 
-FILES=$(git diff --staged --name-only "$against")
-if [ -z "$FILES" ]; then exit 0; fi
+# Capture the names of all files in the index
+#
+files="$(git diff --staged --name-only "${against}")"
+if [ -z "${files}" ]; then exit 0; fi
+readonly files
 
-GO_PATTERN='^\.golangci\.yml$\|^go\.mod$\|^cmd/.*\.go$\|^pkg/.*\.go$'
-GO_FILES=$(filter_lines "$FILES" "$GO_PATTERN")
-if [ -n "$GO_FILES" ]; then
-	command -v make > /dev/null \
-		|| log_fatal 'Make not found'
-
-	command -v go > /dev/null \
-		|| log_fatal 'Go not found'
-
-	log 'info' 'checking Go source code...'
-	make --quiet check \
-		|| log_fatal 'failed checking Go module'
-
-	log 'info' 'building Go source code...'
-	make --quiet build \
-		|| log_fatal 'failed building Go module'
+# Check all Go code and compile the principal binary
+#
+readonly go_pattern='^\.golangci\.yml$\|^Makefile$\|^cmd/.*\.go$\|^go\.mod$\|^go\.sum$\|^pkg/.*\.go$'
+go_files="$(filter "${go_pattern}" "${files}")"
+if [ -n "${go_files}" ]; then
+	make --quiet check
+	make --quiet build
 fi
 
-SHELL_PATTERN='^\.githooks/.*$'
-SHELL_SCRIPTS=$(filter_lines "$FILES" "$SHELL_PATTERN")
-if [ -n "$SHELL_SCRIPTS" ]; then
-	log 'info' 'linting shell scripts...'
-
-	command -v shellcheck > /dev/null \
-		|| log_fatal 'ShellCheck not found'
-
+# Check all changed Git hooks as POSIX shell scripts
+#
+readonly shell_pattern='^\.githooks/.*$'
+shell_scripts="$(filter "${shell_pattern}" "${files}")"
+if [ -n "${shell_scripts}" ]; then
+	readonly shell_scripts
 	# shellcheck disable=SC2086
-	shellcheck --shell=sh $SHELL_SCRIPTS \
-		|| log_fatal 'found problem(s) in shell script(s)'
+	shellcheck --shell=sh ${shell_scripts}
 fi
 
-YAML_PATTERN='^.*\.yml$\|^\.yamllint$'
-YAML_FILES=$(filter_lines "$FILES" "$YAML_PATTERN")
-if [ -n "$YAML_FILES" ]; then
-	log 'info' 'linting YAML files...'
-
-	command -v yamllint > /dev/null \
-		|| log_fatal 'yamllint not found'
-
+# Check all changed YAML files
+#
+readonly yaml_pattern='^.*\.yml$\|^\.yamllint$'
+yaml_files="$(filter "${yaml_pattern}" "${files}")"
+if [ -n "${yaml_files}" ]; then
+	readonly yaml_files
 	# shellcheck disable=SC2086
-	yamllint --no-warnings $YAML_FILES \
-		|| log_fatal 'found problem(s) in YAML file(s)'
+	yamllint --no-warnings ${yaml_files}
 fi
 
-log 'info' 'OK!'
 exit 0
