@@ -5,8 +5,10 @@ on:
       - main
     paths:
       - '.golangci.yml'
-      - 'go.mod'
+      - 'Makefile'
       - 'cmd/**.go'
+      - 'go.mod'
+      - 'go.sum'
       - 'pkg/**.go'
 
   pull_request:
@@ -14,8 +16,10 @@ on:
       - main
     paths:
       - '.golangci.yml'
-      - 'go.mod'
+      - 'Makefile'
       - 'cmd/**.go'
+      - 'go.mod'
+      - 'go.sum'
       - 'pkg/**.go'
 
   workflow_dispatch:
@@ -24,18 +28,18 @@ permissions:
   contents: read
 
 jobs:
-  debug:
+  check:
     runs-on:
       - ubuntu-22.04
 
     steps:
-      - name: Update apt package index
+      - name: Update APT index
         run: sudo apt update
 
-      - name: Install Buildah dependencies
-        run: sudo apt install -qy libbtrfs-dev libdevmapper-dev libgpgme11-dev
+      - name: Install compile-time dependencies of Buildah
+        run: sudo apt install --quiet --yes libbtrfs-dev libdevmapper-dev libgpgme11-dev
 
-      - name: Checkout
+      - name: Checkout last commit on branch main
         uses: actions/checkout@v3
 
       - name: Setup Go
@@ -43,8 +47,8 @@ jobs:
         with:
           go-version: '^1.20.2'
 
-      - name: Setup linters
+      - name: Prepare development environment
         run: make setup
 
-      - name: Check Go code
+      - name: Assert all Go code satisfies quality standards
         run: make check
