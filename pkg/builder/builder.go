@@ -16,6 +16,7 @@ import (
 
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
+	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -51,7 +52,7 @@ type TurretBuilderInterface interface {
 	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
 
 	// CreateUser creates the sole unprivileged user of the working container.
-	CreateUser(name string, distro linux.Distro, options CreateUserOptions) error
+	CreateUser(name string, options usrgrp.CreateUserOptions) error
 
 	// InstallPackages installs one or more packages in the working container.
 	InstallPackages(packages []string) error
@@ -76,6 +77,10 @@ type TurretBuilder struct {
 
 	// Pointer to an object that manages packages in the working container
 	PackageManager TurretPackageManagerInterface
+
+	// Pointer to an object that manages users and groups in the working
+	// container
+	UserManager TurretUserManagerInterface
 
 	// Common options available to all build steps
 	CommonOptions CommonOptions
@@ -157,8 +162,12 @@ func (b *TurretBuilder) Configure(user bool, options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
 	if user {
-		b.Builder.SetEntrypoint([]string{"/bin/sh", "-c"})
-		b.Builder.SetCmd([]string{options.LoginShell})
+		ep := []string{"/bin/sh"}
+		if options.LoginShell != "" {
+			ep = append(ep, "-c")
+			b.Builder.SetCmd([]string{options.LoginShell})
+		}
+		b.Builder.SetEntrypoint(ep)
 		b.Builder.SetUser(options.UserName)
 		b.Builder.SetWorkDir(filepath.Join("/home", options.UserName))
 	}
@@ -225,111 +234,28 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container,
 // asserting that `name` is a nonempty string.
-func (b *TurretBuilder) CreateUser(name string, distro linux.Distro, options CreateUserOptions) error {
+func (b *TurretBuilder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
 
-	useraddCmd := []string{"useradd", "--create-home"}
+	if options.ID != 0 && (options.ID < 1000 || options.ID > 60000) {
+		return fmt.Errorf("UID %d outside allowed range [1000-60000]", options.ID)
+	}
 
-	if options.LoginShell != distro.DefaultShell() {
-		shell, err := b.resolveExecutable(options.LoginShell, distro)
+	if options.LoginShell != "" {
+		shell, err := b.resolveExecutable(options.LoginShell)
 		if err != nil {
-			return fmt.Errorf("resolving login shell: %w", err)
+			return fmt.Errorf("resolving shell: %w", err)
 		}
 		options.LoginShell = shell
 	}
-	useraddCmd = append(useraddCmd, "--shell", options.LoginShell)
 
-	if options.ID != 0 {
-		if options.ID < 1000 || options.ID > 60000 {
-			return fmt.Errorf("UID %d outside allowed range [1000-60000]", options.ID)
-		}
-		useraddCmd = append(
-			useraddCmd,
-			"--uid",
-			fmt.Sprintf("%d", options.ID),
-		)
-	}
-
-	userGroupFlag := "--no-user-group"
-	if options.UserGroup {
-		userGroupFlag = "--user-group"
-	}
-	useraddCmd = append(useraddCmd, userGroupFlag)
-
-	if options.Comment != "" {
-		useraddCmd = append(useraddCmd, "--comment", options.Comment)
-	}
-
-	if len(options.Groups) > 0 {
-		useraddCmd = append(
-			useraddCmd,
-			"--groups",
-			strings.Join(options.Groups, ","),
-		)
-	}
-
-	useraddCmd = append(useraddCmd, name)
-
-	uao := b.defaultRunOptions()
-
-	// CAP_DAC_READ_SEARCH and CAP_FSETID are elements of the useradd effective
-	// capability set but are not needed for the operation to succeed.
-	//
-	uao.AddCapabilities = []string{
-		"CAP_CHOWN",
-		//
-		// - Change owner of files copied from /etc/skel to /home/user
-		// - Change owner of /var/spool/mail/user
-
-		"CAP_DAC_OVERRIDE",
-		//
-		// - Open /etc/shadow and /etc/gshadow
-		// - Open files copied from /etc/skel to /home/user
-
-		"CAP_FOWNER",
-		//
-		// - Change owner and mode of temporary files when updating the passwd,
-		// shadow, gshadow, group, subuid and subgid files in /etc
-		// - Change owner and mode of /home/user and /var/spool/mail/user
-		// - Change owner of, set extended attributes on and update timestamps
-		// of files copied from /etc/skel to /home/user
-	}
-
-	// If the sss_cache command is available, then useradd will fork into
-	// sss_cache to invalidate the System Security Services Daemon cache,
-	// an operation that requires additional capabilities.
-	//
-	_, err := b.resolveExecutable("sss_cache", distro)
-	if err != nil {
-		b.Logger.Debugln("sss_cache not found; skipping cache invalidation")
-	} else {
-		uao.AddCapabilities = append(
-			uao.AddCapabilities,
-			"CAP_SETGID",
-			//
-			// Set the effective GID to 0 (root)
-
-			"CAP_SETUID",
-			//
-			// Set the effective UID to 0 (root)
-		)
-	}
-
-	if err := b.run(useraddCmd, uao); err != nil {
+	if err := b.UserManager.CreateUser(b, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
 	return nil
-}
-
-type CreateUserOptions struct {
-	ID         uint
-	UserGroup  bool
-	Groups     []string
-	Comment    string
-	LoginShell string
 }
 
 func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
@@ -365,24 +291,15 @@ func (b *TurretBuilder) Remove() error {
 	if err != nil {
 		return fmt.Errorf("deleting container: %w", err)
 	}
-
-	b.Builder = nil
-	b.Logger = nil
-	b.CommonOptions = CommonOptions{}
-
+	*b = TurretBuilder{}
 	return nil
 }
 
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise, assuming `command` can
 // be resolved.
-func (b *TurretBuilder) resolveExecutable(executable string, distro linux.Distro) (string, error) {
-	shell := distro.DefaultShell()
-	cmd := []string{shell}
-	if filepath.Base(shell) == "bash" {
-		cmd = append(cmd, "--restricted")
-	}
-	cmd = append(cmd, "-c", "command", "-v", executable)
+func (b *TurretBuilder) resolveExecutable(executable string) (string, error) {
+	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
 
 	var buf bytes.Buffer
 	ro := b.defaultRunOptions()
@@ -521,11 +438,12 @@ func (b *TurretBuilder) UpgradePackages() error {
 }
 
 // New creates a new TurretBuilder for a given combination of a Linux-based
-// distro and package manager.
+// distro, package manager, and user/group management utility.
 func New(
 	ctx context.Context,
 	distro linux.Distro,
 	packageManager pckg.Manager,
+	userManager usrgrp.Manager,
 	imageRef string,
 	pull bool,
 	store storage.Store,
@@ -556,39 +474,20 @@ func New(
 		return nil, fmt.Errorf("creating package manager: %w", err)
 	}
 
-	var tb TurretBuilderInterface
-	switch distro {
-	case linux.Alpine:
-		tb = &AlpineTurretBuilder{
-			TurretBuilder{
-				Builder:        b,
-				PackageManager: pm,
-				Logger:         logger,
-				CommonOptions:  options,
-			},
-		}
-	case linux.Debian:
-		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
-		tb = &TurretBuilder{
-			Builder:        b,
-			PackageManager: pm,
-			Logger:         logger,
-			CommonOptions:  options,
-		}
-	case
-		linux.Arch,
-		linux.Chimera,
-		linux.Fedora,
-		linux.OpenSUSE,
-		linux.Void:
-		tb = &TurretBuilder{
-			Builder:        b,
-			PackageManager: pm,
-			Logger:         logger,
-			CommonOptions:  options,
-		}
-	default:
-		return nil, fmt.Errorf("unrecognized distro")
+	um, err := NewUserManager(userManager)
+	if err != nil {
+		return nil, fmt.Errorf("creating user and group manager: %w", err)
 	}
-	return tb, nil
+
+	if distro == linux.Debian {
+		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
+	}
+
+	return &TurretBuilder{
+		Builder:        b,
+		PackageManager: pm,
+		UserManager:    um,
+		Logger:         logger,
+		CommonOptions:  options,
+	}, nil
 }

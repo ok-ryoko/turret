@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
+	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
 
 // Distro is a unique identifier for an independent Linux-based distribution.
@@ -62,6 +63,21 @@ func (d Distro) DefaultPackageManager() pckg.Manager {
 		pm = 0
 	}
 	return pm
+}
+
+// DefaultUserManager returns the canonical user and group management utility
+// for the distro.
+func (d Distro) DefaultUserManager() usrgrp.Manager {
+	var um usrgrp.Manager
+	switch d {
+	case Alpine:
+		um = usrgrp.BusyBox
+	case Arch, Chimera, Debian, Fedora, OpenSUSE, Void:
+		um = usrgrp.Shadow
+	default:
+		um = 0
+	}
+	return um
 }
 
 // String returns a string containing the stylized name of the distro.

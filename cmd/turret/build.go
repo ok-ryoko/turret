@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/ok-ryoko/turret/pkg/builder"
+	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"
@@ -133,12 +134,14 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 
 			distro := spec.Distro.Distro
 			packageManager := spec.Packages.Manager.Manager
+			userManager := spec.User.Manager.Manager
 			baseRef := spec.From.Reference()
 			commonOptions := builder.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
 				ctx,
 				distro,
 				packageManager,
+				userManager,
 				baseRef,
 				cCtx.Bool("pull"),
 				store,
@@ -182,14 +185,14 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if spec.User != nil {
-				createUserOptions := builder.CreateUserOptions{
+				createUserOptions := usrgrp.CreateUserOptions{
 					ID:         spec.User.ID,
 					UserGroup:  spec.User.UserGroup,
 					Groups:     spec.User.Groups,
 					Comment:    spec.User.Comment,
 					LoginShell: spec.User.LoginShell,
 				}
-				if err = b.CreateUser(spec.User.Name, spec.Distro.Distro, createUserOptions); err != nil {
+				if err = b.CreateUser(spec.User.Name, createUserOptions); err != nil {
 					return fmt.Errorf("creating unprivileged user: %w", err)
 				}
 				logger.Debugf("created unprivileged user '%s'", spec.User.Name)

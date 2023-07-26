@@ -104,6 +104,12 @@
 #
 #login-shell = ""
 
+# The user and group management utility in the base image;
+# one of "busybox" and "shadow";
+# case-insensitive
+#
+#manager = ""
+
 [security.special-files]
 
 # Whether to automatically unset the special bit on any files in the working

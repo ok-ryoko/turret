@@ -9,6 +9,7 @@ import (
 
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
+	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
 
 const (
@@ -64,9 +65,9 @@ func (s *Spec) Fill() {
 		}
 	}
 
-	if s.User != nil {
-		if s.User.LoginShell == "" {
-			s.User.LoginShell = s.Distro.DefaultShell()
+	if s.User.Manager.Manager == 0 {
+		s.User.Manager = usrgrp.ManagerWrapper{
+			Manager: s.Distro.DefaultUserManager(),
 		}
 	}
 
@@ -204,6 +205,9 @@ type User struct {
 
 	// Login shell; must be a PATH-resolvable executable
 	LoginShell string `toml:"login-shell"`
+
+	// Choice of user-space utility for managing users and groups
+	Manager usrgrp.ManagerWrapper
 }
 
 // Security holds security-related options for the working container.
