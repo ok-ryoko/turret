@@ -14,16 +14,16 @@ import (
 // TurretPackageManager for a particular package manager.
 type TurretPackageManagerInterface interface {
 	// CleanCaches cleans the package caches in the working container.
-	CleanCaches(b *TurretBuilder) error
+	CleanCaches(c *TurretContainer) error
 
 	// Install installs one or more packages to the working container.
-	Install(b *TurretBuilder, packages []string) error
+	Install(c *TurretContainer, packages []string) error
 
 	// List lists the packages installed in the working container.
-	List(b *TurretBuilder) error
+	List(c *TurretContainer) error
 
 	// Upgrade upgrades the packages in the working container.
-	Upgrade(b *TurretBuilder) error
+	Upgrade(c *TurretContainer) error
 }
 
 // TurretPackageManager provides a high-level front end for Buildah for
@@ -33,11 +33,11 @@ type TurretPackageManager struct {
 }
 
 // CleanCaches cleans the package caches in the working container.
-func (pm *TurretPackageManager) CleanCaches(b *TurretBuilder) error {
+func (pm *TurretPackageManager) CleanCaches(c *TurretContainer) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"cleaning %s package cache: %w",
 			pm.PackageManager().String(),
@@ -48,12 +48,12 @@ func (pm *TurretPackageManager) CleanCaches(b *TurretBuilder) error {
 }
 
 // Install installs one or more packages to the working container.
-func (pm *TurretPackageManager) Install(b *TurretBuilder, packages []string) error {
+func (pm *TurretPackageManager) Install(c *TurretContainer, packages []string) error {
 	cmd, capabilities := pm.NewInstallCmd(packages)
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
 			pm.PackageManager().String(),
@@ -64,11 +64,11 @@ func (pm *TurretPackageManager) Install(b *TurretBuilder, packages []string) err
 }
 
 // List lists the packages installed in the working container.
-func (pm *TurretPackageManager) List(b *TurretBuilder) error {
+func (pm *TurretPackageManager) List(c *TurretContainer) error {
 	cmd, capabilities := pm.NewListInstalledPackagesCmd()
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"listing installed %s packages: %w",
 			pm.PackageManager().String(),
@@ -79,12 +79,12 @@ func (pm *TurretPackageManager) List(b *TurretBuilder) error {
 }
 
 // Upgrade upgrades the packages in the working container.
-func (pm *TurretPackageManager) Upgrade(b *TurretBuilder) error {
+func (pm *TurretPackageManager) Upgrade(c *TurretContainer) error {
 	cmd, capabilities := pm.NewUpgradeCmd()
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
 			pm.PackageManager().String(),

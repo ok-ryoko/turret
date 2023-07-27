@@ -13,12 +13,12 @@ type APTTurretPackageManager struct {
 	TurretPackageManager
 }
 
-func (pm *APTTurretPackageManager) Install(b *TurretBuilder, packages []string) error {
+func (pm *APTTurretPackageManager) Install(c *TurretContainer, packages []string) error {
 	cmd, capabilities := pm.NewUpdateIndexCmd()
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
 			pm.PackageManager().String(),
@@ -27,10 +27,10 @@ func (pm *APTTurretPackageManager) Install(b *TurretBuilder, packages []string) 
 	}
 
 	cmd, capabilities = pm.NewInstallCmd(packages)
-	ro = b.defaultRunOptions()
+	ro = c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
 			pm.PackageManager().String(),
@@ -40,12 +40,12 @@ func (pm *APTTurretPackageManager) Install(b *TurretBuilder, packages []string) 
 	return nil
 }
 
-func (pm *APTTurretPackageManager) Upgrade(b *TurretBuilder) error {
+func (pm *APTTurretPackageManager) Upgrade(c *TurretContainer) error {
 	cmd, capabilities := pm.NewUpdateIndexCmd()
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
 			pm.PackageManager().String(),
@@ -54,10 +54,10 @@ func (pm *APTTurretPackageManager) Upgrade(b *TurretBuilder) error {
 	}
 
 	cmd, capabilities = pm.NewUpgradeCmd()
-	ro = b.defaultRunOptions()
+	ro = c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
 			pm.PackageManager().String(),

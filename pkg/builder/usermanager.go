@@ -13,7 +13,7 @@ import (
 // TurretUserManager for a particular user and group management utility.
 type TurretUserManagerInterface interface {
 	// CreateUser creates the sole unprivileged user of the working container.
-	CreateUser(b *TurretBuilder, name string, options usrgrp.CreateUserOptions) error
+	CreateUser(c *TurretContainer, name string, options usrgrp.CreateUserOptions) error
 }
 
 // TurretUserManager provides a high-level front end for Buildah for managing

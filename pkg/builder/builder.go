@@ -9,10 +9,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
@@ -25,55 +23,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TurretBuilderInterface is the interface implemented by a TurretBuilder for
-// a particular Linux-based distro.
-type TurretBuilderInterface interface {
-	// CleanPackageCaches cleans the package caches in the working container.
-	CleanPackageCaches() error
-
-	// Commit commits an image from the working container to storage and returns
-	// the ID of the newly created image.
-	Commit(
-		ctx context.Context,
-		store storage.Store,
-		repository string,
-		tag string,
-		options CommitOptions,
-	) (string, error)
-
-	// Configure sets runtime properties and metadata for the working container.
-	Configure(user bool, options ConfigureOptions)
-
-	// ContainerID returns the ID of the working container.
-	ContainerID() string
-
-	// CopyFiles copies files from the end user's home directory to the working
-	// container's file system.
-	CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error
-
-	// CreateUser creates the sole unprivileged user of the working container.
-	CreateUser(name string, options usrgrp.CreateUserOptions) error
-
-	// InstallPackages installs one or more packages in the working container.
-	InstallPackages(packages []string) error
-
-	// Remove removes the working container and destroys this builder, which
-	// should not be used afterwards.
-	Remove() error
-
-	// UnsetSpecialBits removes the SUID/SGID bit from files in real filesystems
-	// mounted in the working container.
-	UnsetSpecialBits(files []string) error
-
-	// UpgradePackages upgrades the packages in the working container.
-	UpgradePackages() error
-}
-
 // TurretBuilder provides a high-level front end for Buildah for configuring
 // and building container images of diverse Linux-based distros.
 type TurretBuilder struct {
-	// Pointer to the underlying Buildah builder instance
-	Builder *buildah.Builder
+	TurretContainer
 
 	// Pointer to an object that manages packages in the working container
 	PackageManager TurretPackageManagerInterface
@@ -81,30 +34,14 @@ type TurretBuilder struct {
 	// Pointer to an object that manages users and groups in the working
 	// container
 	UserManager TurretUserManagerInterface
-
-	// Common options available to all build steps
-	CommonOptions CommonOptions
-
-	// Pointer to the underlying logger
-	Logger *logrus.Logger
 }
 
 // CleanPackageCaches cleans the package caches in the working container.
 func (b *TurretBuilder) CleanPackageCaches() error {
-	if err := b.PackageManager.CleanCaches(b); err != nil {
+	if err := b.PackageManager.CleanCaches(&b.TurretContainer); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
-}
-
-// CommonOptions holds common options for every step of a build.
-type CommonOptions struct {
-	// Environment variables to set when running a command in the working
-	// container, represented as a slice of "KEY=VALUE"s
-	Env []string
-
-	// Whether to log the output and error streams of container processes
-	LogCommands bool
 }
 
 // Commit commits an image from the working container to storage, asserting
@@ -188,11 +125,6 @@ type ConfigureOptions struct {
 	UserName    string
 }
 
-// ContainerID returns the ID of the working container.
-func (b *TurretBuilder) ContainerID() string {
-	return buildah.GetBuildInfo(b.Builder).ContainerID
-}
-
 // CopyFiles copies one or more files from the end user's home directory to the
 // working container's file system, assuming `destSourcesMap` is a nonempty map
 // of destinations in the working container to sources on the host. Sources are
@@ -251,128 +183,18 @@ func (b *TurretBuilder) CreateUser(name string, options usrgrp.CreateUserOptions
 		options.LoginShell = shell
 	}
 
-	if err := b.UserManager.CreateUser(b, name, options); err != nil {
+	if err := b.UserManager.CreateUser(&b.TurretContainer, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
 	return nil
-}
-
-func (b *TurretBuilder) defaultRunOptions() buildah.RunOptions {
-	ro := buildah.RunOptions{
-		ConfigureNetwork: buildah.NetworkDisabled,
-		Quiet:            true,
-	}
-
-	if len(b.CommonOptions.Env) > 0 {
-		ro.Env = append(ro.Env, b.CommonOptions.Env...)
-	}
-
-	if b.CommonOptions.LogCommands {
-		ro.Logger = b.Logger
-		ro.Quiet = false
-	}
-
-	return ro
 }
 
 // InstallPackages installs one or more packages to the working container.
 func (b *TurretBuilder) InstallPackages(packages []string) error {
-	if err := b.PackageManager.Install(b, packages); err != nil {
+	if err := b.PackageManager.Install(&b.TurretContainer, packages); err != nil {
 		return fmt.Errorf("%w", err)
 	}
-	return nil
-}
-
-// Remove removes the working container and destroys this TurretBuilder, which
-// should not be used afterwards.
-func (b *TurretBuilder) Remove() error {
-	err := b.Builder.Delete()
-	if err != nil {
-		return fmt.Errorf("deleting container: %w", err)
-	}
-	*b = TurretBuilder{}
-	return nil
-}
-
-// resolveExecutable returns the absolute path of an executable in the working
-// container if it can be found and an error otherwise, assuming `command` can
-// be resolved.
-func (b *TurretBuilder) resolveExecutable(executable string) (string, error) {
-	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
-
-	var buf bytes.Buffer
-	ro := b.defaultRunOptions()
-	ro.Stdout = &buf
-
-	if err := b.run(cmd, ro); err != nil {
-		return "", fmt.Errorf("running default shell or resolving executable '%s'", executable)
-	}
-
-	return strings.TrimSpace(buf.String()), nil
-}
-
-// run runs a command in the working container, optionally sanitizing and
-// logging the process's standard output and error streams. When sanitizing, it
-// strips all ANSI escape codes as well as superfluous whitespace.
-func (b *TurretBuilder) run(cmd []string, options buildah.RunOptions) error {
-	var stderrBuf bytes.Buffer
-	if options.Stderr == nil && b.CommonOptions.LogCommands {
-		options.Stderr = &stderrBuf
-	}
-
-	var stdoutBuf bytes.Buffer
-	if options.Stdout == nil && b.CommonOptions.LogCommands {
-		options.Stdout = &stdoutBuf
-	}
-
-	defer func() {
-		if b.CommonOptions.LogCommands {
-			reEscape := regexp.MustCompile(`((\\x1b|\\u001b)\[[0-9;]*[A-Za-z]?)+`)
-			reWhitespace := regexp.MustCompile(`[[:space:]]+`)
-
-			if stderrBuf.Len() > 0 {
-				lines := stderrBuf.String()
-				for _, l := range strings.Split(lines, "\n") {
-					l = strings.Map(func(r rune) rune {
-						if unicode.IsGraphic(r) {
-							return r
-						}
-						return -1
-					}, l)
-					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
-					if l == "" {
-						continue
-					}
-					l = reEscape.ReplaceAllLiteralString(l, "")
-					b.Logger.Debugf("%s: stderr: %s", cmd[0], l)
-				}
-			}
-
-			if stdoutBuf.Len() > 0 {
-				lines := stdoutBuf.String()
-				for _, l := range strings.Split(lines, "\n") {
-					l = strings.Map(func(r rune) rune {
-						if unicode.IsGraphic(r) {
-							return r
-						}
-						return -1
-					}, l)
-					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
-					if l == "" {
-						continue
-					}
-					l = reEscape.ReplaceAllLiteralString(l, "")
-					b.Logger.Debugf("%s: stdout: %s", cmd[0], l)
-				}
-			}
-		}
-	}()
-
-	if err := b.Builder.Run(cmd, options); err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
 	return nil
 }
 
@@ -431,15 +253,15 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 
 // UpgradePackages upgrades the packages in the working container.
 func (b *TurretBuilder) UpgradePackages() error {
-	if err := b.PackageManager.Upgrade(b); err != nil {
+	if err := b.PackageManager.Upgrade(&b.TurretContainer); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
 
-// New creates a new TurretBuilder for a given combination of a Linux-based
-// distro, package manager, and user/group management utility.
-func New(
+// NewBuilder creates a new TurretBuilder for a given combination of a Linux-
+// based distro, package manager, and user/group management utility.
+func NewBuilder(
 	ctx context.Context,
 	distro linux.Distro,
 	packageManager pckg.Manager,
@@ -449,7 +271,7 @@ func New(
 	store storage.Store,
 	logger *logrus.Logger,
 	options CommonOptions,
-) (TurretBuilderInterface, error) {
+) (TurretBuilder, error) {
 	bo := buildah.BuilderOptions{
 		Capabilities: []string{},
 		FromImage:    imageRef,
@@ -465,29 +287,33 @@ func New(
 
 	b, err := buildah.NewBuilder(ctx, store, bo)
 	if err != nil {
-		return nil, fmt.Errorf("creating Buildah builder: %w", err)
+		return TurretBuilder{}, fmt.Errorf("creating Buildah builder: %w", err)
 	}
 	logger.Debugf("created working container from image '%s'", imageRef)
 
+	cntr := TurretContainer{
+		Builder: b,
+		Logger:  logger,
+	}
+
 	pm, err := NewPackageManager(packageManager)
 	if err != nil {
-		return nil, fmt.Errorf("creating package manager: %w", err)
+		return TurretBuilder{}, fmt.Errorf("creating package manager: %w", err)
 	}
 
 	um, err := NewUserManager(userManager)
 	if err != nil {
-		return nil, fmt.Errorf("creating user and group manager: %w", err)
+		return TurretBuilder{}, fmt.Errorf("creating user and group manager: %w", err)
 	}
 
 	if distro == linux.Debian {
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 	}
+	cntr.CommonOptions = options
 
-	return &TurretBuilder{
-		Builder:        b,
-		PackageManager: pm,
-		UserManager:    um,
-		Logger:         logger,
-		CommonOptions:  options,
+	return TurretBuilder{
+		TurretContainer: cntr,
+		PackageManager:  pm,
+		UserManager:     um,
 	}, nil
 }

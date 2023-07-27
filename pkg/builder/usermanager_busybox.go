@@ -14,11 +14,11 @@ type BusyBoxTurretUserManager struct {
 }
 
 // CreateUser creates the sole unprivileged user of the working container.
-func (um *BusyBoxTurretUserManager) CreateUser(b *TurretBuilder, name string, options usrgrp.CreateUserOptions) error {
+func (um *BusyBoxTurretUserManager) CreateUser(c *TurretContainer, name string, options usrgrp.CreateUserOptions) error {
 	cmd, capabilities := um.NewCreateUserCmd(name, options)
-	ro := b.defaultRunOptions()
+	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := b.run(cmd, ro); err != nil {
+	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"creating user using %s: %w",
 			um.UserManager().String(),
@@ -28,8 +28,8 @@ func (um *BusyBoxTurretUserManager) CreateUser(b *TurretBuilder, name string, op
 
 	if options.UserGroup {
 		cmd, _ = um.NewAddUserToGroupCmd(name, name)
-		ro = b.defaultRunOptions()
-		if err := b.run(cmd, ro); err != nil {
+		ro = c.defaultRunOptions()
+		if err := c.run(cmd, ro); err != nil {
 			return fmt.Errorf(
 				"adding user to group using %s: %w",
 				um.UserManager().String(),
@@ -41,8 +41,8 @@ func (um *BusyBoxTurretUserManager) CreateUser(b *TurretBuilder, name string, op
 	if len(options.Groups) > 0 {
 		for _, g := range options.Groups {
 			cmd, _ = um.NewAddUserToGroupCmd(name, g)
-			ro = b.defaultRunOptions()
-			if err := b.run(cmd, ro); err != nil {
+			ro = c.defaultRunOptions()
+			if err := c.run(cmd, ro); err != nil {
 				return fmt.Errorf(
 					"adding user to group using %s: %w",
 					um.UserManager().String(),
