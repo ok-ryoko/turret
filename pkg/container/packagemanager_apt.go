@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package builder
+package container
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"github.com/containers/buildah"
 )
 
-type APTTurretPackageManager struct {
-	TurretPackageManager
+type APTPackageManager struct {
+	PackageManager
 }
 
-func (pm *APTTurretPackageManager) Install(c *TurretContainer, packages []string) error {
+func (pm *APTPackageManager) Install(c *Container, packages []string) error {
 	cmd, capabilities := pm.NewUpdateIndexCmd()
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -21,7 +21,7 @@ func (pm *APTTurretPackageManager) Install(c *TurretContainer, packages []string
 	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
-			pm.PackageManager().String(),
+			pm.PackageManager.PackageManager().String(),
 			err,
 		)
 	}
@@ -33,14 +33,14 @@ func (pm *APTTurretPackageManager) Install(c *TurretContainer, packages []string
 	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
-			pm.PackageManager().String(),
+			pm.PackageManager.PackageManager().String(),
 			err,
 		)
 	}
 	return nil
 }
 
-func (pm *APTTurretPackageManager) Upgrade(c *TurretContainer) error {
+func (pm *APTPackageManager) Upgrade(c *Container) error {
 	cmd, capabilities := pm.NewUpdateIndexCmd()
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -48,7 +48,7 @@ func (pm *APTTurretPackageManager) Upgrade(c *TurretContainer) error {
 	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"updating %s package index: %w",
-			pm.PackageManager().String(),
+			pm.PackageManager.PackageManager().String(),
 			err,
 		)
 	}
@@ -60,7 +60,7 @@ func (pm *APTTurretPackageManager) Upgrade(c *TurretContainer) error {
 	if err := c.run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
-			pm.PackageManager().String(),
+			pm.PackageManager.PackageManager().String(),
 			err,
 		)
 	}

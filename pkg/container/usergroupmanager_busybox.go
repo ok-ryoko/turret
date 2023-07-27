@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package builder
+package container
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
 
-type BusyBoxTurretUserManager struct {
-	TurretUserManager
+type BusyBoxUserGroupManager struct {
+	UserGroupManager
 }
 
 // CreateUser creates the sole unprivileged user of the working container.
-func (um *BusyBoxTurretUserManager) CreateUser(c *TurretContainer, name string, options usrgrp.CreateUserOptions) error {
+func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options usrgrp.CreateUserOptions) error {
 	cmd, capabilities := um.NewCreateUserCmd(name, options)
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities

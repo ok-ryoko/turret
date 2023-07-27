@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package builder
+package container
 
 import (
 	"fmt"
@@ -10,30 +10,30 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 )
 
-// TurretPackageManagerInterface is the interface implemented by a
-// TurretPackageManager for a particular package manager.
-type TurretPackageManagerInterface interface {
+// PackageManagerInterface is the interface implemented by a PackageManager
+// for a particular package manager.
+type PackageManagerInterface interface {
 	// CleanCaches cleans the package caches in the working container.
-	CleanCaches(c *TurretContainer) error
+	CleanCaches(c *Container) error
 
 	// Install installs one or more packages to the working container.
-	Install(c *TurretContainer, packages []string) error
+	Install(c *Container, packages []string) error
 
 	// List lists the packages installed in the working container.
-	List(c *TurretContainer) error
+	List(c *Container) error
 
 	// Upgrade upgrades the packages in the working container.
-	Upgrade(c *TurretContainer) error
+	Upgrade(c *Container) error
 }
 
-// TurretPackageManager provides a high-level front end for Buildah for
-// managing packages in a Linux builder container.
-type TurretPackageManager struct {
+// PackageManager provides a high-level front end for Buildah for managing
+// packages in a Linux builder container.
+type PackageManager struct {
 	pckg.CommandFactory
 }
 
 // CleanCaches cleans the package caches in the working container.
-func (pm *TurretPackageManager) CleanCaches(c *TurretContainer) error {
+func (pm *PackageManager) CleanCaches(c *Container) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -48,7 +48,7 @@ func (pm *TurretPackageManager) CleanCaches(c *TurretContainer) error {
 }
 
 // Install installs one or more packages to the working container.
-func (pm *TurretPackageManager) Install(c *TurretContainer, packages []string) error {
+func (pm *PackageManager) Install(c *Container, packages []string) error {
 	cmd, capabilities := pm.NewInstallCmd(packages)
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -64,7 +64,7 @@ func (pm *TurretPackageManager) Install(c *TurretContainer, packages []string) e
 }
 
 // List lists the packages installed in the working container.
-func (pm *TurretPackageManager) List(c *TurretContainer) error {
+func (pm *PackageManager) List(c *Container) error {
 	cmd, capabilities := pm.NewListInstalledPackagesCmd()
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -79,7 +79,7 @@ func (pm *TurretPackageManager) List(c *TurretContainer) error {
 }
 
 // Upgrade upgrades the packages in the working container.
-func (pm *TurretPackageManager) Upgrade(c *TurretContainer) error {
+func (pm *PackageManager) Upgrade(c *Container) error {
 	cmd, capabilities := pm.NewUpgradeCmd()
 	ro := c.defaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -94,25 +94,25 @@ func (pm *TurretPackageManager) Upgrade(c *TurretContainer) error {
 	return nil
 }
 
-// NewPackageManager creates a new TurretPackageManager for a particular
-// package manager.
-func NewPackageManager(pm pckg.Manager) (TurretPackageManagerInterface, error) {
+// NewPackageManager creates a new PackageManager for a particular package
+// manager.
+func NewPackageManager(pm pckg.Manager) (PackageManagerInterface, error) {
 	cf, err := pckg.NewCommandFactory(pm)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	var tpm TurretPackageManagerInterface
+	var tpm PackageManagerInterface
 	switch pm {
 	case pckg.APT:
-		tpm = &APTTurretPackageManager{TurretPackageManager{cf}}
+		tpm = &APTPackageManager{PackageManager{cf}}
 	case
 		pckg.APK,
 		pckg.DNF,
 		pckg.Pacman,
 		pckg.XBPS,
 		pckg.Zypper:
-		tpm = &TurretPackageManager{cf}
+		tpm = &PackageManager{cf}
 	default:
 		return nil, fmt.Errorf("unrecognized package manager")
 	}

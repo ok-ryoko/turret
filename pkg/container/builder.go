@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package builder
+package container
 
 import (
 	"bytes"
@@ -23,22 +23,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TurretBuilder provides a high-level front end for Buildah for configuring
-// and building container images of diverse Linux-based distros.
-type TurretBuilder struct {
-	TurretContainer
+// Builder provides a high-level front end for Buildah for configuring and
+// building container images of diverse Linux-based distros.
+type Builder struct {
+	Container
 
 	// Pointer to an object that manages packages in the working container
-	PackageManager TurretPackageManagerInterface
+	PackageManager PackageManagerInterface
 
 	// Pointer to an object that manages users and groups in the working
 	// container
-	UserManager TurretUserManagerInterface
+	UserGroupManager UserGroupManagerInterface
 }
 
 // CleanPackageCaches cleans the package caches in the working container.
-func (b *TurretBuilder) CleanPackageCaches() error {
-	if err := b.PackageManager.CleanCaches(&b.TurretContainer); err != nil {
+func (b *Builder) CleanPackageCaches() error {
+	if err := b.PackageManager.CleanCaches(&b.Container); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -47,7 +47,7 @@ func (b *TurretBuilder) CleanPackageCaches() error {
 // Commit commits an image from the working container to storage, asserting
 // that `repository` and `tag` are nonempty strings, and returns the ID of the
 // newly created image.
-func (b *TurretBuilder) Commit(
+func (b *Builder) Commit(
 	ctx context.Context,
 	store storage.Store,
 	repository string,
@@ -95,7 +95,7 @@ type CommitOptions struct {
 }
 
 // Configure sets metadata and runtime parameters for the working container.
-func (b *TurretBuilder) Configure(user bool, options ConfigureOptions) {
+func (b *Builder) Configure(user bool, options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
 	if user {
@@ -130,7 +130,7 @@ type ConfigureOptions struct {
 // of destinations in the working container to sources on the host. Sources are
 // resolved with respect to the end user's home directory on the host;
 // destinations are absolute paths in the working container's filesystem.
-func (b *TurretBuilder) CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error {
+func (b *Builder) CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error {
 	if len(destSourcesMap) == 0 {
 		return nil
 	}
@@ -166,7 +166,7 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container,
 // asserting that `name` is a nonempty string.
-func (b *TurretBuilder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
+func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
 	if name == "" {
 		return fmt.Errorf("blank user name")
 	}
@@ -183,7 +183,7 @@ func (b *TurretBuilder) CreateUser(name string, options usrgrp.CreateUserOptions
 		options.LoginShell = shell
 	}
 
-	if err := b.UserManager.CreateUser(&b.TurretContainer, name, options); err != nil {
+	if err := b.UserGroupManager.CreateUser(&b.Container, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -191,8 +191,8 @@ func (b *TurretBuilder) CreateUser(name string, options usrgrp.CreateUserOptions
 }
 
 // InstallPackages installs one or more packages to the working container.
-func (b *TurretBuilder) InstallPackages(packages []string) error {
-	if err := b.PackageManager.Install(&b.TurretContainer, packages); err != nil {
+func (b *Builder) InstallPackages(packages []string) error {
+	if err := b.PackageManager.Install(&b.Container, packages); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -201,7 +201,7 @@ func (b *TurretBuilder) InstallPackages(packages []string) error {
 // UnsetSpecialBits removes the SUID/SGID bit from files in the working container,
 // assuming the availability of the chmod(1) and find(1) core utilities and
 // searching only real file systems, excluding the /home directory.
-func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
+func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	findCmd := []string{
 		"find", "/",
 		"-xdev",
@@ -252,14 +252,14 @@ func (b *TurretBuilder) UnsetSpecialBits(excludes []string) error {
 }
 
 // UpgradePackages upgrades the packages in the working container.
-func (b *TurretBuilder) UpgradePackages() error {
-	if err := b.PackageManager.Upgrade(&b.TurretContainer); err != nil {
+func (b *Builder) UpgradePackages() error {
+	if err := b.PackageManager.Upgrade(&b.Container); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
 
-// NewBuilder creates a new TurretBuilder for a given combination of a Linux-
+// NewBuilder creates a new Builder for a given combination of a Linux-
 // based distro, package manager, and user/group management utility.
 func NewBuilder(
 	ctx context.Context,
@@ -271,7 +271,7 @@ func NewBuilder(
 	store storage.Store,
 	logger *logrus.Logger,
 	options CommonOptions,
-) (TurretBuilder, error) {
+) (Builder, error) {
 	bo := buildah.BuilderOptions{
 		Capabilities: []string{},
 		FromImage:    imageRef,
@@ -287,23 +287,23 @@ func NewBuilder(
 
 	b, err := buildah.NewBuilder(ctx, store, bo)
 	if err != nil {
-		return TurretBuilder{}, fmt.Errorf("creating Buildah builder: %w", err)
+		return Builder{}, fmt.Errorf("creating Buildah builder: %w", err)
 	}
 	logger.Debugf("created working container from image '%s'", imageRef)
 
-	cntr := TurretContainer{
+	cntr := Container{
 		Builder: b,
 		Logger:  logger,
 	}
 
 	pm, err := NewPackageManager(packageManager)
 	if err != nil {
-		return TurretBuilder{}, fmt.Errorf("creating package manager: %w", err)
+		return Builder{}, fmt.Errorf("creating package manager: %w", err)
 	}
 
-	um, err := NewUserManager(userManager)
+	um, err := NewUserGroupManager(userManager)
 	if err != nil {
-		return TurretBuilder{}, fmt.Errorf("creating user and group manager: %w", err)
+		return Builder{}, fmt.Errorf("creating user and group manager: %w", err)
 	}
 
 	if distro == linux.Debian {
@@ -311,9 +311,9 @@ func NewBuilder(
 	}
 	cntr.CommonOptions = options
 
-	return TurretBuilder{
-		TurretContainer: cntr,
-		PackageManager:  pm,
-		UserManager:     um,
+	return Builder{
+		Container:        cntr,
+		PackageManager:   pm,
+		UserGroupManager: um,
 	}, nil
 }

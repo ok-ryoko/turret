@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ok-ryoko/turret/pkg/builder"
+	"github.com/ok-ryoko/turret/pkg/container"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 
 	"github.com/containers/storage"
@@ -136,8 +136,8 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			packageManager := spec.Packages.Manager.Manager
 			userManager := spec.User.Manager.Manager
 			baseRef := spec.From.Reference()
-			commonOptions := builder.CommonOptions{LogCommands: v >= 4}
-			b, err := builder.NewBuilder(
+			commonOptions := container.CommonOptions{LogCommands: v >= 4}
+			b, err := container.NewBuilder(
 				ctx,
 				distro,
 				packageManager,
@@ -199,7 +199,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if len(spec.Copy) > 0 {
-				copyFilesOptions := builder.CopyFilesOptions{
+				copyFilesOptions := container.CopyFilesOptions{
 					UserName: spec.User.Name,
 				}
 				if err = b.CopyFiles(spec.Copy, copyFilesOptions); err != nil {
@@ -219,7 +219,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				spec.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
-			configureOptions := builder.ConfigureOptions{
+			configureOptions := container.ConfigureOptions{
 				Annotations: spec.Annotations,
 				Env:         spec.Env,
 				LoginShell:  spec.User.LoginShell,
@@ -229,7 +229,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			logger.Debugln("configured image")
 
 			logger.Debugln("committing image...")
-			commitOptions := builder.CommitOptions{
+			commitOptions := container.CommitOptions{
 				KeepHistory: spec.KeepHistory,
 				Latest:      cCtx.Bool("latest"),
 			}
@@ -281,10 +281,10 @@ func processPath(p string) (string, error) {
 // Decode the contents of the TOML file at `p` into a Turret build spec,
 // filling in the missing values, validating the spec, and optionally returning
 // an annotated string representation of the file's SHA256 digest.
-func createSpec(p string, hash bool) (builder.Spec, string, error) {
+func createSpec(p string, hash bool) (container.Spec, string, error) {
 	blob, err := os.ReadFile(p)
 	if err != nil {
-		return builder.Spec{}, "", fmt.Errorf("loading spec: %w", err)
+		return container.Spec{}, "", fmt.Errorf("loading spec: %w", err)
 	}
 
 	digest := ""
@@ -298,15 +298,15 @@ func createSpec(p string, hash bool) (builder.Spec, string, error) {
 	d := toml.NewDecoder(r)
 	d.DisallowUnknownFields()
 
-	s := builder.Spec{}
+	s := container.Spec{}
 	if err = d.Decode(&s); err != nil {
-		return builder.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
+		return container.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
 	}
 
 	s.Fill()
 
 	if err = s.Validate(); err != nil {
-		return builder.Spec{}, "", fmt.Errorf("validating spec: %w", err)
+		return container.Spec{}, "", fmt.Errorf("validating spec: %w", err)
 	}
 
 	return s, digest, nil

@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package builder
+package container
 
 import (
 	"bytes"
@@ -14,8 +14,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// TurretContainer represents a working container.
-type TurretContainer struct {
+// Container represents a working container.
+type Container struct {
 	// Pointer to the underlying Buildah builder instance
 	Builder *buildah.Builder
 
@@ -37,13 +37,13 @@ type CommonOptions struct {
 }
 
 // ContainerID returns the ID of the working container.
-func (c *TurretContainer) ContainerID() string {
+func (c *Container) ContainerID() string {
 	return buildah.GetBuildInfo(c.Builder).ContainerID
 }
 
 // defaultRunOptions instantiates a buildah.RunOptions from the container's
 // common execution options.
-func (c *TurretContainer) defaultRunOptions() buildah.RunOptions {
+func (c *Container) defaultRunOptions() buildah.RunOptions {
 	ro := buildah.RunOptions{
 		ConfigureNetwork: buildah.NetworkDisabled,
 		Quiet:            true,
@@ -61,21 +61,21 @@ func (c *TurretContainer) defaultRunOptions() buildah.RunOptions {
 	return ro
 }
 
-// Remove removes the working container and destroys this TurretContainer,
-// which should not be used afterwards.
-func (c *TurretContainer) Remove() error {
+// Remove removes the working container and destroys this Container, which
+// should not be used afterwards.
+func (c *Container) Remove() error {
 	err := c.Builder.Delete()
 	if err != nil {
 		return fmt.Errorf("deleting container: %w", err)
 	}
-	*c = TurretContainer{}
+	*c = Container{}
 	return nil
 }
 
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise, assuming `command` can
 // be resolved.
-func (c *TurretContainer) resolveExecutable(executable string) (string, error) {
+func (c *Container) resolveExecutable(executable string) (string, error) {
 	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
 
 	var buf bytes.Buffer
@@ -92,7 +92,7 @@ func (c *TurretContainer) resolveExecutable(executable string) (string, error) {
 // run runs a command in the working container, optionally sanitizing and
 // logging the process's standard output and error streams. When sanitizing, it
 // strips all ANSI escape codes as well as superfluous whitespace.
-func (c *TurretContainer) run(cmd []string, options buildah.RunOptions) error {
+func (c *Container) run(cmd []string, options buildah.RunOptions) error {
 	var stderrBuf bytes.Buffer
 	if options.Stderr == nil && c.CommonOptions.LogCommands {
 		options.Stderr = &stderrBuf
