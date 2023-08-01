@@ -54,19 +54,22 @@ type Spec struct {
 
 	// Security options for the working container
 	Security Security
+
+	// Choices of implementations of operations in the working container
+	Backends Backends
 }
 
 // Fill populates empty optional fields in the spec using information encoded
 // by required fields.
 func (s *Spec) Fill() {
-	if s.Packages.Manager.Manager == 0 {
-		s.Packages.Manager = pckg.ManagerWrapper{
+	if s.Backends.Package.Manager == 0 {
+		s.Backends.Package = pckg.ManagerWrapper{
 			Manager: s.Distro.DefaultPackageManager(),
 		}
 	}
 
-	if s.User.Manager.Manager == 0 {
-		s.User.Manager = usrgrp.ManagerWrapper{
+	if s.Backends.User.Manager == 0 {
+		s.Backends.User = usrgrp.ManagerWrapper{
 			Manager: s.Distro.DefaultUserManager(),
 		}
 	}
@@ -90,8 +93,12 @@ func (s *Spec) Validate() error {
 		return fmt.Errorf("missing distro")
 	}
 
-	if s.Packages.Manager.Manager == 0 {
+	if s.Backends.Package.Manager == 0 {
 		return fmt.Errorf("missing package manager")
+	}
+
+	if s.Backends.User.Manager == 0 {
+		return fmt.Errorf("missing user/group management utility")
 	}
 
 	if s.Repository == "" {
@@ -103,7 +110,7 @@ func (s *Spec) Validate() error {
 	}
 
 	if len(s.Packages.Install) > 0 {
-		re := regexp.MustCompile(s.Packages.Manager.RePackageName())
+		re := regexp.MustCompile(s.Backends.Package.RePackageName())
 		for _, p := range s.Packages.Install {
 			if !re.MatchString(p) {
 				return fmt.Errorf("invalid package name '%s'", p)
@@ -168,9 +175,6 @@ func (i BaseImage) Reference() string {
 
 // Packages contains instructions for the distro's canonical package manager.
 type Packages struct {
-	// Identity of the package manager in the working container
-	Manager pckg.ManagerWrapper
-
 	// Whether to upgrade pre-installed packages
 	Upgrade bool
 
@@ -205,9 +209,6 @@ type User struct {
 
 	// Login shell; must be a PATH-resolvable executable
 	LoginShell string `toml:"login-shell"`
-
-	// Choice of user-space utility for managing users and groups
-	Manager usrgrp.ManagerWrapper
 }
 
 // Security holds security-related options for the working container.
@@ -223,4 +224,15 @@ type SpecialFiles struct {
 
 	// Whether to preserve the SUID/SGID bit on one or more files
 	Excludes []string
+}
+
+// Backends holds the choices of implementations of operations in the working
+// container
+type Backends struct {
+	// Identity of the package manager in the working container
+	Package pckg.ManagerWrapper
+
+	// Identity of user-space utility for managing users and groups in the
+	// working container
+	User usrgrp.ManagerWrapper `toml:"user-group"`
 }

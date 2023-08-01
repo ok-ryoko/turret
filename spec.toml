@@ -51,12 +51,6 @@
 
 [packages]
 
-# manager is the package manager in the base image;
-# one of "apk", "apt", "dnf", "pacman", "xbps" and "zypper";
-# case-insensitive
-#
-#manager = ""
-
 # Whether to upgrade pre-installed packages
 #
 #upgrade = false
@@ -104,12 +98,6 @@
 #
 #login-shell = ""
 
-# The user and group management utility in the base image;
-# one of "busybox" and "shadow";
-# case-insensitive
-#
-#manager = ""
-
 [security.special-files]
 
 # Whether to automatically unset the special bit on any files in the working
@@ -123,3 +111,17 @@
 # file need not possess a special bit to be listed)
 #
 #excludes = []
+
+[backends]
+
+# The package manager in the base image;
+# one of "apk", "apt", "dnf", "pacman", "xbps" and "zypper";
+# case-insensitive
+#
+#package = ""
+
+# The user and group management utility in the base image;
+# one of "busybox" and "shadow";
+# case-insensitive
+#
+#user = ""

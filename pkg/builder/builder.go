@@ -16,6 +16,7 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/spec"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -96,18 +97,15 @@ type CommitOptions struct {
 }
 
 // Configure sets metadata and runtime parameters for the working container.
-func (b *Builder) Configure(user bool, options ConfigureOptions) {
+func (b *Builder) Configure(options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
-	if user {
-		ep := []string{"/bin/sh"}
-		if options.LoginShell != "" {
-			ep = append(ep, "-c")
-			b.Builder.SetCmd([]string{options.LoginShell})
+	if options.User != nil {
+		if options.User.LoginShell != "" {
+			b.Builder.SetCmd([]string{options.User.LoginShell})
 		}
-		b.Builder.SetEntrypoint(ep)
-		b.Builder.SetUser(options.UserName)
-		b.Builder.SetWorkDir(filepath.Join("/home", options.UserName))
+		b.Builder.SetUser(options.User.Name)
+		b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
 	}
 
 	for k, v := range options.Env {
@@ -122,8 +120,7 @@ func (b *Builder) Configure(user bool, options ConfigureOptions) {
 type ConfigureOptions struct {
 	Annotations map[string]string
 	Env         map[string]string
-	LoginShell  string
-	UserName    string
+	User        *spec.User
 }
 
 // CopyFiles copies one or more files from the end user's home directory to the

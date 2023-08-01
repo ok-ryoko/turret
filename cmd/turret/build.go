@@ -135,8 +135,8 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			distro := spec.Distro.Distro
-			packageManager := spec.Packages.Manager.Manager
-			userManager := spec.User.Manager.Manager
+			packageManager := spec.Backends.Package.Manager
+			userManager := spec.Backends.User.Manager
 			baseRef := spec.From.Reference()
 			commonOptions := container.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
@@ -224,10 +224,9 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			configureOptions := builder.ConfigureOptions{
 				Annotations: spec.Annotations,
 				Env:         spec.Env,
-				LoginShell:  spec.User.LoginShell,
-				UserName:    spec.User.Name,
+				User:        spec.User,
 			}
-			b.Configure(spec.User != nil, configureOptions)
+			b.Configure(configureOptions)
 			logger.Debugln("configured image")
 
 			logger.Debugln("committing image...")
