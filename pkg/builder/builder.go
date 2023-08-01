@@ -1,7 +1,7 @@
 // Copyright 2023 OK Ryoko
 // SPDX-License-Identifier: Apache-2.0
 
-package container
+package builder
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ok-ryoko/turret/pkg/container"
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
@@ -26,14 +27,14 @@ import (
 // Builder provides a high-level front end for Buildah for configuring and
 // building container images of diverse Linux-based distros.
 type Builder struct {
-	Container
+	container.Container
 
 	// Pointer to an object that manages packages in the working container
-	PackageManager PackageManagerInterface
+	PackageManager container.PackageManagerInterface
 
 	// Pointer to an object that manages users and groups in the working
 	// container
-	UserGroupManager UserGroupManagerInterface
+	UserGroupManager container.UserGroupManagerInterface
 }
 
 // CleanPackageCaches cleans the package caches in the working container.
@@ -176,7 +177,7 @@ func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) erro
 	}
 
 	if options.LoginShell != "" {
-		shell, err := b.resolveExecutable(options.LoginShell)
+		shell, err := b.ResolveExecutable(options.LoginShell)
 		if err != nil {
 			return fmt.Errorf("resolving shell: %w", err)
 		}
@@ -210,10 +211,10 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	}
 
 	var buf bytes.Buffer
-	fo := b.defaultRunOptions()
+	fo := b.DefaultRunOptions()
 	fo.Stdout = &buf
 
-	if err := b.run(findCmd, fo); err != nil {
+	if err := b.Run(findCmd, fo); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -242,9 +243,9 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	chmodCmd := []string{"chmod", "-s"}
 	chmodCmd = append(chmodCmd, targets...)
 
-	co := b.defaultRunOptions()
+	co := b.DefaultRunOptions()
 
-	if err := b.run(chmodCmd, co); err != nil {
+	if err := b.Run(chmodCmd, co); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 
@@ -261,7 +262,7 @@ func (b *Builder) UpgradePackages() error {
 
 // NewBuilder creates a new Builder for a given combination of a Linux-
 // based distro, package manager, and user/group management utility.
-func NewBuilder(
+func New(
 	ctx context.Context,
 	distro linux.Distro,
 	packageManager pckg.Manager,
@@ -270,7 +271,7 @@ func NewBuilder(
 	pull bool,
 	store storage.Store,
 	logger *logrus.Logger,
-	options CommonOptions,
+	options container.CommonOptions,
 ) (Builder, error) {
 	bo := buildah.BuilderOptions{
 		Capabilities: []string{},
@@ -291,17 +292,17 @@ func NewBuilder(
 	}
 	logger.Debugf("created working container from image '%s'", imageRef)
 
-	cntr := Container{
+	cntr := container.Container{
 		Builder: b,
 		Logger:  logger,
 	}
 
-	pm, err := NewPackageManager(packageManager)
+	pm, err := container.NewPackageManager(packageManager)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating package manager: %w", err)
 	}
 
-	um, err := NewUserGroupManager(userManager)
+	um, err := container.NewUserGroupManager(userManager)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating user and group manager: %w", err)
 	}

@@ -35,9 +35,9 @@ type PackageManager struct {
 // CleanCaches cleans the package caches in the working container.
 func (pm *PackageManager) CleanCaches(c *Container) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
-	ro := c.defaultRunOptions()
+	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := c.run(cmd, ro); err != nil {
+	if err := c.Run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"cleaning %s package cache: %w",
 			pm.PackageManager().String(),
@@ -50,10 +50,10 @@ func (pm *PackageManager) CleanCaches(c *Container) error {
 // Install installs one or more packages to the working container.
 func (pm *PackageManager) Install(c *Container, packages []string) error {
 	cmd, capabilities := pm.NewInstallCmd(packages)
-	ro := c.defaultRunOptions()
+	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.run(cmd, ro); err != nil {
+	if err := c.Run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"installing %s packages: %w",
 			pm.PackageManager().String(),
@@ -66,9 +66,9 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 // List lists the packages installed in the working container.
 func (pm *PackageManager) List(c *Container) error {
 	cmd, capabilities := pm.NewListInstalledPackagesCmd()
-	ro := c.defaultRunOptions()
+	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := c.run(cmd, ro); err != nil {
+	if err := c.Run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"listing installed %s packages: %w",
 			pm.PackageManager().String(),
@@ -81,10 +81,10 @@ func (pm *PackageManager) List(c *Container) error {
 // Upgrade upgrades the packages in the working container.
 func (pm *PackageManager) Upgrade(c *Container) error {
 	cmd, capabilities := pm.NewUpgradeCmd()
-	ro := c.defaultRunOptions()
+	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.run(cmd, ro); err != nil {
+	if err := c.Run(cmd, ro); err != nil {
 		return fmt.Errorf(
 			"upgrading pre-installed %s packages: %w",
 			pm.PackageManager().String(),

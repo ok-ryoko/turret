@@ -43,7 +43,7 @@ func (c *Container) ContainerID() string {
 
 // defaultRunOptions instantiates a buildah.RunOptions from the container's
 // common execution options.
-func (c *Container) defaultRunOptions() buildah.RunOptions {
+func (c *Container) DefaultRunOptions() buildah.RunOptions {
 	ro := buildah.RunOptions{
 		ConfigureNetwork: buildah.NetworkDisabled,
 		Quiet:            true,
@@ -75,14 +75,14 @@ func (c *Container) Remove() error {
 // resolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise, assuming `command` can
 // be resolved.
-func (c *Container) resolveExecutable(executable string) (string, error) {
+func (c *Container) ResolveExecutable(executable string) (string, error) {
 	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
 
 	var buf bytes.Buffer
-	ro := c.defaultRunOptions()
+	ro := c.DefaultRunOptions()
 	ro.Stdout = &buf
 
-	if err := c.run(cmd, ro); err != nil {
+	if err := c.Run(cmd, ro); err != nil {
 		return "", fmt.Errorf("running default shell or resolving executable '%s'", executable)
 	}
 
@@ -92,7 +92,7 @@ func (c *Container) resolveExecutable(executable string) (string, error) {
 // run runs a command in the working container, optionally sanitizing and
 // logging the process's standard output and error streams. When sanitizing, it
 // strips all ANSI escape codes as well as superfluous whitespace.
-func (c *Container) run(cmd []string, options buildah.RunOptions) error {
+func (c *Container) Run(cmd []string, options buildah.RunOptions) error {
 	var stderrBuf bytes.Buffer
 	if options.Stderr == nil && c.CommonOptions.LogCommands {
 		options.Stderr = &stderrBuf

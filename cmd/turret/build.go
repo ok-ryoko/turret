@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ok-ryoko/turret/pkg/builder"
 	"github.com/ok-ryoko/turret/pkg/container"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 
@@ -137,7 +138,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			userManager := spec.User.Manager.Manager
 			baseRef := spec.From.Reference()
 			commonOptions := container.CommonOptions{LogCommands: v >= 4}
-			b, err := container.NewBuilder(
+			b, err := builder.New(
 				ctx,
 				distro,
 				packageManager,
@@ -199,7 +200,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if len(spec.Copy) > 0 {
-				copyFilesOptions := container.CopyFilesOptions{
+				copyFilesOptions := builder.CopyFilesOptions{
 					UserName: spec.User.Name,
 				}
 				if err = b.CopyFiles(spec.Copy, copyFilesOptions); err != nil {
@@ -219,7 +220,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				spec.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
-			configureOptions := container.ConfigureOptions{
+			configureOptions := builder.ConfigureOptions{
 				Annotations: spec.Annotations,
 				Env:         spec.Env,
 				LoginShell:  spec.User.LoginShell,
@@ -229,7 +230,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			logger.Debugln("configured image")
 
 			logger.Debugln("committing image...")
-			commitOptions := container.CommitOptions{
+			commitOptions := builder.CommitOptions{
 				KeepHistory: spec.KeepHistory,
 				Latest:      cCtx.Bool("latest"),
 			}
