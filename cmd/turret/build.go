@@ -15,6 +15,7 @@ import (
 	"github.com/ok-ryoko/turret/pkg/builder"
 	"github.com/ok-ryoko/turret/pkg/container"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/spec"
 
 	"github.com/containers/storage"
 	"github.com/containers/storage/pkg/unshare"
@@ -282,10 +283,10 @@ func processPath(p string) (string, error) {
 // Decode the contents of the TOML file at `p` into a Turret build spec,
 // filling in the missing values, validating the spec, and optionally returning
 // an annotated string representation of the file's SHA256 digest.
-func createSpec(p string, hash bool) (container.Spec, string, error) {
+func createSpec(p string, hash bool) (spec.Spec, string, error) {
 	blob, err := os.ReadFile(p)
 	if err != nil {
-		return container.Spec{}, "", fmt.Errorf("loading spec: %w", err)
+		return spec.Spec{}, "", fmt.Errorf("loading spec: %w", err)
 	}
 
 	digest := ""
@@ -299,15 +300,15 @@ func createSpec(p string, hash bool) (container.Spec, string, error) {
 	d := toml.NewDecoder(r)
 	d.DisallowUnknownFields()
 
-	s := container.Spec{}
+	s := spec.Spec{}
 	if err = d.Decode(&s); err != nil {
-		return container.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
+		return spec.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
 	}
 
 	s.Fill()
 
 	if err = s.Validate(); err != nil {
-		return container.Spec{}, "", fmt.Errorf("validating spec: %w", err)
+		return spec.Spec{}, "", fmt.Errorf("validating spec: %w", err)
 	}
 
 	return s, digest, nil
