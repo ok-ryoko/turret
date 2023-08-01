@@ -234,5 +234,5 @@ type Backends struct {
 
 	// Identity of user-space utility for managing users and groups in the
 	// working container
-	User usrgrp.ManagerWrapper `toml:"user-group"`
+	User usrgrp.ManagerWrapper
 }
