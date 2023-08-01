@@ -14,8 +14,8 @@ func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserO
 		cmd = append(cmd, "-u", fmt.Sprintf("%d", options.ID))
 	}
 
-	if options.Comment != "" {
-		cmd = append(cmd, "-g", options.Comment)
+	if options.Comment != nil {
+		cmd = append(cmd, "-g", *options.Comment)
 	}
 
 	if options.LoginShell != "" {

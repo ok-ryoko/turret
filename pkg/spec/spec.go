@@ -205,7 +205,7 @@ type User struct {
 	Groups []string
 
 	// GECOS field text commonly used to store a full display name
-	Comment string
+	Comment *string
 
 	// Login shell; must be a PATH-resolvable executable
 	LoginShell string `toml:"login-shell"`

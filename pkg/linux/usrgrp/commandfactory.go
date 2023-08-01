@@ -38,7 +38,7 @@ func NewCommandFactory(m Manager) (CommandFactory, error) {
 
 type CreateUserOptions struct {
 	ID         uint
-	Comment    string
+	Comment    *string
 	LoginShell string
 	UserGroup  bool
 	Groups     []string
