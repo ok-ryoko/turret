@@ -6,13 +6,13 @@ package pckg
 type ZypperCommandFactory struct{}
 
 func (c ZypperCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
-	cmd = []string{"zypper", "--non-interactive", "clean", "--all"}
+	cmd = []string{"zypper", "--non-interactive", "--quiet", "clean", "--all"}
 	capabilities = []string{}
 	return
 }
 
 func (c ZypperCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
-	cmd = []string{"zypper", "--non-interactive", "install", "--no-recommends"}
+	cmd = []string{"zypper", "--non-interactive", "--quiet", "install", "--no-recommends"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{}
 	return
@@ -29,7 +29,7 @@ func (c ZypperCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 }
 
 func (c ZypperCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
-	cmd = []string{"zypper", "--non-interactive", "patch"}
+	cmd = []string{"zypper", "--non-interactive", "--quiet", "patch"}
 	capabilities = []string{}
 	return
 }

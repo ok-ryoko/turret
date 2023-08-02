@@ -6,13 +6,13 @@ package pckg
 type DNFCommandFactory struct{}
 
 func (c DNFCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
-	cmd = []string{"dnf", "clean", "all"}
+	cmd = []string{"dnf", "--quiet", "clean", "all"}
 	capabilities = []string{}
 	return
 }
 
 func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
-	cmd = []string{"dnf", "--assumeyes", "--setopt=install_weak_deps=False", "install"}
+	cmd = []string{"dnf", "--assumeyes", "--quiet", "--setopt=install_weak_deps=False", "install"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -33,7 +33,7 @@ func (c DNFCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 }
 
 func (c DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
-	cmd = []string{"dnf", "--assumeyes", "--refresh", "upgrade"}
+	cmd = []string{"dnf", "--assumeyes", "--quiet", "--refresh", "upgrade"}
 	capabilities = []string{
 		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",

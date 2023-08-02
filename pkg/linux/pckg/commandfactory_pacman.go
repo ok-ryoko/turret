@@ -6,13 +6,13 @@ package pckg
 type PacmanCommandFactory struct{}
 
 func (c PacmanCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
-	cmd = []string{"pacman", "--sync", "--clean", "--clean", "--noconfirm"}
+	cmd = []string{"pacman", "--sync", "--clean", "--clean", "--noconfirm", "--quiet"}
 	capabilities = []string{}
 	return
 }
 
 func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
-	cmd = []string{"pacman", "--sync", "--noconfirm", "--noprogressbar"}
+	cmd = []string{"pacman", "--sync", "--noconfirm", "--noprogressbar", "--quiet"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -34,7 +34,7 @@ func (c PacmanCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 }
 
 func (c PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
-	cmd = []string{"pacman", "--sync", "--sysupgrade", "--refresh", "--noconfirm", "--noprogressbar"}
+	cmd = []string{"pacman", "--sync", "--sysupgrade", "--refresh", "--noconfirm", "--noprogressbar", "--quiet"}
 	capabilities = []string{
 		"CAP_CHOWN",
 		"CAP_DAC_OVERRIDE",

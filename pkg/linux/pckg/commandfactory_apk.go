@@ -10,7 +10,7 @@ func (c APKCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 }
 
 func (c APKCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
-	cmd = []string{"apk", "--no-cache", "--no-progress", "add"}
+	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "add"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{}
 	return
@@ -27,7 +27,7 @@ func (c APKCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 }
 
 func (c APKCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
-	cmd = []string{"apk", "--no-cache", "--no-progress", "upgrade"}
+	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "upgrade"}
 	capabilities = []string{}
 	return
 }
