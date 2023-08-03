@@ -15,26 +15,22 @@ type BusyBoxUserGroupManager struct {
 
 // CreateUser creates the sole unprivileged user of the working container.
 func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options usrgrp.CreateUserOptions) error {
+	umDisplay := um.UserManager().String()
+
 	cmd, capabilities := um.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"creating user using %s: %w",
-			um.UserManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("creating user using %s", umDisplay)
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 
 	if options.UserGroup {
 		cmd, _ = um.NewAddUserToGroupCmd(name, name)
 		ro = c.DefaultRunOptions()
-		if err := c.Run(cmd, ro); err != nil {
-			return fmt.Errorf(
-				"adding user to group using %s: %w",
-				um.UserManager().String(),
-				err,
-			)
+		errMsg = fmt.Sprintf("adding user to group using %s", umDisplay)
+		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+			return fmt.Errorf("%w", err)
 		}
 	}
 
@@ -42,12 +38,9 @@ func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options
 		for _, g := range options.Groups {
 			cmd, _ = um.NewAddUserToGroupCmd(name, g)
 			ro = c.DefaultRunOptions()
-			if err := c.Run(cmd, ro); err != nil {
-				return fmt.Errorf(
-					"adding user to group using %s: %w",
-					um.UserManager().String(),
-					err,
-				)
+			errMsg = fmt.Sprintf("adding user to group using %s", umDisplay)
+			if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+				return fmt.Errorf("%w", err)
 			}
 		}
 	}

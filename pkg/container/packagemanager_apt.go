@@ -14,55 +14,57 @@ type APTPackageManager struct {
 }
 
 func (pm *APTPackageManager) Install(c *Container, packages []string) error {
-	cmd, capabilities := pm.NewUpdateIndexCmd()
-	ro := c.DefaultRunOptions()
-	ro.AddCapabilities = capabilities
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"updating %s package index: %w",
-			pm.PackageManager.PackageManager().String(),
-			err,
-		)
+	pmDisplay := pm.PackageManager.PackageManager().String()
+
+	{
+		cmd, capabilities := pm.NewUpdateIndexCmd()
+		ro := c.DefaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		errMsg := fmt.Sprintf("updating %s package index", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
 
-	cmd, capabilities = pm.NewInstallCmd(packages)
-	ro = c.DefaultRunOptions()
-	ro.AddCapabilities = capabilities
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"installing %s packages: %w",
-			pm.PackageManager.PackageManager().String(),
-			err,
-		)
+	{
+		cmd, capabilities := pm.NewInstallCmd(packages)
+		ro := c.DefaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		errMsg := fmt.Sprintf("installing %s packages", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
+
 	return nil
 }
 
 func (pm *APTPackageManager) Upgrade(c *Container) error {
-	cmd, capabilities := pm.NewUpdateIndexCmd()
-	ro := c.DefaultRunOptions()
-	ro.AddCapabilities = capabilities
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"updating %s package index: %w",
-			pm.PackageManager.PackageManager().String(),
-			err,
-		)
+	pmDisplay := pm.PackageManager.PackageManager().String()
+
+	{
+		cmd, capabilities := pm.NewUpdateIndexCmd()
+		ro := c.DefaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		errMsg := fmt.Sprintf("updating %s package index", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
 
-	cmd, capabilities = pm.NewUpgradeCmd()
-	ro = c.DefaultRunOptions()
-	ro.AddCapabilities = capabilities
-	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"upgrading pre-installed %s packages: %w",
-			pm.PackageManager.PackageManager().String(),
-			err,
-		)
+	{
+		cmd, capabilities := pm.NewUpgradeCmd()
+		ro := c.DefaultRunOptions()
+		ro.AddCapabilities = capabilities
+		ro.ConfigureNetwork = buildah.NetworkEnabled
+		errMsg := fmt.Sprintf("upgrading pre-installed %s packages", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+			return fmt.Errorf("%w", err)
+		}
 	}
+
 	return nil
 }

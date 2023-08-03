@@ -4,7 +4,6 @@
 package builder
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -200,22 +199,27 @@ func (b *Builder) InstallPackages(packages []string) error {
 // assuming the availability of the chmod(1) and find(1) core utilities and
 // searching only real file systems, excluding the /home directory.
 func (b *Builder) UnsetSpecialBits(excludes []string) error {
-	findCmd := []string{
-		"find", "/",
-		"-xdev",
-		"!", "(", "-wholename", "/home", "-prune", ")",
-		"-perm", "/u=s,g=s",
+	var targets []string
+
+	{
+		cmd := []string{
+			"find", "/",
+			"-xdev",
+			"!", "(", "-wholename", "/home", "-prune", ")",
+			"-perm", "/u=s,g=s",
+		}
+		ro := b.DefaultRunOptions()
+		textOut, textErr, err := b.Run(cmd, ro)
+		if err != nil {
+			errMsg := "searching for special files"
+			if textErr != "" {
+				errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
+			}
+			return fmt.Errorf("%s: %w", errMsg, err)
+		}
+		targets = strings.Split(strings.TrimSpace(textOut), "\n")
 	}
 
-	var buf bytes.Buffer
-	fo := b.DefaultRunOptions()
-	fo.Stdout = &buf
-
-	if err := b.Run(findCmd, fo); err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	targets := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	for i, t := range targets {
 		targets[i] = strings.TrimSpace(t)
 	}
@@ -237,13 +241,17 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 		targets = filteredTargets
 	}
 
-	chmodCmd := []string{"chmod", "-s"}
-	chmodCmd = append(chmodCmd, targets...)
-
-	co := b.DefaultRunOptions()
-
-	if err := b.Run(chmodCmd, co); err != nil {
-		return fmt.Errorf("%w", err)
+	{
+		cmd := append([]string{"chmod", "-s"}, targets...)
+		ro := b.DefaultRunOptions()
+		_, textErr, err := b.Run(cmd, ro)
+		if err != nil {
+			errMsg := "unsetting special bit"
+			if textErr != "" {
+				errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
+			}
+			return fmt.Errorf("%s: %w", errMsg, err)
+		}
 	}
 
 	return nil

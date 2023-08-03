@@ -37,12 +37,9 @@ func (pm *PackageManager) CleanCaches(c *Container) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"cleaning %s package cache: %w",
-			pm.PackageManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("cleaning %s package caches", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
@@ -53,12 +50,9 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"installing %s packages: %w",
-			pm.PackageManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("installing %s packages", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
@@ -68,12 +62,9 @@ func (pm *PackageManager) List(c *Container) error {
 	cmd, capabilities := pm.NewListInstalledPackagesCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"listing installed %s packages: %w",
-			pm.PackageManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("listing installed %s packages", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
@@ -84,12 +75,9 @@ func (pm *PackageManager) Upgrade(c *Container) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"upgrading pre-installed %s packages: %w",
-			pm.PackageManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 	return nil
 }

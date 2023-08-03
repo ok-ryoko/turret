@@ -6,9 +6,7 @@ package container
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"strings"
-	"unicode"
 
 	"github.com/containers/buildah"
 	"github.com/sirupsen/logrus"
@@ -77,78 +75,58 @@ func (c *Container) Remove() error {
 // be resolved.
 func (c *Container) ResolveExecutable(executable string) (string, error) {
 	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
-
-	var buf bytes.Buffer
 	ro := c.DefaultRunOptions()
-	ro.Stdout = &buf
-
-	if err := c.Run(cmd, ro); err != nil {
-		return "", fmt.Errorf("running default shell or resolving executable '%s'", executable)
+	resolved, _, err := c.Run(cmd, ro)
+	if err != nil {
+		return "", fmt.Errorf("resolving executable %s: %w", executable, err)
 	}
-
-	return strings.TrimSpace(buf.String()), nil
+	return strings.TrimSpace(resolved), nil
 }
 
-// run runs a command in the working container, optionally sanitizing and
-// logging the process's standard output and error streams. When sanitizing, it
-// strips all ANSI escape codes as well as superfluous whitespace.
-func (c *Container) Run(cmd []string, options buildah.RunOptions) error {
-	var stderrBuf bytes.Buffer
-	if options.Stderr == nil && c.CommonOptions.LogCommands {
-		options.Stderr = &stderrBuf
+// Run executes a command in the working container, capturing standard output
+// and standard error streams as UTF-8-encoded strings.
+func (c *Container) Run(cmd []string, options buildah.RunOptions) (string, string, error) {
+	var (
+		stdoutBuf bytes.Buffer
+		stderrBuf bytes.Buffer
+	)
+
+	options.Stdout = &stdoutBuf
+	options.Stderr = &stderrBuf
+	err := c.Builder.Run(cmd, options)
+
+	textOut := stdoutBuf.String()
+	if textOut == "<nil>" {
+		textOut = ""
 	}
 
-	var stdoutBuf bytes.Buffer
-	if options.Stdout == nil && c.CommonOptions.LogCommands {
-		options.Stdout = &stdoutBuf
+	textErr := stderrBuf.String()
+	if textErr == "<nil>" {
+		textErr = ""
 	}
 
-	defer func() {
-		if c.CommonOptions.LogCommands {
-			reEscape := regexp.MustCompile(`((\\x1b|\\u001b)\[[0-9;]*[A-Za-z]?)+`)
-			reWhitespace := regexp.MustCompile(`[[:space:]]+`)
+	if err != nil {
+		return textOut, textErr, fmt.Errorf("%w", err)
+	}
+	return textOut, textErr, nil
+}
 
-			if stderrBuf.Len() > 0 {
-				lines := stderrBuf.String()
-				for _, l := range strings.Split(lines, "\n") {
-					l = strings.Map(func(r rune) rune {
-						if unicode.IsGraphic(r) {
-							return r
-						}
-						return -1
-					}, l)
-					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
-					if l == "" {
-						continue
-					}
-					l = reEscape.ReplaceAllLiteralString(l, "")
-					c.Logger.Debugf("%s: stderr: %s", cmd[0], l)
-				}
-			}
-
-			if stdoutBuf.Len() > 0 {
-				lines := stdoutBuf.String()
-				for _, l := range strings.Split(lines, "\n") {
-					l = strings.Map(func(r rune) rune {
-						if unicode.IsGraphic(r) {
-							return r
-						}
-						return -1
-					}, l)
-					l = reWhitespace.ReplaceAllLiteralString(strings.TrimSpace(l), " ")
-					if l == "" {
-						continue
-					}
-					l = reEscape.ReplaceAllLiteralString(l, "")
-					c.Logger.Debugf("%s: stdout: %s", cmd[0], l)
-				}
-			}
+// runWithLogging wraps Run, logging standard output and standard error.
+func (c *Container) runWithLogging(cmd []string, options buildah.RunOptions, errMsg string) error {
+	textOut, textErr, err := c.Run(cmd, options)
+	if err != nil {
+		if textErr != "" {
+			errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
 		}
-	}()
-
-	if err := c.Builder.Run(cmd, options); err != nil {
-		return fmt.Errorf("%w", err)
+		return fmt.Errorf("%s: %w", errMsg, err)
 	}
-
+	if textErr != "" {
+		c.Logger.Warn(textErr)
+	}
+	if c.CommonOptions.LogCommands {
+		if textOut != "" {
+			c.Logger.Debug(textOut)
+		}
+	}
 	return nil
 }

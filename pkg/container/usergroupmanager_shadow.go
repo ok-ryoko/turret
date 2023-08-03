@@ -39,12 +39,9 @@ func (um *ShadowUserGroupManager) CreateUser(c *Container, name string, options 
 		)
 	}
 
-	if err := c.Run(cmd, ro); err != nil {
-		return fmt.Errorf(
-			"creating user using %s: %w",
-			um.UserManager().String(),
-			err,
-		)
+	errMsg := fmt.Sprintf("creating user using %s", um.UserManager().String())
+	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil
