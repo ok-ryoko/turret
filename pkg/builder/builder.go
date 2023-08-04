@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/ok-ryoko/turret/pkg/container"
 	"github.com/ok-ryoko/turret/pkg/linux"
+	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 	"github.com/ok-ryoko/turret/pkg/spec"
@@ -35,6 +37,9 @@ type Builder struct {
 	// Pointer to an object that manages users and groups in the working
 	// container
 	UserGroupManager container.UserGroupManagerInterface
+
+	// Object that creates commands for locating files in the working container
+	FinderCommandFactory find.CommandFactory
 }
 
 // CleanPackageCaches cleans the package caches in the working container.
@@ -195,20 +200,19 @@ func (b *Builder) InstallPackages(packages []string) error {
 	return nil
 }
 
-// UnsetSpecialBits removes the SUID/SGID bit from files in the working container,
-// assuming the availability of the chmod(1) and find(1) core utilities and
-// searching only real file systems, excluding the /home directory.
+// UnsetSpecialBits removes the SUID/SGID bit from files in the working
+// container, assuming the availability of the chmod and find core
+// utilities and searching only real (non-device) file systems.
+//
+// `excludes` is a slice of absolute paths to real files in the working
+// container for which to keep the SUID/SGID bit.
 func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	var targets []string
 
 	{
-		cmd := []string{
-			"find", "/",
-			"-xdev",
-			"!", "(", "-wholename", "/home", "-prune", ")",
-			"-perm", "/u=s,g=s",
-		}
+		cmd, capabilities := b.FinderCommandFactory.NewFindSpecialCmd()
 		ro := b.DefaultRunOptions()
+		ro.AddCapabilities = capabilities
 		textOut, textErr, err := b.Run(cmd, ro)
 		if err != nil {
 			errMsg := "searching for special files"
@@ -217,11 +221,10 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 			}
 			return fmt.Errorf("%s: %w", errMsg, err)
 		}
-		targets = strings.Split(strings.TrimSpace(textOut), "\n")
-	}
-
-	for i, t := range targets {
-		targets[i] = strings.TrimSpace(t)
+		if len(textOut) > 0 {
+			reNewline := regexp.MustCompile(`\r?\n`)
+			targets = reNewline.Split(strings.TrimSpace(textOut), -1)
+		}
 	}
 
 	if len(excludes) > 0 {
@@ -232,18 +235,26 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 
 		var filteredTargets []string
 		for _, t := range targets {
-			if _, ok := excludeSet[t]; ok {
-				continue
+			if _, ok := excludeSet[t]; !ok {
+				filteredTargets = append(filteredTargets, t)
 			}
-			filteredTargets = append(filteredTargets, t)
 		}
 
 		targets = filteredTargets
 	}
 
-	{
+	if len(targets) > 0 {
 		cmd := append([]string{"chmod", "-s"}, targets...)
+
+		// CAP_FSETID is a member of the chmod effective capability set but is
+		// neither sufficient nor necessary for this operation
+		//
 		ro := b.DefaultRunOptions()
+		ro.AddCapabilities = []string{
+			"CAP_DAC_READ_SEARCH",
+			"CAP_FOWNER",
+		}
+
 		_, textErr, err := b.Run(cmd, ro)
 		if err != nil {
 			errMsg := "unsetting special bit"
@@ -272,6 +283,7 @@ func New(
 	distro linux.Distro,
 	packageManager pckg.Manager,
 	userManager usrgrp.Manager,
+	finder find.Finder,
 	imageRef string,
 	pull bool,
 	store storage.Store,
@@ -312,14 +324,20 @@ func New(
 		return Builder{}, fmt.Errorf("creating user and group manager: %w", err)
 	}
 
+	f, err := find.NewCommandFactory(finder)
+	if err != nil {
+		return Builder{}, fmt.Errorf("creating finder: %w", err)
+	}
+
 	if distro == linux.Debian {
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 	}
 	cntr.CommonOptions = options
 
 	return Builder{
-		Container:        cntr,
-		PackageManager:   pm,
-		UserGroupManager: um,
+		Container:            cntr,
+		PackageManager:       pm,
+		UserGroupManager:     um,
+		FinderCommandFactory: f,
 	}, nil
 }

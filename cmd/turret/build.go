@@ -137,6 +137,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			distro := spec.Distro.Distro
 			packageManager := spec.Backends.Package.Manager
 			userManager := spec.Backends.User.Manager
+			finder := spec.Backends.Finder.Finder
 			baseRef := spec.From.Reference()
 			commonOptions := container.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
@@ -144,6 +145,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				distro,
 				packageManager,
 				userManager,
+				finder,
 				baseRef,
 				cCtx.Bool("pull"),
 				store,

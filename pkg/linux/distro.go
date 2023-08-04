@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
@@ -78,6 +79,23 @@ func (d Distro) DefaultUserManager() usrgrp.Manager {
 		um = 0
 	}
 	return um
+}
+
+// DefaultFinder returns the canonical implementation of the find utility for
+// the distro.
+func (d Distro) DefaultFinder() find.Finder {
+	var f find.Finder
+	switch d {
+	case Alpine:
+		f = find.BusyBox
+	case Chimera:
+		f = find.BSD
+	case Arch, Debian, Fedora, OpenSUSE, Void:
+		f = find.GNU
+	default:
+		f = 0
+	}
+	return f
 }
 
 // String returns a string containing the stylized name of the distro.

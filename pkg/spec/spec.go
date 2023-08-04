@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
+	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
@@ -74,6 +75,12 @@ func (s *Spec) Fill() {
 		}
 	}
 
+	if s.Backends.Finder.Finder == 0 {
+		s.Backends.Finder = find.FinderWrapper{
+			Finder: s.Distro.DefaultFinder(),
+		}
+	}
+
 	if s.Annotations == nil {
 		s.Annotations = map[string]string{}
 	}
@@ -99,6 +106,10 @@ func (s *Spec) Validate() error {
 
 	if s.Backends.User.Manager == 0 {
 		return fmt.Errorf("missing user/group management utility")
+	}
+
+	if s.Backends.Finder.Finder == 0 {
+		return fmt.Errorf("missing find implementation")
 	}
 
 	if s.Repository == "" {
@@ -235,4 +246,8 @@ type Backends struct {
 	// Identity of user-space utility for managing users and groups in the
 	// working container
 	User usrgrp.ManagerWrapper
+
+	// Identity of the implementation of the find utility in the working
+	// container
+	Finder find.FinderWrapper
 }
