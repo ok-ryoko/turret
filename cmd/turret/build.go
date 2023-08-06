@@ -203,11 +203,16 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if len(spec.Copy) > 0 {
-				copyFilesOptions := builder.CopyFilesOptions{
-					UserName: spec.User.Name,
-				}
-				if err = b.CopyFiles(spec.Copy, copyFilesOptions); err != nil {
-					return fmt.Errorf("copying some files from the home directory: %w", err)
+				for _, c := range spec.Copy {
+					copyFilesOptions := builder.CopyFilesOptions{
+						Excludes: c.Excludes,
+						Mode:     c.Mode,
+						Owner:    c.Owner,
+						RemoveS:  c.RemoveS,
+					}
+					if err = b.CopyFiles(c.Base, c.Destination, c.Sources, copyFilesOptions); err != nil {
+						return fmt.Errorf("copying files to container: %w", err)
+					}
 				}
 				logger.Debugln("file copy step succeeded")
 			}
@@ -281,10 +286,15 @@ func processPath(p string) (string, error) {
 	return p, nil
 }
 
-// Decode the contents of the TOML file at `p` into a Turret build spec,
-// filling in the missing values, validating the spec, and optionally returning
-// an annotated string representation of the file's SHA256 digest.
+// createSpec decodes the contents of the TOML file at the absolute path `p`
+// into a build spec, filling in missing values, validating the result, and
+// optionally returning an annotated string representation of the file's SHA256
+// digest.
 func createSpec(p string, hash bool) (spec.Spec, string, error) {
+	if !filepath.IsAbs(p) {
+		return spec.Spec{}, "", fmt.Errorf("expected absolute path, got %q", p)
+	}
+
 	blob, err := os.ReadFile(p)
 	if err != nil {
 		return spec.Spec{}, "", fmt.Errorf("loading spec: %w", err)
@@ -307,6 +317,20 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 	}
 
 	s.Fill()
+
+	if len(s.Copy) > 0 {
+		parent := filepath.Dir(p)
+		for i, c := range s.Copy {
+			if c.Base == "" {
+				s.Copy[i].Base = parent
+			} else if filepath.IsLocal(c.Base) {
+				s.Copy[i].Base, err = filepath.Abs(filepath.Join(parent, c.Base))
+				if err != nil {
+					return spec.Spec{}, "", fmt.Errorf("canonicalizing base path %q", c.Base)
+				}
+			}
+		}
+	}
 
 	if err = s.Validate(); err != nil {
 		return spec.Spec{}, "", fmt.Errorf("validating spec: %w", err)

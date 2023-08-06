@@ -6,7 +6,6 @@ package builder
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -127,43 +126,85 @@ type ConfigureOptions struct {
 	User        *spec.User
 }
 
-// CopyFiles copies one or more files from the end user's home directory to the
-// working container's file system, assuming `destSourcesMap` is a nonempty map
-// of destinations in the working container to sources on the host. Sources are
-// resolved with respect to the end user's home directory on the host;
-// destinations are absolute paths in the working container's filesystem.
-func (b *Builder) CopyFiles(destSourcesMap map[string][]string, options CopyFilesOptions) error {
-	if len(destSourcesMap) == 0 {
-		return nil
+// CopyFiles copies one or more files on the host's file system to the working
+// container's file system.
+//
+// `base` is an absolute path to a directory on the host's file system against
+// which relative paths in `srcs` should be resolved.
+//
+// `dest` is an absolute path to a destination on the working container's file
+// system. If the destination ends with a path separator, then it's assumed to
+// be a directory.
+//
+// `srcs` is a slice of relative or absolute paths to items on the host's file
+// system. Relative paths are resolved with respect to `base`.
+//
+// If there is only one source item and the destination does not end with a
+// path separator, then copy the item to the parent directory in the
+// destination, renaming the item to match the destination as needed.
+func (b *Builder) CopyFiles(base string, dest string, srcs []string, options CopyFilesOptions) error {
+	if !filepath.IsAbs(base) {
+		return fmt.Errorf("base path is not an absolute path")
 	}
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("getting current user's home directory: %w", err)
+	if !filepath.IsAbs(dest) {
+		return fmt.Errorf("destination path is not an absolute path")
 	}
 
-	for dest, srcs := range destSourcesMap {
-		for i, s := range srcs {
-			srcs[i] = fmt.Sprintf("!%s", s)
-		}
-		excludes := append([]string{"*"}, srcs...)
-		ao := buildah.AddAndCopyOptions{
-			Chown:          options.UserName,
-			ContextDir:     home,
-			Excludes:       excludes,
-			StripSetgidBit: true,
-			StripSetuidBit: true,
-		}
-		if err := b.Builder.Add(dest, false, ao, home); err != nil {
-			return fmt.Errorf("%w", err)
-		}
+	if len(srcs) == 0 {
+		return fmt.Errorf("no source items to copy")
+	}
+
+	patterns := make([]string, len(srcs))
+	for i, s := range srcs {
+		patterns[i] = fmt.Sprintf("!%s", s)
+	}
+	excludes := append([]string{"*"}, patterns...)
+	if len(options.Excludes) > 0 {
+		excludes = append(excludes, options.Excludes...)
+	}
+
+	aco := buildah.AddAndCopyOptions{
+		ContextDir: base,
+		Excludes:   excludes,
+	}
+
+	if options.Owner != "" {
+		aco.Chown = options.Owner
+	}
+
+	if options.Mode != 0 {
+		aco.Chmod = fmt.Sprint(options.Mode)
+	}
+
+	if options.RemoveS {
+		aco.StripSetuidBit = true
+		aco.StripSetgidBit = true
+	}
+
+	if err := b.Builder.Add(dest, false, aco, base); err != nil {
+		return fmt.Errorf("copying files to %q: %w", dest, err)
 	}
 
 	return nil
 }
 
+// CopyFilesOptions holds options for copying files from the host's file system
+// to the working container's file system.
 type CopyFilesOptions struct {
-	UserName string
+	// Source files in the base directory to exclude from the copy operation;
+	// may contain gitignore-style glob patterns
+	Excludes []string
+
+	// Set the mode of the copied files to this integer
+	Mode uint32
+
+	// Transfer ownership of the copied files to this user
+	Owner string
+
+	// Remove all SUID and SGID bits from the files copied to the working
+	// container
+	RemoveS bool
 }
 
 // CreateUser creates the sole unprivileged user of the working container,

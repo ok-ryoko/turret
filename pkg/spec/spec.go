@@ -5,6 +5,7 @@ package spec
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
@@ -39,9 +40,9 @@ type Spec struct {
 	// Sole unprivileged user in the working container
 	User *User
 
-	// Map of destination paths in the working container's file system to
-	// sources in the end user's home directory
-	Copy map[string][]string
+	// Instructions and options for copying one or more files from the host's
+	// file system to the working container's file system
+	Copy []Copy
 
 	// Map of environment variables to set or update in the working container
 	Env map[string]string
@@ -83,10 +84,6 @@ func (s *Spec) Fill() {
 
 	if s.Annotations == nil {
 		s.Annotations = map[string]string{}
-	}
-
-	if s.Copy == nil {
-		s.Copy = map[string][]string{}
 	}
 
 	if s.Env == nil {
@@ -160,6 +157,37 @@ func (s *Spec) Validate() error {
 		}
 	}
 
+	if len(s.Copy) > 0 {
+		for i, c := range s.Copy {
+			if c.Base == "" {
+				return fmt.Errorf("missing base")
+			}
+			if !filepath.IsAbs(c.Base) {
+				return fmt.Errorf("base is not an absolute path")
+			}
+			s.Copy[i].Base = filepath.Clean(c.Base)
+
+			if c.Destination == "" {
+				return fmt.Errorf("missing destination")
+			}
+			if !filepath.IsAbs(c.Destination) {
+				return fmt.Errorf("destination is not an absolute path")
+			}
+			s.Copy[i].Destination = filepath.Clean(c.Destination)
+
+			if len(c.Sources) == 0 {
+				return fmt.Errorf("missing sources for destination %q", c.Destination)
+			}
+			reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
+			for j, src := range c.Sources {
+				if reScheme.MatchString(src) {
+					return fmt.Errorf("only schemeless paths are supported (%q)", src)
+				}
+				s.Copy[i].Sources[j] = filepath.Clean(src)
+			}
+		}
+	}
+
 	if len(s.Annotations) > 0 {
 		re := regexp.MustCompile(reReverseUnlimitedFQDN)
 		for k := range s.Annotations {
@@ -220,6 +248,33 @@ type User struct {
 
 	// Login shell; must be a PATH-resolvable executable
 	LoginShell string `toml:"login-shell"`
+}
+
+// Copy holds instructions and options for copying one or more files from the
+// host's file system to the working container's file system.
+type Copy struct {
+	// Context directory for the files to copy over to the working container
+	Base string
+
+	// Absolute path to the destination on the working container's file system
+	Destination string `toml:"dest"`
+
+	// Absolute or relative paths to source files on the host's file system;
+	// may contain gitignore-style glob patterns
+	Sources []string `toml:"srcs"`
+
+	// Source files in the base directory to exclude from the copy operation;
+	// may contain gitignore-style glob patterns
+	Excludes []string
+
+	// Set the mode of the copied files to this integer
+	Mode uint32
+
+	// Transfer ownership of the copied files to this user
+	Owner string
+
+	// Remove all SUID and SGID bits from the files copied to the working container
+	RemoveS bool `toml:"remove-s"`
 }
 
 // Security holds security-related options for the working container.

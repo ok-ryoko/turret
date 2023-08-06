@@ -18,12 +18,6 @@
 #
 #tag = ""
 
-# Association between destination paths in the working container to one or more
-# source paths in the directory;
-# each list of sources will be copied to the respective destination path
-#
-#copy = {}
-
 # Environment variables to set before committing the image
 #
 #env = {}
@@ -97,6 +91,42 @@
 # typically used to set a non-standard interactive shell such as zsh or fish
 #
 #login-shell = ""
+
+[[copy]]
+
+# Context directory for the files to copy over to the working container;
+# if a relative path, then it must be local to the containing directory;
+# if omitted, then the base is the containing directory
+#
+#base = ""
+
+# Absolute path to the destination on the working container's file system;
+# required
+#
+#dest = ""
+
+# Absolute or relative paths to source files on the host's file system;
+# required;
+# may contain gitignore-style glob patterns
+#
+#srcs = []
+
+# Source files in the base directory to exclude from the copy operation;
+# may contain gitignore-style glob patterns
+#
+#excludes = []
+
+# Set the mode of the copied files to this integer, e.g., 0o600
+#
+#mode = 0o0
+
+# Transfer ownership of the copied files to this user
+#
+#owner = ""
+
+# Remove all SUID and SGID bits from the files copied to the working container
+#
+#remove-s = false
 
 [security.special-files]
 
