@@ -101,14 +101,27 @@ type CommitOptions struct {
 
 // Configure alters the metadata on and execution of the working container.
 func (b *Builder) Configure(options ConfigureOptions) {
+	if options.Clear.Annotations {
+		for k := range b.Builder.Annotations() {
+			if !strings.HasPrefix("org.opencontainers.image.base", k) {
+				b.Builder.UnsetAnnotation(k)
+			}
+		}
+	}
 	for k, v := range options.Annotations {
 		b.Builder.SetAnnotation(k, v)
 	}
 
+	if options.Clear.Author {
+		b.Builder.SetMaintainer("")
+	}
 	if options.Author != "" {
 		b.Builder.SetMaintainer(options.Author)
 	}
 
+	if options.Clear.Command {
+		b.Builder.SetCmd([]string{})
+	}
 	if len(options.Command) > 0 {
 		b.Builder.SetCmd(options.Command)
 	}
@@ -117,20 +130,32 @@ func (b *Builder) Configure(options ConfigureOptions) {
 		b.Builder.SetCreatedBy(options.CreatedBy)
 	}
 
+	if options.Clear.Entrypoint {
+		b.Builder.SetEntrypoint([]string{})
+	}
 	if len(options.Entrypoint) > 0 {
 		b.Builder.SetEntrypoint(options.Entrypoint)
 	}
 
+	if options.Clear.Environment {
+		b.Builder.ClearEnv()
+	}
 	for k, v := range options.Environment {
 		b.Builder.SetEnv(k, v)
 	}
 
+	if options.Clear.Labels {
+		b.Builder.ClearLabels()
+	}
 	for k, v := range options.Labels {
 		b.Builder.SetLabel(k, v)
 	}
 
 	b.Builder.SetOS("linux")
 
+	if options.Clear.Ports {
+		b.Builder.ClearPorts()
+	}
 	if len(options.Ports) > 0 {
 		for _, p := range options.Ports {
 			b.Builder.SetPort(p.String())
@@ -159,6 +184,9 @@ type ConfigureOptions struct {
 
 	// Provide contact information for the image maintainer
 	Author string
+
+	// Clear configuration inherited from the base image
+	Clear spec.Clear
 
 	// Set the default command (or the parameters, if an entrypoint is set)
 	Command []string

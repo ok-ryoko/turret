@@ -230,16 +230,43 @@ func (s *Spec) Validate() error {
 	return nil
 }
 
-// BaseImage holds the components of the reference to the base image.
+// BaseImage holds the components of the reference to the base image, plus
+// preprocessing instructions for the base image.
 type BaseImage struct {
 	Repository string
 	Tag        string
+	Clear      Clear
 }
 
 // Reference returns the repository:tag string representation of the
 // reference to the base image.
 func (i BaseImage) Reference() string {
 	return fmt.Sprintf("%s:%s", i.Repository, i.Tag)
+}
+
+// Clear holds toggles for clearing configuration inherited from the base
+// image.
+type Clear struct {
+	// Clear all annotations
+	Annotations bool
+
+	// Clear the author
+	Author bool
+
+	// Clear the command
+	Command bool `toml:"cmd"`
+
+	// Unset all environment variables
+	Environment bool `toml:"env"`
+
+	// Clear the entrypoint
+	Entrypoint bool `toml:"ep"`
+
+	// Clear all labels
+	Labels bool
+
+	// Close all exposed ports
+	Ports bool
 }
 
 // Packages contains instructions for the distro's canonical package manager.

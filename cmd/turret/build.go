@@ -232,6 +232,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			configureOptions := builder.ConfigureOptions{
 				Annotations: spec.Config.Annotations,
 				Author:      spec.Config.Author,
+				Clear:       spec.From.Clear,
 				Command:     spec.Config.Command,
 				CreatedBy:   spec.Config.CreatedBy,
 				Entrypoint:  spec.Config.Entrypoint,

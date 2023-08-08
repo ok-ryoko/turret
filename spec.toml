@@ -35,6 +35,41 @@
 #
 #tag = ""
 
+[from.clear]
+
+# Clear all annotations
+#
+#annotations = false
+
+# Clear the author
+#
+#author = false
+
+# Clear the command;
+# useful when the base image has a command but you want to set a custom
+# entrypoint instead
+#
+#cmd = false
+
+# Unset all environment variables;
+# use with caution: many base images use this mechanism to set `PATH`
+#
+#env = false
+
+# Clear the entrypoint;
+# useful when the base image has an entrypoint but you would rather set a
+# custom command instead
+#
+#ep = false
+
+# Clear all labels
+#
+#labels = false
+
+# Close all exposed ports
+#
+#ports = false
+
 [packages]
 
 # Whether to upgrade pre-installed packages
