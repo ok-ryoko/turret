@@ -74,7 +74,7 @@ func (c *Container) Remove() error {
 // container if it can be found and an error otherwise, assuming `command` can
 // be resolved.
 func (c *Container) ResolveExecutable(executable string) (string, error) {
-	cmd := []string{"/bin/sh", "-c", "command", "-v", executable}
+	cmd := []string{"command", "-v", executable}
 	ro := c.DefaultRunOptions()
 	resolved, _, err := c.Run(cmd, ro)
 	if err != nil {
