@@ -18,14 +18,6 @@
 #
 #tag = ""
 
-# Environment variables to set before committing the image
-#
-#env = {}
-
-# Annotations to set before committing the image
-#
-#annotations = {}
-
 # Whether to preserve the image history and file timestamps
 #
 #keep-history = false
@@ -143,6 +135,56 @@
 # file need not possess a special bit to be listed)
 #
 #excludes = []
+
+[config]
+
+# Set or update one or more annotations;
+# each annotation key must use reverse domain notation
+#
+#annotations = {}
+
+# Provide contact information for the image maintainer
+#
+#author = ""
+
+# Set the default command (or the parameters, if an entrypoint is set)
+#
+#cmd = []
+
+# Describe how the image was built
+#
+#created-by = ""
+
+# Set the entrypoint
+#
+#ep = []
+
+# Set or update one or more environment variables
+#
+#env = {}
+
+# Set or update one or more labels;
+# each label key must use reverse domain notation
+#
+#labels = {}
+
+# Set the default directory in which the entrypoint or command should run
+#
+#work-dir = ""
+
+[[config.ports]]
+
+# Expose the port with this number;
+# required
+#
+#number = 0
+
+# Use this protocol;
+# one of "tcp" and "udp";
+# case-insensitive;
+# when omitted, defaults to TCP
+#
+#protocol = ""
 
 [backends]
 

@@ -99,33 +99,90 @@ type CommitOptions struct {
 	Latest      bool
 }
 
-// Configure sets metadata and runtime parameters for the working container.
+// Configure alters the metadata on and execution of the working container.
 func (b *Builder) Configure(options ConfigureOptions) {
-	b.Builder.SetOS("linux")
-
-	if options.User != nil {
-		if options.User.Shell != "" {
-			b.Builder.SetCmd([]string{options.User.Shell})
-		}
-		b.Builder.SetUser(options.User.Name)
-		if options.User.CreateHome {
-			b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
-		}
-	}
-
-	for k, v := range options.Env {
-		b.Builder.SetEnv(k, v)
-	}
-
 	for k, v := range options.Annotations {
 		b.Builder.SetAnnotation(k, v)
 	}
+
+	if options.Author != "" {
+		b.Builder.SetMaintainer(options.Author)
+	}
+
+	if len(options.Command) > 0 {
+		b.Builder.SetCmd(options.Command)
+	}
+
+	if options.CreatedBy != "" {
+		b.Builder.SetCreatedBy(options.CreatedBy)
+	}
+
+	if len(options.Entrypoint) > 0 {
+		b.Builder.SetEntrypoint(options.Entrypoint)
+	}
+
+	for k, v := range options.Environment {
+		b.Builder.SetEnv(k, v)
+	}
+
+	for k, v := range options.Labels {
+		b.Builder.SetLabel(k, v)
+	}
+
+	b.Builder.SetOS("linux")
+
+	if len(options.Ports) > 0 {
+		for _, p := range options.Ports {
+			b.Builder.SetPort(p.String())
+		}
+	}
+
+	if options.WorkDir != "" {
+		b.Builder.SetWorkDir(options.WorkDir)
+	}
+
+	if options.User != nil {
+		b.Builder.SetUser(options.User.Name)
+		if options.WorkDir == "" && options.User.CreateHome {
+			b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
+		}
+		if len(options.Command) == 0 && len(options.Entrypoint) == 0 && options.User.Shell != "" {
+			b.Builder.SetCmd([]string{options.User.Shell})
+		}
+	}
 }
 
+// ConfigureOptions holds configuration options for the working container.
 type ConfigureOptions struct {
+	// Set or update one or more annotations
 	Annotations map[string]string
-	Env         map[string]string
-	User        *spec.User
+
+	// Provide contact information for the image maintainer
+	Author string
+
+	// Set the default command (or the parameters, if an entrypoint is set)
+	Command []string
+
+	// Describe how the image was built
+	CreatedBy string
+
+	// Set the entrypoint
+	Entrypoint []string
+
+	// Set or update one or more environment variables
+	Environment map[string]string
+
+	// Set or update one or more labels
+	Labels map[string]string
+
+	// Expose one or more network ports
+	Ports []spec.Port
+
+	// Set the user as whom the entrypoint or command should run
+	User *spec.User
+
+	// Set the default directory in which the entrypoint or command should run
+	WorkDir string
 }
 
 // CopyFiles copies one or more files on the host's file system to the working

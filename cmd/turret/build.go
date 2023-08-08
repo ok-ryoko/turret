@@ -226,13 +226,20 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if digest != "" {
-				spec.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
+				spec.Config.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
 			configureOptions := builder.ConfigureOptions{
-				Annotations: spec.Annotations,
-				Env:         spec.Env,
+				Annotations: spec.Config.Annotations,
+				Author:      spec.Config.Author,
+				Command:     spec.Config.Command,
+				CreatedBy:   spec.Config.CreatedBy,
+				Entrypoint:  spec.Config.Entrypoint,
+				Environment: spec.Config.Environment,
+				Labels:      spec.Config.Labels,
+				Ports:       spec.Config.Ports,
 				User:        spec.User,
+				WorkDir:     spec.Config.WorkDir,
 			}
 			b.Configure(configureOptions)
 			logger.Debugln("configured image")

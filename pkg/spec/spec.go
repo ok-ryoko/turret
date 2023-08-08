@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/find"
@@ -44,18 +45,15 @@ type Spec struct {
 	// file system to the working container's file system
 	Copy []Copy
 
-	// Map of environment variables to set or update in the working container
-	Env map[string]string
-
-	// Map of annotations to apply to the working container
-	Annotations map[string]string
-
 	// Whether to preserve the image history and timestamps of the files in the
 	// working container's file system
 	KeepHistory bool `toml:"keep-history"`
 
 	// Security options for the working container
 	Security Security
+
+	// Configuration for the working container
+	Config Configuration
 
 	// Choices of implementations of operations in the working container
 	Backends Backends
@@ -82,12 +80,24 @@ func (s *Spec) Fill() {
 		}
 	}
 
-	if s.Annotations == nil {
-		s.Annotations = map[string]string{}
+	if s.Config.Annotations == nil {
+		s.Config.Annotations = map[string]string{}
 	}
 
-	if s.Env == nil {
-		s.Env = map[string]string{}
+	if s.Config.Environment == nil {
+		s.Config.Environment = map[string]string{}
+	}
+
+	if s.Config.Labels == nil {
+		s.Config.Labels = map[string]string{}
+	}
+
+	if ports := s.Config.Ports; len(ports) > 0 {
+		for i, p := range ports {
+			if p.Protocol.Protocol == 0 {
+				s.Config.Ports[i].Protocol.Protocol = TCP
+			}
+		}
 	}
 }
 
@@ -188,11 +198,31 @@ func (s *Spec) Validate() error {
 		}
 	}
 
-	if len(s.Annotations) > 0 {
+	if a := s.Config.Annotations; len(a) > 0 {
 		re := regexp.MustCompile(reReverseUnlimitedFQDN)
-		for k := range s.Annotations {
+		for k := range a {
 			if !re.MatchString(k) {
-				return fmt.Errorf("invalid annotation key '%s'", k)
+				return fmt.Errorf("invalid annotation key: %q", k)
+			}
+		}
+	}
+
+	if l := s.Config.Labels; len(l) > 0 {
+		re := regexp.MustCompile(reReverseUnlimitedFQDN)
+		for k := range l {
+			if !re.MatchString(k) {
+				return fmt.Errorf("invalid label key: %q", k)
+			}
+		}
+	}
+
+	if ports := s.Config.Ports; len(ports) > 0 {
+		for _, p := range ports {
+			if p.Number == 0 {
+				return fmt.Errorf("the zero port is reserved")
+			}
+			if p.Protocol.Protocol == 0 {
+				return fmt.Errorf("unknown protocol for port %d", p.Number)
 			}
 		}
 	}
@@ -293,6 +323,96 @@ type SpecialFiles struct {
 
 	// Whether to preserve the SUID/SGID bit on one or more files
 	Excludes []string
+}
+
+// Configuration holds configuration options for the image to be built from the
+// working container, as defined in the OCI v1 Image Format specification.
+type Configuration struct {
+	// Set or update one or more annotations
+	Annotations map[string]string
+
+	// Provide contact information for the image maintainer
+	Author string
+
+	// Set the default command (or the parameters, if an entrypoint is set)
+	Command []string `toml:"cmd"`
+
+	// Describe how the image was built
+	CreatedBy string `toml:"created-by"`
+
+	// Set the entrypoint
+	Entrypoint []string `toml:"ep"`
+
+	// Set or update one or more environment variables
+	Environment map[string]string `toml:"env"`
+
+	// Set or update one or more labels
+	Labels map[string]string
+
+	// Expose one or more network ports
+	Ports []Port
+
+	// Set the default directory in which the entrypoint or command should run
+	WorkDir string `toml:"work-dir"`
+}
+
+// Port holds a combination of a port number and network protocol.
+type Port struct {
+	Number   uint16
+	Protocol ProtocolWrapper
+}
+
+// String returns a string representation of the port.
+func (p Port) String() string {
+	return fmt.Sprintf("%d/%s", p.Number, p.Protocol.String())
+}
+
+// Protocol is a unique identifier for a network protocol. The zero value
+// represents an unknown protocol.
+type Protocol uint
+
+const (
+	TCP Protocol = 1 << iota
+	UDP
+)
+
+// String returns a string containing the stylized name of the protocol.
+func (p Protocol) String() string {
+	var s string
+	switch p {
+	case TCP:
+		s = "tcp"
+	case UDP:
+		s = "udp"
+	default:
+		s = "unknown"
+	}
+	return s
+}
+
+// ProtocolWrapper wraps Protocol to facilitate its parsing from serialized data.
+type ProtocolWrapper struct {
+	Protocol
+}
+
+// UnmarshalText decodes the protocol from a string.
+func (w *ProtocolWrapper) UnmarshalText(text []byte) error {
+	var err error
+	w.Protocol, err = parseProtocolString(string(text))
+	return err
+}
+
+func parseProtocolString(s string) (Protocol, error) {
+	var p Protocol
+	switch strings.ToLower(s) {
+	case "tcp":
+		p = TCP
+	case "udp":
+		p = UDP
+	default:
+		return 0, fmt.Errorf("unsupported protocol: %q", s)
+	}
+	return p, nil
 }
 
 // Backends holds the choices of implementations of operations in the working
