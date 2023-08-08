@@ -246,6 +246,9 @@ type User struct {
 	// GECOS field text commonly used to store a full display name
 	Comment *string
 
+	// Create a home directory for the user in /home
+	CreateHome bool `toml:"create-home"`
+
 	// Preferred interactive shell; must be a PATH-resolvable executable
 	Shell string
 }

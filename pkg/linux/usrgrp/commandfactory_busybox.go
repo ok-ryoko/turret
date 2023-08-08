@@ -18,6 +18,10 @@ func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserO
 		cmd = append(cmd, "-g", *options.Comment)
 	}
 
+	if options.CreateHome {
+		cmd = append(cmd, "-h", fmt.Sprintf("/home/%s", name))
+	}
+
 	if options.Shell != "" {
 		cmd = append(cmd, "-s", options.Shell)
 	}

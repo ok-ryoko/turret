@@ -11,7 +11,7 @@ import (
 type ShadowCommandFactory struct{}
 
 func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
-	cmd = []string{"useradd", "--create-home"}
+	cmd = []string{"useradd"}
 
 	if options.ID > 0 {
 		cmd = append(cmd, "--uid", fmt.Sprintf("%d", options.ID))
@@ -23,6 +23,10 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 
 	if options.Comment != nil {
 		cmd = append(cmd, "--comment", *options.Comment)
+	}
+
+	if options.CreateHome {
+		cmd = append(cmd, "--create-home")
 	}
 
 	if options.Shell != "" {

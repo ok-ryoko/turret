@@ -190,11 +190,12 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 
 			if spec.User != nil {
 				createUserOptions := usrgrp.CreateUserOptions{
-					ID:        spec.User.ID,
-					UserGroup: spec.User.UserGroup,
-					Groups:    spec.User.Groups,
-					Comment:   spec.User.Comment,
-					Shell:     spec.User.Shell,
+					ID:         spec.User.ID,
+					UserGroup:  spec.User.UserGroup,
+					Groups:     spec.User.Groups,
+					Comment:    spec.User.Comment,
+					CreateHome: spec.User.CreateHome,
+					Shell:      spec.User.Shell,
 				}
 				if err = b.CreateUser(spec.User.Name, createUserOptions); err != nil {
 					return fmt.Errorf("creating unprivileged user: %w", err)

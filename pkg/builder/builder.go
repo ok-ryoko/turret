@@ -108,7 +108,9 @@ func (b *Builder) Configure(options ConfigureOptions) {
 			b.Builder.SetCmd([]string{options.User.Shell})
 		}
 		b.Builder.SetUser(options.User.Name)
-		b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
+		if options.User.CreateHome {
+			b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
+		}
 	}
 
 	for k, v := range options.Env {

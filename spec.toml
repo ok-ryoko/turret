@@ -86,6 +86,10 @@
 #
 #comment = ""
 
+# Create a home directory for the user in /home
+#
+#create-home = false
+
 # User's interactive shell;
 # can be an absolute path or a PATH-resolvable command;
 # useful in development containers
