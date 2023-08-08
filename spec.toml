@@ -86,11 +86,11 @@
 #
 #comment = ""
 
-# User's login shell;
+# User's interactive shell;
 # can be an absolute path or a PATH-resolvable command;
-# typically used to set a non-standard interactive shell such as zsh or fish
+# useful in development containers
 #
-#login-shell = ""
+#shell = ""
 
 [[copy]]
 

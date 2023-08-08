@@ -246,8 +246,8 @@ type User struct {
 	// GECOS field text commonly used to store a full display name
 	Comment *string
 
-	// Login shell; must be a PATH-resolvable executable
-	LoginShell string `toml:"login-shell"`
+	// Preferred interactive shell; must be a PATH-resolvable executable
+	Shell string
 }
 
 // Copy holds instructions and options for copying one or more files from the

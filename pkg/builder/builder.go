@@ -104,8 +104,8 @@ func (b *Builder) Configure(options ConfigureOptions) {
 	b.Builder.SetOS("linux")
 
 	if options.User != nil {
-		if options.User.LoginShell != "" {
-			b.Builder.SetCmd([]string{options.User.LoginShell})
+		if options.User.Shell != "" {
+			b.Builder.SetCmd([]string{options.User.Shell})
 		}
 		b.Builder.SetUser(options.User.Name)
 		b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
@@ -218,12 +218,12 @@ func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) erro
 		return fmt.Errorf("UID %d outside allowed range [1000-60000]", options.ID)
 	}
 
-	if options.LoginShell != "" {
-		shell, err := b.ResolveExecutable(options.LoginShell)
+	if options.Shell != "" {
+		shell, err := b.ResolveExecutable(options.Shell)
 		if err != nil {
 			return fmt.Errorf("resolving shell: %w", err)
 		}
-		options.LoginShell = shell
+		options.Shell = shell
 	}
 
 	if err := b.UserGroupManager.CreateUser(&b.Container, name, options); err != nil {

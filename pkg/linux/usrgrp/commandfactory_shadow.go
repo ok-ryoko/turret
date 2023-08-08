@@ -25,8 +25,8 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 		cmd = append(cmd, "--comment", *options.Comment)
 	}
 
-	if options.LoginShell != "" {
-		cmd = append(cmd, "--shell", options.LoginShell)
+	if options.Shell != "" {
+		cmd = append(cmd, "--shell", options.Shell)
 	}
 
 	if len(options.Groups) > 0 {

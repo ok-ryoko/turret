@@ -26,7 +26,7 @@ const (
 	Void
 )
 
-// DefaultShell returns the known default login shell for the distro.
+// DefaultShell returns the known default shell for the distro.
 func (d Distro) DefaultShell() string {
 	var s string
 	switch d {
