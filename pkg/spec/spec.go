@@ -63,21 +63,15 @@ type Spec struct {
 // by required fields in the spec.
 func Fill(s Spec) Spec {
 	if s.Backends.Package.Manager == 0 {
-		s.Backends.Package = pckg.ManagerWrapper{
-			Manager: s.Distro.DefaultPackageManager(),
-		}
+		s.Backends.Package.Manager = s.Distro.DefaultPackageManager()
 	}
 
 	if s.Backends.User.Manager == 0 {
-		s.Backends.User = usrgrp.ManagerWrapper{
-			Manager: s.Distro.DefaultUserManager(),
-		}
+		s.Backends.User.Manager = s.Distro.DefaultUserManager()
 	}
 
 	if s.Backends.Finder.Finder == 0 {
-		s.Backends.Finder = find.FinderWrapper{
-			Finder: s.Distro.DefaultFinder(),
-		}
+		s.Backends.Finder.Finder = s.Distro.DefaultFinder()
 	}
 
 	if s.Config.Annotations == nil {
@@ -92,11 +86,9 @@ func Fill(s Spec) Spec {
 		s.Config.Labels = map[string]string{}
 	}
 
-	if ports := s.Config.Ports; len(ports) > 0 {
-		for i, p := range ports {
-			if p.Protocol.Protocol == 0 {
-				s.Config.Ports[i].Protocol.Protocol = TCP
-			}
+	for i, p := range s.Config.Ports {
+		if p.Protocol.Protocol == 0 {
+			s.Config.Ports[i].Protocol.Protocol = TCP
 		}
 	}
 
@@ -160,39 +152,35 @@ func Validate(s Spec) error {
 			return fmt.Errorf("UID %d outside allowed range [1000-60000]", s.User.ID)
 		}
 
-		if len(s.User.Groups) > 0 {
-			for _, g := range s.User.Groups {
-				if !reProper.MatchString(g) || reImproper.MatchString(g) {
-					return fmt.Errorf("invalid group name '%s'", g)
-				}
+		for _, g := range s.User.Groups {
+			if !reProper.MatchString(g) || reImproper.MatchString(g) {
+				return fmt.Errorf("invalid group name '%s'", g)
 			}
 		}
 	}
 
-	if len(s.Copy) > 0 {
-		for _, c := range s.Copy {
-			if c.Base == "" {
-				return fmt.Errorf("missing base")
-			}
-			if !filepath.IsAbs(c.Base) {
-				return fmt.Errorf("base is not an absolute path")
-			}
+	for _, c := range s.Copy {
+		if c.Base == "" {
+			return fmt.Errorf("missing base")
+		}
+		if !filepath.IsAbs(c.Base) {
+			return fmt.Errorf("base is not an absolute path")
+		}
 
-			if c.Destination == "" {
-				return fmt.Errorf("missing destination")
-			}
-			if !filepath.IsAbs(c.Destination) {
-				return fmt.Errorf("destination is not an absolute path")
-			}
+		if c.Destination == "" {
+			return fmt.Errorf("missing destination")
+		}
+		if !filepath.IsAbs(c.Destination) {
+			return fmt.Errorf("destination is not an absolute path")
+		}
 
-			if len(c.Sources) == 0 {
-				return fmt.Errorf("missing sources for destination %q", c.Destination)
-			}
-			reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
-			for _, src := range c.Sources {
-				if reScheme.MatchString(src) {
-					return fmt.Errorf("only schemeless paths are supported (%q)", src)
-				}
+		if len(c.Sources) == 0 {
+			return fmt.Errorf("missing sources for destination %q", c.Destination)
+		}
+		reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
+		for _, src := range c.Sources {
+			if reScheme.MatchString(src) {
+				return fmt.Errorf("only schemeless paths are supported (%q)", src)
 			}
 		}
 	}
@@ -215,14 +203,12 @@ func Validate(s Spec) error {
 		}
 	}
 
-	if ports := s.Config.Ports; len(ports) > 0 {
-		for _, p := range ports {
-			if p.Number == 0 {
-				return fmt.Errorf("the zero port is reserved")
-			}
-			if p.Protocol.Protocol == 0 {
-				return fmt.Errorf("unknown protocol for port %d", p.Number)
-			}
+	for _, p := range s.Config.Ports {
+		if p.Number == 0 {
+			return fmt.Errorf("the zero port is reserved")
+		}
+		if p.Protocol.Protocol == 0 {
+			return fmt.Errorf("unknown protocol for port %d", p.Number)
 		}
 	}
 
