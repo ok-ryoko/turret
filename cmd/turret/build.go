@@ -311,9 +311,7 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 
 	digest := ""
 	if hash {
-		h := sha256.New()
-		h.Write(blob)
-		digest = fmt.Sprintf("sha256:%x", h.Sum(nil))
+		digest = fmt.Sprintf("sha256:%x", sha256.Sum256(blob))
 	}
 
 	r := bytes.NewReader(blob)
