@@ -5,7 +5,6 @@ package container
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/containers/buildah"
@@ -75,7 +74,7 @@ func (pm *PackageManager) List(c *Container) ([]string, error) {
 		return nil, fmt.Errorf("%s: %w", errContext, err)
 	}
 
-	lines := regexp.MustCompile(`\r?\n`).Split(strings.TrimSpace(outText), -1)
+	lines := strings.Split(strings.ReplaceAll(strings.TrimSpace(outText), "\r\n", "\n"), "\n")
 	packages, err := parse(lines)
 	if err != nil {
 		return nil, fmt.Errorf("parsing installed packages: %w", err)

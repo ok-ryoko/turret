@@ -15,10 +15,12 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
 )
 
-const (
-	rePOSIXPortableName    string = `^[0-9A-Za-z]$|^[0-9A-Za-z][-\._0-9A-Za-z]*[0-9A-Za-z]$`
-	reInvalidName          string = `^[0-9]+$|^\.{1,2}$`
-	reReverseUnlimitedFQDN string = `^\.?([0-9A-Za-z]|[0-9A-Za-z][-0-9A-Za-z]*[0-9A-Za-z]\.)*[0-9A-Za-z]$`
+var (
+	reDigits                    = regexp.MustCompile(`^[0-9]+$`)
+	reNotPOSIXPortableCharacter = regexp.MustCompile(`[^-.0-9A-Z_a-z]`)
+	reReverseUnlimitedFQDN      = regexp.MustCompile(`^\.?([0-9A-Za-z]|[0-9A-Za-z][-0-9A-Za-z]*[0-9A-Za-z]\.)*[0-9A-Za-z]$`)
+	reSpecialPrefixOrSuffix     = regexp.MustCompile(`^[-._]|[-._]$`)
+	reURLScheme                 = regexp.MustCompile(`^[^:/?#]+:`) // IETF RFC 3986 Appendix B
 )
 
 // Spec holds the options for the build and defines the structure of spec files.
@@ -131,21 +133,9 @@ func Validate(s Spec) error {
 	}
 
 	if s.User != nil {
-		reProper := regexp.MustCompile(rePOSIXPortableName)
-		reImproper := regexp.MustCompile(reInvalidName)
-
-		if s.User.Name != "" {
-			if s.User.Name == "root" {
-				return fmt.Errorf("won't create unprivileged user named 'root'")
-			}
-
-			if len(s.User.Name) > 32 {
-				return fmt.Errorf("user name '%s' too long (limit: 32 chars)", s.User.Name)
-			}
-
-			if !reProper.MatchString(s.User.Name) || reImproper.MatchString(s.User.Name) {
-				return fmt.Errorf("invalid user name '%s'", s.User.Name)
-			}
+		err := validateName(s.User.Name)
+		if err != nil {
+			return fmt.Errorf("invalid user name '%s': %w", s.User.Name, err)
 		}
 
 		if s.User.ID != 0 && (s.User.ID < 1000 || s.User.ID > 60000) {
@@ -153,8 +143,9 @@ func Validate(s Spec) error {
 		}
 
 		for _, g := range s.User.Groups {
-			if !reProper.MatchString(g) || reImproper.MatchString(g) {
-				return fmt.Errorf("invalid group name '%s'", g)
+			err := validateName(g)
+			if err != nil {
+				return fmt.Errorf("invalid group name '%s': %w", g, err)
 			}
 		}
 	}
@@ -177,30 +168,27 @@ func Validate(s Spec) error {
 		if len(c.Sources) == 0 {
 			return fmt.Errorf("missing sources for destination %q", c.Destination)
 		}
-		reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
 		for i, src := range c.Sources {
 			if src == "" {
 				return fmt.Errorf("empty source at index %d for destination %q", i, c.Destination)
 			}
-			if reScheme.MatchString(src) {
+			if reURLScheme.MatchString(src) {
 				return fmt.Errorf("only schemeless paths are supported (%q)", src)
 			}
 		}
 	}
 
 	if a := s.Config.Annotations; len(a) > 0 {
-		re := regexp.MustCompile(reReverseUnlimitedFQDN)
 		for k := range a {
-			if !re.MatchString(k) {
+			if !reReverseUnlimitedFQDN.MatchString(k) {
 				return fmt.Errorf("invalid annotation key: %q", k)
 			}
 		}
 	}
 
 	if l := s.Config.Labels; len(l) > 0 {
-		re := regexp.MustCompile(reReverseUnlimitedFQDN)
 		for k := range l {
-			if !re.MatchString(k) {
+			if !reReverseUnlimitedFQDN.MatchString(k) {
 				return fmt.Errorf("invalid label key: %q", k)
 			}
 		}
@@ -213,6 +201,37 @@ func Validate(s Spec) error {
 		if p.Protocol.Protocol == 0 {
 			return fmt.Errorf("unknown protocol for port %d", p.Number)
 		}
+	}
+
+	return nil
+}
+
+// validateName asserts that a name is a valid Linux user or group name
+// according to BusyBox and shadow-utils conventions. However, it disallows the
+// '$' character.
+func validateName(name string) error {
+	if name == "" {
+		return fmt.Errorf("blank name")
+	}
+
+	if name == "root" {
+		return fmt.Errorf("name 'root' is reserved")
+	}
+
+	if len(name) > 32 {
+		return fmt.Errorf("name is longer than 32 characters")
+	}
+
+	if reNotPOSIXPortableCharacter.MatchString(name) {
+		return fmt.Errorf("name contains one or more characters not in the POSIX portable character set")
+	}
+
+	if reDigits.MatchString(name) {
+		return fmt.Errorf("name comprises only digits")
+	}
+
+	if reSpecialPrefixOrSuffix.MatchString(name) {
+		return fmt.Errorf("name starts or ends with a special character")
 	}
 
 	return nil

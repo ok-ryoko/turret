@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -373,8 +372,7 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 			return fmt.Errorf("%s: %w", errContext, err)
 		}
 		if len(outText) > 0 {
-			reNewline := regexp.MustCompile(`\r?\n`)
-			targets = reNewline.Split(strings.TrimSpace(outText), -1)
+			targets = strings.Split(strings.ReplaceAll(strings.TrimSpace(outText), "\r\n", "\n"), "\n")
 		}
 	}
 
