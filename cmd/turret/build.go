@@ -325,7 +325,7 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 		return spec.Spec{}, "", fmt.Errorf("decoding TOML: %w", err)
 	}
 
-	s.Fill()
+	s = spec.Fill(s)
 
 	if len(s.Copy) > 0 {
 		parent := filepath.Dir(p)
@@ -337,11 +337,23 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 				if err != nil {
 					return spec.Spec{}, "", fmt.Errorf("canonicalizing base path %q", c.Base)
 				}
+			} else {
+				s.Copy[i].Base = filepath.Clean(c.Base)
+			}
+
+			if c.Destination != "" {
+				s.Copy[i].Destination = filepath.Clean(c.Destination)
+			}
+
+			for j, src := range s.Copy[i].Sources {
+				if src != "" {
+					s.Copy[i].Sources[j] = filepath.Clean(src)
+				}
 			}
 		}
 	}
 
-	if err = s.Validate(); err != nil {
+	if err = spec.Validate(s); err != nil {
 		return spec.Spec{}, "", fmt.Errorf("validating spec: %w", err)
 	}
 

@@ -59,9 +59,9 @@ type Spec struct {
 	Backends Backends
 }
 
-// Fill populates empty optional fields in the spec using information encoded
-// by required fields.
-func (s *Spec) Fill() {
+// Fill populates empty optional fields in a spec using information encoded
+// by required fields in the spec.
+func Fill(s Spec) Spec {
 	if s.Backends.Package.Manager == 0 {
 		s.Backends.Package = pckg.ManagerWrapper{
 			Manager: s.Distro.DefaultPackageManager(),
@@ -99,10 +99,12 @@ func (s *Spec) Fill() {
 			}
 		}
 	}
+
+	return s
 }
 
-// Validate asserts that the spec is suitable for ingestion by a builder.
-func (s *Spec) Validate() error {
+// Validate asserts that a spec is suitable for ingestion by a builder.
+func Validate(s Spec) error {
 	if s.Distro.Distro == 0 {
 		return fmt.Errorf("missing distro")
 	}
@@ -168,14 +170,13 @@ func (s *Spec) Validate() error {
 	}
 
 	if len(s.Copy) > 0 {
-		for i, c := range s.Copy {
+		for _, c := range s.Copy {
 			if c.Base == "" {
 				return fmt.Errorf("missing base")
 			}
 			if !filepath.IsAbs(c.Base) {
 				return fmt.Errorf("base is not an absolute path")
 			}
-			s.Copy[i].Base = filepath.Clean(c.Base)
 
 			if c.Destination == "" {
 				return fmt.Errorf("missing destination")
@@ -183,17 +184,15 @@ func (s *Spec) Validate() error {
 			if !filepath.IsAbs(c.Destination) {
 				return fmt.Errorf("destination is not an absolute path")
 			}
-			s.Copy[i].Destination = filepath.Clean(c.Destination)
 
 			if len(c.Sources) == 0 {
 				return fmt.Errorf("missing sources for destination %q", c.Destination)
 			}
 			reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
-			for j, src := range c.Sources {
+			for _, src := range c.Sources {
 				if reScheme.MatchString(src) {
 					return fmt.Errorf("only schemeless paths are supported (%q)", src)
 				}
-				s.Copy[i].Sources[j] = filepath.Clean(src)
 			}
 		}
 	}
