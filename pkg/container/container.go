@@ -95,37 +95,37 @@ func (c *Container) Run(cmd []string, options buildah.RunOptions) (string, strin
 	options.Stderr = &stderrBuf
 	err := c.Builder.Run(cmd, options)
 
-	textOut := stdoutBuf.String()
-	if textOut == "<nil>" {
-		textOut = ""
+	outText := stdoutBuf.String()
+	if outText == "<nil>" {
+		outText = ""
 	}
 
-	textErr := stderrBuf.String()
-	if textErr == "<nil>" {
-		textErr = ""
+	errText := stderrBuf.String()
+	if errText == "<nil>" {
+		errText = ""
 	}
 
 	if err != nil {
-		return textOut, textErr, fmt.Errorf("%w", err)
+		return outText, errText, fmt.Errorf("%w", err)
 	}
-	return textOut, textErr, nil
+	return outText, errText, nil
 }
 
 // runWithLogging wraps Run, logging standard output and standard error.
-func (c *Container) runWithLogging(cmd []string, options buildah.RunOptions, errMsg string) error {
-	textOut, textErr, err := c.Run(cmd, options)
+func (c *Container) runWithLogging(cmd []string, options buildah.RunOptions, errContext string) error {
+	outText, errText, err := c.Run(cmd, options)
 	if err != nil {
-		if textErr != "" {
-			errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
+		if errText != "" {
+			errContext = fmt.Sprintf("%s (%s)", errContext, errText)
 		}
-		return fmt.Errorf("%s: %w", errMsg, err)
+		return fmt.Errorf("%s: %w", errContext, err)
 	}
-	if textErr != "" {
-		c.Logger.Warn(textErr)
+	if errText != "" {
+		c.Logger.Warn(errText)
 	}
 	if c.CommonOptions.LogCommands {
-		if textOut != "" {
-			c.Logger.Debug(textOut)
+		if outText != "" {
+			c.Logger.Debug(outText)
 		}
 	}
 	return nil

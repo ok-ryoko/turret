@@ -39,8 +39,8 @@ func (pm *PackageManager) CleanCaches(c *Container) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	errMsg := fmt.Sprintf("cleaning %s package caches", pm.PackageManager().String())
-	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+	errContext := fmt.Sprintf("cleaning %s package caches", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -52,8 +52,8 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errMsg := fmt.Sprintf("installing %s packages", pm.PackageManager().String())
-	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+	errContext := fmt.Sprintf("installing %s packages", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -67,12 +67,12 @@ func (pm *PackageManager) List(c *Container) ([]string, error) {
 	ro.AddCapabilities = capabilities
 
 	outText, errText, err := c.Run(cmd, ro)
-	errMsg := fmt.Sprintf("listing installed %s packages", pm.PackageManager().String())
+	errContext := fmt.Sprintf("listing installed %s packages", pm.PackageManager().String())
 	if err != nil {
 		if errText != "" {
-			errMsg = fmt.Sprintf("%s (%q)", errMsg, errText)
+			errContext = fmt.Sprintf("%s (%q)", errContext, errText)
 		}
-		return nil, fmt.Errorf("%s: %w", errMsg, err)
+		return nil, fmt.Errorf("%s: %w", errContext, err)
 	}
 
 	lines := regexp.MustCompile(`\r?\n`).Split(strings.TrimSpace(outText), -1)
@@ -90,8 +90,8 @@ func (pm *PackageManager) Upgrade(c *Container) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errMsg := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager().String())
-	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+	errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager().String())
+	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil

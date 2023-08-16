@@ -21,8 +21,8 @@ func (pm *APTPackageManager) Install(c *Container, packages []string) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errMsg := fmt.Sprintf("updating %s package index", pmDisplay)
-		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		errContext := fmt.Sprintf("updating %s package index", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
@@ -32,8 +32,8 @@ func (pm *APTPackageManager) Install(c *Container, packages []string) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errMsg := fmt.Sprintf("installing %s packages", pmDisplay)
-		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		errContext := fmt.Sprintf("installing %s packages", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
@@ -49,8 +49,8 @@ func (pm *APTPackageManager) Upgrade(c *Container) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errMsg := fmt.Sprintf("updating %s package index", pmDisplay)
-		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		errContext := fmt.Sprintf("updating %s package index", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
@@ -60,8 +60,8 @@ func (pm *APTPackageManager) Upgrade(c *Container) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errMsg := fmt.Sprintf("upgrading pre-installed %s packages", pmDisplay)
-		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
+		errContext := fmt.Sprintf("upgrading pre-installed %s packages", pmDisplay)
+		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}

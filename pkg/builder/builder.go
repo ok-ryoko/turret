@@ -364,17 +364,17 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 		cmd, capabilities := b.FinderCommandFactory.NewFindSpecialCmd()
 		ro := b.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
-		textOut, textErr, err := b.Run(cmd, ro)
+		outText, errText, err := b.Run(cmd, ro)
 		if err != nil {
-			errMsg := "searching for special files"
-			if textErr != "" {
-				errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
+			errContext := "searching for special files"
+			if errText != "" {
+				errContext = fmt.Sprintf("%s (%s)", errContext, errText)
 			}
-			return fmt.Errorf("%s: %w", errMsg, err)
+			return fmt.Errorf("%s: %w", errContext, err)
 		}
-		if len(textOut) > 0 {
+		if len(outText) > 0 {
 			reNewline := regexp.MustCompile(`\r?\n`)
-			targets = reNewline.Split(strings.TrimSpace(textOut), -1)
+			targets = reNewline.Split(strings.TrimSpace(outText), -1)
 		}
 	}
 
@@ -406,13 +406,13 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 			"CAP_FOWNER",
 		}
 
-		_, textErr, err := b.Run(cmd, ro)
+		_, errText, err := b.Run(cmd, ro)
 		if err != nil {
-			errMsg := "unsetting special bit"
-			if textErr != "" {
-				errMsg = fmt.Sprintf("%s (%s)", errMsg, textErr)
+			errContext := "unsetting special bit"
+			if errText != "" {
+				errContext = fmt.Sprintf("%s (%s)", errContext, errText)
 			}
-			return fmt.Errorf("%s: %w", errMsg, err)
+			return fmt.Errorf("%s: %w", errContext, err)
 		}
 	}
 
