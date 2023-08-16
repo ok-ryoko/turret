@@ -30,11 +30,15 @@ build:
 	$(GO) build -o ./build/ ./cmd/turret/
 
 .PHONY: check #? Assert that all Go code satisfies quality standards
-check: lint
+check: lint test
 
 .PHONY: lint #? Perform static analysis of all Go code
 lint:
 	golangci-lint run
+
+.PHONY: test #? Run all Go tests
+test:
+	go test ./pkg/linux/pckg/
 
 .PHONY: fmt #? Format all Go code
 fmt:

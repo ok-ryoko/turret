@@ -16,9 +16,12 @@ type CommandFactory interface {
 	// and (2) the Linux capabilities needed by that command.
 	NewInstallCmd(packages []string) (cmd, capabilities []string)
 
-	// NewListInstalledPackagesCmd returns (1) a command that lists the
-	// installed packages and (2) the Linux capabilities needed by that command.
-	NewListInstalledPackagesCmd() (cmd, capabilities []string)
+	// NewListInstalledPackagesCmd returns:
+	//
+	//   (1) a command that lists the installed packages;
+	//   (2) the Linux capabilities needed by that command, and
+	//   (3) a function to parse the package names from the command's output.
+	NewListInstalledPackagesCmd() (cmd, capabilities []string, parse func([]string) ([]string, error))
 
 	// NewUpdateIndexCmd returns (1) a command that updates the package index
 	// and (2) the Linux capabilities needed by that command.

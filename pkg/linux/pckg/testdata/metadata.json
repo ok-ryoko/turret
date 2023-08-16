@@ -1,0 +1,46 @@
+{
+  "metadata": [
+    {
+      "packageManager": "apk",
+      "version": "2.14.0",
+      "reference": "docker.io/library/alpine:3.18.2",
+      "digest": "sha256:82d1e9d7ed48a7523bdebc18cf6290bdb97b82302a8a9c27d4fe885949ea94d1",
+      "command": "apk --no-interactive --no-network --quiet list --interactive"
+    },
+    {
+      "packageManager": "apt",
+      "version": "2.6.1",
+      "reference": "docker.io/library/debian:12.1-slim",
+      "digest": "sha256:89468107e4c2b9fdea2f15fc582bf92c25aa4296a661ca0202f7ea2f4fc3f48c",
+      "command": "apt-cache pkgnames"
+    },
+    {
+      "packageManager": "dnf",
+      "version": "4.16.2",
+      "reference": "registry.fedoraproject.org/fedora:39-x86_64",
+      "digest": "sha256:3774a4671f4212a82a85ae8942137c2982288623c1c24435a9cd83c4fc440174",
+      "command": "dnf --color=never --quiet list --installed"
+    },
+    {
+      "packageManager": "pacman",
+      "version": "6.0.2",
+      "reference": "docker.io/library/archlinux:latest",
+      "digest": "sha256:b29dab0d5f362cfe2ed4662c46f27855681d56fb548fd2f6d927fd573131178a",
+      "command": "pacman --query --quiet"
+    },
+    {
+      "packageManager": "xbps",
+      "version": "0.59.1",
+      "reference": "ghcr.io/void-linux/void-linux:20230204RC01-full-x86_64",
+      "digest": "sha256:85ea94fee13e89d25665763cac14c22b5da21fa011ed262197c9ab516216f825",
+      "command": "xbps-query --list-pkgs"
+    },
+    {
+      "packageManager": "zypper",
+      "version": "1.14.62",
+      "reference": "registry.opensuse.org/opensuse/tumbleweed:latest",
+      "digest": "sha256:70e271ca97780bdaa73e25fdd71173140239b5ea547f32c928dcfcd8eab50c39",
+      "command": "zypper --non-interactive --quiet --terse --no-remote packages --installed-only"
+    }
+  ]
+}

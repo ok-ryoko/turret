@@ -5,6 +5,8 @@ package container
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/containers/buildah"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
@@ -20,7 +22,7 @@ type PackageManagerInterface interface {
 	Install(c *Container, packages []string) error
 
 	// List lists the packages installed in the working container.
-	List(c *Container) error
+	List(c *Container) ([]string, error)
 
 	// Upgrade upgrades the packages in the working container.
 	Upgrade(c *Container) error
@@ -58,15 +60,28 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 }
 
 // List lists the packages installed in the working container.
-func (pm *PackageManager) List(c *Container) error {
-	cmd, capabilities := pm.NewListInstalledPackagesCmd()
+func (pm *PackageManager) List(c *Container) ([]string, error) {
+	cmd, capabilities, parse := pm.NewListInstalledPackagesCmd()
+
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
+
+	outText, errText, err := c.Run(cmd, ro)
 	errMsg := fmt.Sprintf("listing installed %s packages", pm.PackageManager().String())
-	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
-		return fmt.Errorf("%w", err)
+	if err != nil {
+		if errText != "" {
+			errMsg = fmt.Sprintf("%s (%q)", errMsg, errText)
+		}
+		return nil, fmt.Errorf("%s: %w", errMsg, err)
 	}
-	return nil
+
+	lines := regexp.MustCompile(`\r?\n`).Split(strings.TrimSpace(outText), -1)
+	packages, err := parse(lines)
+	if err != nil {
+		return nil, fmt.Errorf("parsing installed packages: %w", err)
+	}
+
+	return packages, nil
 }
 
 // Upgrade upgrades the packages in the working container.

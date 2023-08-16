@@ -3,6 +3,11 @@
 
 package pckg
 
+import (
+	"fmt"
+	"strings"
+)
+
 type APKCommandFactory struct{}
 
 func (c APKCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
@@ -16,9 +21,44 @@ func (c APKCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 	return
 }
 
-func (c APKCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
-	cmd = []string{"apk", "list", "--installed"}
+func (c APKCommandFactory) NewListInstalledPackagesCmd() (
+	cmd []string,
+	capabilities []string,
+	parse func([]string) ([]string, error),
+) {
+	cmd = []string{
+		"apk",
+		"--no-interactive",
+		"--no-network",
+		"--quiet",
+		"list",
+		"--installed",
+	}
+
 	capabilities = []string{}
+
+	// expected line format: name-version-revision arch {origin} (licenses) [status]
+	parse = func(lines []string) ([]string, error) {
+		result := make([]string, 0, len(lines))
+		for _, l := range lines {
+			pkg, _, ok := strings.Cut(l, " ")
+			if !ok {
+				return nil, fmt.Errorf("expected space delimiter in line %q", l)
+			}
+			i := strings.LastIndex(pkg, "-")
+			if i == -1 {
+				return nil, fmt.Errorf("expected format 'name-version-revision' for field %q", pkg)
+			}
+			j := strings.LastIndex(pkg[:i], "-")
+			if j == -1 {
+				return nil, fmt.Errorf("expected format 'name-version-revision' for field %q", pkg)
+			}
+			name := pkg[:j]
+			result = append(result, name)
+		}
+		return result, nil
+	}
+
 	return
 }
 

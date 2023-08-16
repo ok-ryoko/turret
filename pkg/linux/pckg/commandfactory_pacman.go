@@ -23,9 +23,25 @@ func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilitie
 	return
 }
 
-func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
-	cmd = []string{"pacman", "--query"}
+func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (
+	cmd []string,
+	capabilities []string,
+	parse func([]string) ([]string, error),
+) {
+	cmd = []string{
+		"pacman",
+		"--color", "never",
+		"--query",
+		"--quiet",
+	}
+
 	capabilities = []string{}
+
+	// expected line format: name
+	parse = func(lines []string) ([]string, error) {
+		return lines, nil
+	}
+
 	return
 }
 

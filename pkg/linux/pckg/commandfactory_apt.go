@@ -28,9 +28,19 @@ func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 	return
 }
 
-func (c APTCommandFactory) NewListInstalledPackagesCmd() (cmd, capabilities []string) {
-	cmd = []string{"apt", "list"}
+func (c APTCommandFactory) NewListInstalledPackagesCmd() (
+	cmd []string,
+	capabilities []string,
+	parse func([]string) ([]string, error),
+) {
+	cmd = []string{"apt-cache", "pkgnames"}
 	capabilities = []string{}
+
+	// expected line format: name
+	parse = func(lines []string) ([]string, error) {
+		return lines, nil
+	}
+
 	return
 }
 

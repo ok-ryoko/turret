@@ -1,0 +1,56 @@
+ii acl-2.3.1_1                     Access Control List filesystem support
+ii attr-2.5.1_1                    Extended attribute support library for ACL support
+ii base-files-0.142_14             Void Linux base system files
+ii base-minimal-0.3_1              Void Linux base system meta with minimal tools
+ii bzip2-1.0.8_1                   Freely available, patent free, high-quality data compressor
+ii ca-certificates-20211016+3.86_1 Common CA certificates for SSL/TLS from Mozilla
+ii coreutils-8.32_4                GNU core utilities
+ii dash-0.5.12_1                   POSIX-compliant Unix shell, much smaller than GNU bash
+ii diffutils-3.9_1                 GNU diff utilities
+ii eudev-libudev-3.2.11_1          Fork of systemd-udev (enhanced userland device daemon) - runtime library
+ii findutils-4.9.0_1               GNU Find Utilities
+ii gawk-5.1.1_1                    GNU awk utility
+ii glibc-2.36_1                    GNU C library
+ii glibc-locales-2.36_1            GNU C library - locale data files
+ii gmp-6.2.1_1                     Library for arbitrary precision arithmetic
+ii grep-3.8_1                      GNU grep utility
+ii gzip-1.12_2                     GNU compression utility (replacement for compress)
+ii iana-etc-20230104_1             Unix /etc/services and /etc/protocols files
+ii libarchive-3.6.2_2              Library to read/write several different streaming archive formats
+ii libblkid-2.38.1_1               Library to handle device identification
+ii libcap-2.54_1                   POSIX.1e capabilities suite
+ii libcap-ng-0.8.3_2               Alternate POSIX capabilities library
+ii libcrypto1.1-1.1.1s_1           Toolkit for Secure Sockets Layer and Transport Layer Security - crypto library
+ii libdb-5.3.28_8                  Berkeley DB embedded database system - C shared libraries
+ii libfdisk-2.38.1_1               Library for fdisk(8)
+ii liblz4-1.9.4_1                  LZ4 compression library
+ii liblzma-5.4.1_1                 XZ-format compression library
+ii libmount-2.38.1_1               Library for mount(8)
+ii libpcre2-10.39_2                Perl Compatible Regular Expressions (2nd version) - shared libraries
+ii libreadline8-8.1.000_1          GNU Readline Library
+ii libsmartcols-2.38.1_1           Table or Tree library from util-linux
+ii libssl1.1-1.1.1s_1              Toolkit for Secure Sockets Layer and Transport Layer Security - SSL/TLS library
+ii libuuid-2.38.1_1                UUID library
+ii libxbps-0.59.1_8                XBPS package system utilities - runtime library
+ii libzstd-1.5.2_1                 Fast real-time compression algorithm
+ii ncurses-libs-6.3_3              System V Release 4.0 curses emulation library -- shared libraries
+ii nvi-1.81.6_19                   Berkeley Vi Editor
+ii openssl-1.1.1s_1                Toolkit for Secure Sockets Layer and Transport Layer Security
+ii pam-1.5.2_2                     Flexible mechanism for authenticating users
+ii pam-base-0.4_2                  PAM base configuration files
+ii pam-libs-1.5.2_2                Flexible mechanism for authenticating users - runtime libraries
+ii procps-ng-3.3.17_2              Utilities for monitoring your system and its processes
+ii removed-packages-0.1.20230129_1 Uninstalls packages removed from repository
+ii run-parts-4.11.2_2              Run scripts or programs in a directory
+ii runit-2.1.2_14                  UNIX init scheme with service supervision
+ii runit-void-20220329_1           Void Linux runit scripts
+ii sed-4.9_1                       The GNU stream editor
+ii shadow-4.8.1_2                  Shadow password file utilities
+ii tar-1.34_2                      GNU tape archiver with remote magnetic tape support
+ii tzdata-2022g_1                  Time zone and daylight-saving time data
+ii util-linux-2.38.1_1             Miscellaneous linux utilities
+ii util-linux-common-2.38.1_1      Miscellaneous linux utilities - common files
+ii which-2.21_3                    Displays where a particular program in your path is located
+ii xbps-0.59.1_8                   XBPS package system utilities
+ii xbps-triggers-0.124_1           XBPS triggers for Void Linux
+ii zlib-1.2.13_1                   Compression/decompression Library
