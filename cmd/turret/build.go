@@ -233,18 +233,38 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				spec.Config.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
+			var configureUserOptions builder.ConfigureUserOptions
+			if spec.User != nil {
+				configureUserOptions = builder.ConfigureUserOptions{
+					Name:       spec.User.Name,
+					CreateHome: spec.User.CreateHome,
+					Shell:      spec.User.Shell,
+				}
+			}
+
+			ports := make([]string, len(spec.Config.Ports))
+			for i, p := range spec.Config.Ports {
+				ports[i] = p.String()
+			}
+
 			configureOptions := builder.ConfigureOptions{
-				Annotations: spec.Config.Annotations,
-				Author:      spec.Config.Author,
-				Clear:       spec.From.Clear,
-				Command:     spec.Config.Command,
-				CreatedBy:   spec.Config.CreatedBy,
-				Entrypoint:  spec.Config.Entrypoint,
-				Environment: spec.Config.Environment,
-				Labels:      spec.Config.Labels,
-				Ports:       spec.Config.Ports,
-				User:        spec.User,
-				WorkDir:     spec.Config.WorkDir,
+				ClearAnnotations: spec.From.Clear.Annotations,
+				Annotations:      spec.Config.Annotations,
+				ClearAuthor:      spec.From.Clear.Author,
+				Author:           spec.Config.Author,
+				ClearCommand:     spec.From.Clear.Command,
+				Command:          spec.Config.Command,
+				CreatedBy:        spec.Config.CreatedBy,
+				ClearEntrypoint:  spec.From.Clear.Entrypoint,
+				Entrypoint:       spec.Config.Entrypoint,
+				ClearEnvironment: spec.From.Clear.Environment,
+				Environment:      spec.Config.Environment,
+				ClearLabels:      spec.From.Clear.Labels,
+				Labels:           spec.Config.Labels,
+				ClearPorts:       spec.From.Clear.Ports,
+				Ports:            ports,
+				User:             &configureUserOptions,
+				WorkDir:          spec.Config.WorkDir,
 			}
 			b.Configure(configureOptions)
 			logger.Debugln("configured image")

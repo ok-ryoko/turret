@@ -16,7 +16,6 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
-	"github.com/ok-ryoko/turret/pkg/spec"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -101,7 +100,7 @@ type CommitOptions struct {
 
 // Configure alters the metadata on and execution of the working container.
 func (b *Builder) Configure(options ConfigureOptions) {
-	if options.Clear.Annotations {
+	if options.ClearAnnotations {
 		for k := range b.Builder.Annotations() {
 			if !strings.HasPrefix("org.opencontainers.image.base", k) {
 				b.Builder.UnsetAnnotation(k)
@@ -112,14 +111,14 @@ func (b *Builder) Configure(options ConfigureOptions) {
 		b.Builder.SetAnnotation(k, v)
 	}
 
-	if options.Clear.Author {
+	if options.ClearAuthor {
 		b.Builder.SetMaintainer("")
 	}
 	if options.Author != "" {
 		b.Builder.SetMaintainer(options.Author)
 	}
 
-	if options.Clear.Command {
+	if options.ClearCommand {
 		b.Builder.SetCmd([]string{})
 	}
 	if len(options.Command) > 0 {
@@ -130,21 +129,21 @@ func (b *Builder) Configure(options ConfigureOptions) {
 		b.Builder.SetCreatedBy(options.CreatedBy)
 	}
 
-	if options.Clear.Entrypoint {
+	if options.ClearEntrypoint {
 		b.Builder.SetEntrypoint([]string{})
 	}
 	if len(options.Entrypoint) > 0 {
 		b.Builder.SetEntrypoint(options.Entrypoint)
 	}
 
-	if options.Clear.Environment {
+	if options.ClearEnvironment {
 		b.Builder.ClearEnv()
 	}
 	for k, v := range options.Environment {
 		b.Builder.SetEnv(k, v)
 	}
 
-	if options.Clear.Labels {
+	if options.ClearLabels {
 		b.Builder.ClearLabels()
 	}
 	for k, v := range options.Labels {
@@ -153,12 +152,12 @@ func (b *Builder) Configure(options ConfigureOptions) {
 
 	b.Builder.SetOS("linux")
 
-	if options.Clear.Ports {
+	if options.ClearPorts {
 		b.Builder.ClearPorts()
 	}
 	if len(options.Ports) > 0 {
 		for _, p := range options.Ports {
-			b.Builder.SetPort(p.String())
+			b.Builder.SetPort(p)
 		}
 	}
 
@@ -179,14 +178,20 @@ func (b *Builder) Configure(options ConfigureOptions) {
 
 // ConfigureOptions holds configuration options for the working container.
 type ConfigureOptions struct {
+	// Clear all annotations inherited from the base image
+	ClearAnnotations bool
+
 	// Set or update one or more annotations
 	Annotations map[string]string
+
+	// Clear the author inherited from the base image
+	ClearAuthor bool
 
 	// Provide contact information for the image maintainer
 	Author string
 
-	// Clear configuration inherited from the base image
-	Clear spec.Clear
+	// Clear the command inherited from the base image
+	ClearCommand bool
 
 	// Set the default command (or the parameters, if an entrypoint is set)
 	Command []string
@@ -194,23 +199,41 @@ type ConfigureOptions struct {
 	// Describe how the image was built
 	CreatedBy string
 
+	// Clear the entrypoint inherited from the base image
+	ClearEntrypoint bool
+
 	// Set the entrypoint
 	Entrypoint []string
+
+	// Unset all environment variables inherited from the base image
+	ClearEnvironment bool
 
 	// Set or update one or more environment variables
 	Environment map[string]string
 
+	// Clear all labels inherited from the base image
+	ClearLabels bool
+
 	// Set or update one or more labels
 	Labels map[string]string
 
+	// Close all exposed ports inherited from the base image
+	ClearPorts bool
+
 	// Expose one or more network ports
-	Ports []spec.Port
+	Ports []string
 
 	// Set the user as whom the entrypoint or command should run
-	User *spec.User
+	User *ConfigureUserOptions
 
 	// Set the default directory in which the entrypoint or command should run
 	WorkDir string
+}
+
+type ConfigureUserOptions struct {
+	Name       string
+	CreateHome bool
+	Shell      string
 }
 
 // CopyFiles copies one or more files on the host's file system to the working
