@@ -165,6 +165,10 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}()
 			logger.Debugf("created %s Linux Turret builder", distro.String())
 
+			if b.Builder.OS() != "linux" {
+				return fmt.Errorf("expected Linux image, got %s", b.Builder.OS())
+			}
+
 			if spec.Packages.Upgrade {
 				logger.Debugln("upgrading packages...")
 				if err = b.UpgradePackages(); err != nil {
