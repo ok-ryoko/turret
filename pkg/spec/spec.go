@@ -178,7 +178,10 @@ func Validate(s Spec) error {
 			return fmt.Errorf("missing sources for destination %q", c.Destination)
 		}
 		reScheme := regexp.MustCompile(`^[^:/?#]+:`) // Network Working Group RFC 3986 Appendix B
-		for _, src := range c.Sources {
+		for i, src := range c.Sources {
+			if src == "" {
+				return fmt.Errorf("empty source at index %d for destination %q", i, c.Destination)
+			}
 			if reScheme.MatchString(src) {
 				return fmt.Errorf("only schemeless paths are supported (%q)", src)
 			}

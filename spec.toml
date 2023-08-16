@@ -137,7 +137,7 @@
 #dest = ""
 
 # Absolute or relative paths to source files on the host's file system;
-# required;
+# required (must contain one or more nonempty sources);
 # may contain gitignore-style glob patterns
 #
 #srcs = []
