@@ -47,9 +47,9 @@ func (b *Builder) CleanPackageCaches() error {
 	return nil
 }
 
-// Commit commits an image from the working container to storage, asserting
-// that `repository` and `tag` are nonempty strings, and returns the ID of the
-// newly created image.
+// Commit commits an image from the working container to storage and returns
+// the ID of the newly created image, assuming `repository` and `tag` are
+// nonempty strings from which a valid image reference can be composed.
 func (b *Builder) Commit(
 	ctx context.Context,
 	store storage.Store,
@@ -57,10 +57,6 @@ func (b *Builder) Commit(
 	tag string,
 	options CommitOptions,
 ) (string, error) {
-	if repository == "" || tag == "" {
-		return "", fmt.Errorf("missing image reference component")
-	}
-
 	co := buildah.CommitOptions{
 		Compression:      archive.Gzip,
 		HistoryTimestamp: &time.Time{},
@@ -236,7 +232,8 @@ type ConfigureUserOptions struct {
 }
 
 // CopyFiles copies one or more files on the host's file system to the working
-// container's file system.
+// container's file system, assuming `base` and `dest` are absolute file paths
+// and `srcs` is a nonempty slice of file paths.
 //
 // `base` is an absolute path to a directory on the host's file system against
 // which relative paths in `srcs` should be resolved.
@@ -252,18 +249,6 @@ type ConfigureUserOptions struct {
 // path separator, then copy the item to the parent directory in the
 // destination, renaming the item to match the destination as needed.
 func (b *Builder) CopyFiles(base string, dest string, srcs []string, options CopyFilesOptions) error {
-	if !filepath.IsAbs(base) {
-		return fmt.Errorf("base path is not an absolute path")
-	}
-
-	if !filepath.IsAbs(dest) {
-		return fmt.Errorf("destination path is not an absolute path")
-	}
-
-	if len(srcs) == 0 {
-		return fmt.Errorf("no source items to copy")
-	}
-
 	patterns := make([]string, len(srcs))
 	for i, s := range srcs {
 		patterns[i] = fmt.Sprintf("!%s", s)
@@ -317,16 +302,8 @@ type CopyFilesOptions struct {
 }
 
 // CreateUser creates the sole unprivileged user of the working container,
-// asserting that `name` is a nonempty string.
+// assuming `name` is a nonempty string.
 func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
-	if name == "" {
-		return fmt.Errorf("blank user name")
-	}
-
-	if options.ID != 0 && (options.ID < 1000 || options.ID > 60000) {
-		return fmt.Errorf("UID %d outside allowed range [1000-60000]", options.ID)
-	}
-
 	if options.Shell != "" {
 		shell, err := b.ResolveExecutable(options.Shell)
 		if err != nil {
