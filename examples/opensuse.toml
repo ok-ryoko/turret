@@ -1,3 +1,4 @@
+[this]
 distro = "openSUSE"
 repository = "opensuse-base"
 tag = "0.1.0"

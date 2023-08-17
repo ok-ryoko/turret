@@ -1,3 +1,4 @@
+[this]
 distro = "fedora"
 repository = "fedora-base"
 tag = "0.1.0"

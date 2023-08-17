@@ -25,14 +25,8 @@ var (
 
 // Spec holds the options for the build and defines the structure of spec files.
 type Spec struct {
-	// Linux-based distro for this image
-	Distro linux.DistroWrapper
-
-	// Fully qualified name for the image we're building
-	Repository string
-
-	// Tag for the image we're building
-	Tag string
+	// Commit options for the image to be built according to the spec
+	This This
 
 	// Reference for the base image
 	From BaseImage
@@ -47,10 +41,6 @@ type Spec struct {
 	// file system to the working container's file system
 	Copy []Copy
 
-	// Whether to preserve the image history and timestamps of the files in the
-	// working container's file system
-	KeepHistory bool `toml:"keep-history"`
-
 	// Security options for the working container
 	Security Security
 
@@ -61,19 +51,35 @@ type Spec struct {
 	Backends Backends
 }
 
+// This holds commit options for the image to be built according to the spec.
+type This struct {
+	// Linux-based distro for this image
+	Distro linux.DistroWrapper
+
+	// Fully qualified name for the image we're building
+	Repository string
+
+	// Tag for the image we're building
+	Tag string
+
+	// Whether to preserve the image history and timestamps of the files in the
+	// working container's file system
+	KeepHistory bool `toml:"keep-history"`
+}
+
 // Fill populates empty optional fields in a spec using information encoded
 // by required fields in the spec.
 func Fill(s Spec) Spec {
 	if s.Backends.Package.Manager == 0 {
-		s.Backends.Package.Manager = s.Distro.DefaultPackageManager()
+		s.Backends.Package.Manager = s.This.Distro.DefaultPackageManager()
 	}
 
 	if s.Backends.User.Manager == 0 {
-		s.Backends.User.Manager = s.Distro.DefaultUserManager()
+		s.Backends.User.Manager = s.This.Distro.DefaultUserManager()
 	}
 
 	if s.Backends.Finder.Finder == 0 {
-		s.Backends.Finder.Finder = s.Distro.DefaultFinder()
+		s.Backends.Finder.Finder = s.This.Distro.DefaultFinder()
 	}
 
 	if s.Config.Annotations == nil {
@@ -99,7 +105,7 @@ func Fill(s Spec) Spec {
 
 // Validate asserts that a spec is suitable for ingestion by a builder.
 func Validate(s Spec) error {
-	if s.Distro.Distro == 0 {
+	if s.This.Distro.Distro == 0 {
 		return fmt.Errorf("missing distro")
 	}
 
@@ -115,7 +121,7 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing find implementation")
 	}
 
-	if s.Repository == "" {
+	if s.This.Repository == "" {
 		return fmt.Errorf("missing image repository (name)")
 	}
 

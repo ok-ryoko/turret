@@ -1,3 +1,4 @@
+[this]
 distro = "debian"
 repository = "debian-base"
 tag = "0.1.0"

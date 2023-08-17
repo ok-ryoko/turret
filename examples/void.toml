@@ -1,3 +1,4 @@
+[this]
 distro = "void"
 repository = "void-base"
 tag = "0.1.0"

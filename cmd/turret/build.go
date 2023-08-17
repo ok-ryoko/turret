@@ -124,9 +124,9 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				}
 			}()
 
-			imageRef := spec.Repository
-			if spec.Tag != "" {
-				imageRef = fmt.Sprintf("%s:%s", imageRef, spec.Tag)
+			imageRef := spec.This.Repository
+			if spec.This.Tag != "" {
+				imageRef = fmt.Sprintf("%s:%s", imageRef, spec.This.Tag)
 			}
 			localRef := fmt.Sprintf("localhost/%s", imageRef)
 
@@ -134,7 +134,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				return fmt.Errorf("image %s already exists", localRef)
 			}
 
-			distro := spec.Distro.Distro
+			distro := spec.This.Distro.Distro
 			packageManager := spec.Backends.Package.Manager
 			userManager := spec.Backends.User.Manager
 			finder := spec.Backends.Finder.Finder
@@ -271,14 +271,14 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 
 			logger.Debugln("committing image...")
 			commitOptions := builder.CommitOptions{
-				KeepHistory: spec.KeepHistory,
+				KeepHistory: spec.This.KeepHistory,
 				Latest:      cCtx.Bool("latest"),
 			}
 			imageID, err := b.Commit(
 				ctx,
 				store,
-				fmt.Sprintf("localhost/%s", spec.Repository),
-				spec.Tag,
+				fmt.Sprintf("localhost/%s", spec.This.Repository),
+				spec.This.Tag,
 				commitOptions,
 			)
 			if err != nil {
