@@ -23,6 +23,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const manifestType string = "application/vnd.oci.image.manifest.v1+json"
+
 // Builder provides a high-level front end for Buildah for configuring and
 // building container images of diverse Linux-based distros.
 type Builder struct {
@@ -58,10 +60,11 @@ func (b *Builder) Commit(
 	options CommitOptions,
 ) (string, error) {
 	co := buildah.CommitOptions{
-		Compression:      archive.Gzip,
-		HistoryTimestamp: &time.Time{},
-		OmitHistory:      false,
-		Squash:           true,
+		PreferredManifestType: manifestType,
+		Compression:           archive.Gzip,
+		HistoryTimestamp:      &time.Time{},
+		OmitHistory:           false,
+		Squash:                true,
 	}
 
 	if options.Latest && tag != "latest" {
