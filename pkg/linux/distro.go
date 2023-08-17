@@ -152,7 +152,7 @@ func parseDistroString(s string) (Distro, error) {
 	case "void":
 		d = Void
 	default:
-		return 0, fmt.Errorf("unsupported distro: %s", s)
+		return 0, fmt.Errorf("unsupported distro %q", s)
 	}
 	return d, nil
 }

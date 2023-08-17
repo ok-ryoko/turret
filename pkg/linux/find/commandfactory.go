@@ -26,7 +26,7 @@ func NewCommandFactory(f Finder) (CommandFactory, error) {
 	case GNU:
 		result = &GNUCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized find implementation")
+		return nil, fmt.Errorf("unrecognized find implementation %v", f)
 	}
 	return result, nil
 }

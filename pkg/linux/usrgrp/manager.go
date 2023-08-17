@@ -52,7 +52,7 @@ func parseManagerString(s string) (Manager, error) {
 	case "shadow", "shadow-utils":
 		m = Shadow
 	default:
-		return 0, fmt.Errorf("unsupported user/group management utility: %s", s)
+		return 0, fmt.Errorf("unsupported user management utility %q", s)
 	}
 	return m, nil
 }

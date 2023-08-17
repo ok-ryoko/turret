@@ -83,7 +83,7 @@ func (b *Builder) Commit(
 	imageRef := fmt.Sprintf("%s:%s", repository, tag)
 	storageRef, err := is.Transport.ParseStoreReference(store, imageRef)
 	if err != nil {
-		return "", fmt.Errorf("parsing image reference: %w", err)
+		return "", fmt.Errorf("parsing reference: %w", err)
 	}
 	imageID, _, _, err := b.Builder.Commit(ctx, storageRef, co)
 	if err != nil {
@@ -292,7 +292,7 @@ func (b *Builder) CopyFiles(base string, dest string, srcs []string, options Cop
 	}
 
 	if err := b.Builder.Add(dest, false, aco, base); err != nil {
-		return fmt.Errorf("copying files to %q: %w", dest, err)
+		return fmt.Errorf("copying files from %q to %q: %w", base, dest, err)
 	}
 
 	return nil
@@ -367,7 +367,7 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 		if err != nil {
 			errContext := "searching for special files"
 			if errText != "" {
-				errContext = fmt.Sprintf("%s (%s)", errContext, errText)
+				errContext = fmt.Sprintf("%s (%q)", errContext, errText)
 			}
 			return fmt.Errorf("%s: %w", errContext, err)
 		}
@@ -408,7 +408,7 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 		if err != nil {
 			errContext := "unsetting special bit"
 			if errText != "" {
-				errContext = fmt.Sprintf("%s (%s)", errContext, errText)
+				errContext = fmt.Sprintf("%s (%q)", errContext, errText)
 			}
 			return fmt.Errorf("%s: %w", errContext, err)
 		}
@@ -456,7 +456,7 @@ func New(
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating Buildah builder: %w", err)
 	}
-	logger.Debugf("created working container from image '%s'", imageRef)
+	logger.Debugf("created working container from image %s", imageRef)
 
 	cntr := container.Container{
 		Builder: b,
@@ -465,17 +465,17 @@ func New(
 
 	pm, err := container.NewPackageManager(packageManager)
 	if err != nil {
-		return Builder{}, fmt.Errorf("creating package manager: %w", err)
+		return Builder{}, fmt.Errorf("creating package management interface: %w", err)
 	}
 
 	um, err := container.NewUserGroupManager(userManager)
 	if err != nil {
-		return Builder{}, fmt.Errorf("creating user and group manager: %w", err)
+		return Builder{}, fmt.Errorf("creating user management interface: %w", err)
 	}
 
 	f, err := find.NewCommandFactory(finder)
 	if err != nil {
-		return Builder{}, fmt.Errorf("creating finder: %w", err)
+		return Builder{}, fmt.Errorf("creating find command factory: %w", err)
 	}
 
 	if distro == linux.Debian {

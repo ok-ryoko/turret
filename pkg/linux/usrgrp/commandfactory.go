@@ -31,7 +31,7 @@ func NewCommandFactory(m Manager) (CommandFactory, error) {
 	case Shadow:
 		result = &ShadowCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized user/group management utility")
+		return nil, fmt.Errorf("unrecognized user management utility %v", m)
 	}
 	return result, nil
 }

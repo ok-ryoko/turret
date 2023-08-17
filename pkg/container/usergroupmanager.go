@@ -37,7 +37,7 @@ func NewUserGroupManager(um usrgrp.Manager) (UserGroupManagerInterface, error) {
 	case usrgrp.Shadow:
 		tum = &ShadowUserGroupManager{UserGroupManager{cf}}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager")
+		return nil, fmt.Errorf("unrecognized user management utility %v", um)
 	}
 	return tum, nil
 }

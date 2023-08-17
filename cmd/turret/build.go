@@ -95,15 +95,15 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 
 			specPath, err := processPath(cCtx.Args().First())
 			if err != nil {
-				return fmt.Errorf("processing path: %w", err)
+				return fmt.Errorf("processing spec path: %w", err)
 			}
 			logger.Debugln("processed spec path")
 
 			spec, digest, err := createSpec(specPath, cCtx.Bool("hash-spec"))
 			if err != nil {
-				return fmt.Errorf("creating build spec: %w", err)
+				return fmt.Errorf("creating in-memory representation of spec: %w", err)
 			}
-			logger.Debugln("created build spec")
+			logger.Debugln("created in-memory representation of spec")
 
 			storeOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
 			if err != nil {
@@ -153,7 +153,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				commonOptions,
 			)
 			if err != nil {
-				return fmt.Errorf("creating %s Linux Turret builder: %w", distro.String(), err)
+				return fmt.Errorf("creating %s Linux working container: %w", distro, err)
 			}
 			defer func() {
 				if !cCtx.Bool("keep") {
@@ -163,33 +163,33 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					}
 				}
 			}()
-			logger.Debugf("created %s Linux Turret builder", distro.String())
+			logger.Debugf("created %s Linux working container", distro)
 
 			if b.Builder.OS() != "linux" {
-				return fmt.Errorf("expected Linux image, got %s", b.Builder.OS())
+				return fmt.Errorf("expected 'linux' image, got '%s' image", b.Builder.OS())
 			}
 
 			if spec.Packages.Upgrade {
-				logger.Debugln("upgrading packages...")
+				logger.Debugln("upgrading packages in the working container...")
 				if err = b.UpgradePackages(); err != nil {
 					return fmt.Errorf("upgrading packages: %w", err)
 				}
-				logger.Debugln("upgrade step succeeded")
+				logger.Debugln("upgrade command ran successfully")
 			}
 
 			if len(spec.Packages.Install) > 0 {
-				logger.Debugln("installing packages...")
+				logger.Debugln("installing packages to the working container...")
 				if err = b.InstallPackages(spec.Packages.Install); err != nil {
 					return fmt.Errorf("installing packages: %w", err)
 				}
-				logger.Debugln("package installation step succeeded")
+				logger.Debugln("install command ran successfully")
 			}
 
 			if spec.Packages.Clean {
 				if err = b.CleanPackageCaches(); err != nil {
 					return fmt.Errorf("cleaning package caches: %w", err)
 				}
-				logger.Debugln("package cache cleaning step succeeded")
+				logger.Debugln("clean command ran successfully")
 			}
 
 			if spec.User != nil {
@@ -202,9 +202,9 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					Shell:      spec.User.Shell,
 				}
 				if err = b.CreateUser(spec.User.Name, createUserOptions); err != nil {
-					return fmt.Errorf("creating unprivileged user: %w", err)
+					return fmt.Errorf("creating nonroot user: %w", err)
 				}
-				logger.Debugf("created unprivileged user '%s'", spec.User.Name)
+				logger.Debugf("created nonroot user")
 			}
 
 			if len(spec.Copy) > 0 {
@@ -216,17 +216,17 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 						RemoveS:  c.RemoveS,
 					}
 					if err = b.CopyFiles(c.Base, c.Destination, c.Sources, copyFilesOptions); err != nil {
-						return fmt.Errorf("copying files to container: %w", err)
+						return fmt.Errorf("copying files: %w", err)
 					}
 				}
-				logger.Debugln("file copy step succeeded")
+				logger.Debugln("file copy command(s) ran successfully")
 			}
 
 			if spec.Security.SpecialFiles.RemoveS {
 				if err = b.UnsetSpecialBits(spec.Security.SpecialFiles.Excludes); err != nil {
-					return fmt.Errorf("removing the SUID/SGID bit from files: %w", err)
+					return fmt.Errorf("removing SUID and SGID bits from files: %w", err)
 				}
-				logger.Debugln("SUID/SGID bit removal step succeeded")
+				logger.Debugln("command to remove SUID and SGID bits from files ran successfully")
 			}
 
 			if digest != "" {
@@ -284,7 +284,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			if err != nil {
 				return fmt.Errorf("committing image: %w", err)
 			}
-			logger.Infof("built and committed %s Linux image %s", distro.String(), imageID)
+			logger.Infoln(imageID)
 
 			return nil
 		},
@@ -297,7 +297,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 func processPath(p string) (string, error) {
 	p, err := filepath.Abs(p)
 	if err != nil {
-		return "", fmt.Errorf("determining absolute path: %w", err)
+		return "", fmt.Errorf("canonicalizing spec path: %w", err)
 	}
 
 	home, err := os.UserHomeDir()
@@ -330,7 +330,7 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 
 	blob, err := os.ReadFile(p)
 	if err != nil {
-		return spec.Spec{}, "", fmt.Errorf("loading spec: %w", err)
+		return spec.Spec{}, "", fmt.Errorf("reading spec file: %w", err)
 	}
 
 	digest := ""

@@ -54,7 +54,7 @@ func NewCommandFactory(m Manager) (CommandFactory, error) {
 	case Zypper:
 		result = &ZypperCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager")
+		return nil, fmt.Errorf("unrecognized package manager %v", m)
 	}
 	return result, nil
 }

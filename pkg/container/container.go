@@ -64,7 +64,7 @@ func (c *Container) DefaultRunOptions() buildah.RunOptions {
 func (c *Container) Remove() error {
 	err := c.Builder.Delete()
 	if err != nil {
-		return fmt.Errorf("deleting container: %w", err)
+		return fmt.Errorf("deleting container %s: %w", c.ContainerID(), err)
 	}
 	*c = Container{}
 	return nil
@@ -78,7 +78,7 @@ func (c *Container) ResolveExecutable(executable string) (string, error) {
 	ro := c.DefaultRunOptions()
 	resolved, _, err := c.Run(cmd, ro)
 	if err != nil {
-		return "", fmt.Errorf("resolving executable %s: %w", executable, err)
+		return "", fmt.Errorf("resolving executable %q: %w", executable, err)
 	}
 	return strings.TrimSpace(resolved), nil
 }
@@ -116,7 +116,7 @@ func (c *Container) runWithLogging(cmd []string, options buildah.RunOptions, err
 	outText, errText, err := c.Run(cmd, options)
 	if err != nil {
 		if errText != "" {
-			errContext = fmt.Sprintf("%s (%s)", errContext, errText)
+			errContext = fmt.Sprintf("%s (%q)", errContext, errText)
 		}
 		return fmt.Errorf("%s: %w", errContext, err)
 	}

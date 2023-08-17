@@ -88,7 +88,7 @@ func parseManagerString(s string) (Manager, error) {
 	case "zypper":
 		m = Zypper
 	default:
-		return 0, fmt.Errorf("unsupported package manager: %s", s)
+		return 0, fmt.Errorf("unsupported package manager %q", s)
 	}
 	return m, nil
 }

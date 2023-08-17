@@ -104,11 +104,11 @@ func Validate(s Spec) error {
 	}
 
 	if s.Backends.Package.Manager == 0 {
-		return fmt.Errorf("missing package manager")
+		return fmt.Errorf("missing package management backend")
 	}
 
 	if s.Backends.User.Manager == 0 {
-		return fmt.Errorf("missing user/group management utility")
+		return fmt.Errorf("missing user management backend")
 	}
 
 	if s.Backends.Finder.Finder == 0 {
@@ -119,15 +119,19 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing image repository (name)")
 	}
 
-	if s.From.Repository == "" || s.From.Tag == "" {
-		return fmt.Errorf("missing base image repository (name) or tag")
+	if s.From.Repository == "" {
+		return fmt.Errorf("missing base image repository (name)")
+	}
+
+	if s.From.Tag == "" {
+		return fmt.Errorf("missing base image tag")
 	}
 
 	if len(s.Packages.Install) > 0 {
 		re := regexp.MustCompile(s.Backends.Package.RePackageName())
 		for _, p := range s.Packages.Install {
 			if !re.MatchString(p) {
-				return fmt.Errorf("invalid package name '%s'", p)
+				return fmt.Errorf("invalid package name %q", p)
 			}
 		}
 	}
@@ -135,7 +139,7 @@ func Validate(s Spec) error {
 	if s.User != nil {
 		err := validateName(s.User.Name)
 		if err != nil {
-			return fmt.Errorf("invalid user name '%s': %w", s.User.Name, err)
+			return fmt.Errorf("invalid user name %q: %w", s.User.Name, err)
 		}
 
 		if s.User.ID != 0 && (s.User.ID < 1000 || s.User.ID > 60000) {
@@ -145,7 +149,7 @@ func Validate(s Spec) error {
 		for _, g := range s.User.Groups {
 			err := validateName(g)
 			if err != nil {
-				return fmt.Errorf("invalid group name '%s': %w", g, err)
+				return fmt.Errorf("invalid group name %q: %w", g, err)
 			}
 		}
 	}
@@ -155,25 +159,25 @@ func Validate(s Spec) error {
 			return fmt.Errorf("missing base")
 		}
 		if !filepath.IsAbs(c.Base) {
-			return fmt.Errorf("base is not an absolute path")
+			return fmt.Errorf("base %q is not an absolute path", c.Base)
 		}
 
 		if c.Destination == "" {
 			return fmt.Errorf("missing destination")
 		}
 		if !filepath.IsAbs(c.Destination) {
-			return fmt.Errorf("destination is not an absolute path")
+			return fmt.Errorf("destination %q is not an absolute path", c.Destination)
 		}
 
 		if len(c.Sources) == 0 {
-			return fmt.Errorf("missing sources for destination %q", c.Destination)
+			return fmt.Errorf("missing sources for base %q and destination %q", c.Base, c.Destination)
 		}
 		for i, src := range c.Sources {
 			if src == "" {
-				return fmt.Errorf("empty source at index %d for destination %q", i, c.Destination)
+				return fmt.Errorf("empty source at index %d for base %q and destination %q", i, c.Base, c.Destination)
 			}
 			if reURLScheme.MatchString(src) {
-				return fmt.Errorf("only schemeless paths are supported (%q)", src)
+				return fmt.Errorf("source %q has a scheme", src)
 			}
 		}
 	}
@@ -181,7 +185,7 @@ func Validate(s Spec) error {
 	if a := s.Config.Annotations; len(a) > 0 {
 		for k := range a {
 			if !reReverseUnlimitedFQDN.MatchString(k) {
-				return fmt.Errorf("invalid annotation key: %q", k)
+				return fmt.Errorf("annotation key %q is not in reverse domain notation", k)
 			}
 		}
 	}
@@ -189,7 +193,7 @@ func Validate(s Spec) error {
 	if l := s.Config.Labels; len(l) > 0 {
 		for k := range l {
 			if !reReverseUnlimitedFQDN.MatchString(k) {
-				return fmt.Errorf("invalid label key: %q", k)
+				return fmt.Errorf("label key %q is not in reverse domain notation", k)
 			}
 		}
 	}
@@ -199,7 +203,7 @@ func Validate(s Spec) error {
 			return fmt.Errorf("the zero port is reserved")
 		}
 		if p.Protocol.Protocol == 0 {
-			return fmt.Errorf("unknown protocol for port %d", p.Number)
+			return fmt.Errorf("unknown network protocol for port %d", p.Number)
 		}
 	}
 
@@ -215,7 +219,7 @@ func validateName(name string) error {
 	}
 
 	if name == "root" {
-		return fmt.Errorf("name 'root' is reserved")
+		return fmt.Errorf("the name \"root\" is reserved")
 	}
 
 	if len(name) > 32 {
@@ -398,7 +402,7 @@ type Port struct {
 
 // String returns a string representation of the port.
 func (p Port) String() string {
-	return fmt.Sprintf("%d/%s", p.Number, p.Protocol.String())
+	return fmt.Sprintf("%d/%s", p.Number, p.Protocol)
 }
 
 // Protocol is a unique identifier for a network protocol. The zero value
@@ -444,7 +448,7 @@ func parseProtocolString(s string) (Protocol, error) {
 	case "udp":
 		p = UDP
 	default:
-		return 0, fmt.Errorf("unsupported protocol: %q", s)
+		return 0, fmt.Errorf("unsupported network protocol %q", s)
 	}
 	return p, nil
 }

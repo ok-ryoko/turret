@@ -56,7 +56,7 @@ func parseFinderString(s string) (Finder, error) {
 	case "gnu":
 		f = GNU
 	default:
-		return 0, fmt.Errorf("unsupported finder: %s", s)
+		return 0, fmt.Errorf("unsupported find implementation %q", s)
 	}
 	return f, nil
 }

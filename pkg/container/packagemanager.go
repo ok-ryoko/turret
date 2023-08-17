@@ -38,7 +38,7 @@ func (pm *PackageManager) CleanCaches(c *Container) error {
 	cmd, capabilities := pm.NewCleanCacheCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	errContext := fmt.Sprintf("cleaning %s package caches", pm.PackageManager().String())
+	errContext := fmt.Sprintf("cleaning %s package caches", pm.PackageManager())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -51,7 +51,7 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errContext := fmt.Sprintf("installing %s packages", pm.PackageManager().String())
+	errContext := fmt.Sprintf("installing %s packages", pm.PackageManager())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -66,7 +66,7 @@ func (pm *PackageManager) List(c *Container) ([]string, error) {
 	ro.AddCapabilities = capabilities
 
 	outText, errText, err := c.Run(cmd, ro)
-	errContext := fmt.Sprintf("listing installed %s packages", pm.PackageManager().String())
+	errContext := fmt.Sprintf("listing installed %s packages", pm.PackageManager())
 	if err != nil {
 		if errText != "" {
 			errContext = fmt.Sprintf("%s (%q)", errContext, errText)
@@ -89,7 +89,7 @@ func (pm *PackageManager) Upgrade(c *Container) error {
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager().String())
+	errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -116,7 +116,7 @@ func NewPackageManager(pm pckg.Manager) (PackageManagerInterface, error) {
 		pckg.Zypper:
 		tpm = &PackageManager{cf}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager")
+		return nil, fmt.Errorf("unrecognized package manager %v", pm)
 	}
 	return tpm, nil
 }
