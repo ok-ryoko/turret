@@ -129,6 +129,8 @@
 
 # Context directory for the files to copy over to the working container;
 # if a relative path, then it must be local to the containing directory;
+# if equal to "~" or starts with "~/", then the tilde is expanded to the home
+# directory of the user invoking the program;
 # if omitted, then the base is the containing directory
 #
 #base = ""

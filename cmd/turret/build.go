@@ -354,6 +354,17 @@ func createSpec(p string, hash bool) (spec.Spec, string, error) {
 		for i, c := range s.Copy {
 			if c.Base == "" {
 				s.Copy[i].Base = parent
+			} else if strings.HasPrefix(c.Base, "~") {
+				home, err := os.UserHomeDir()
+				if err != nil {
+					return spec.Spec{}, "", fmt.Errorf("discovering home directory on host: %w", err)
+				}
+				if c.Base == "~" {
+					s.Copy[i].Base = home
+				} else if strings.HasPrefix(c.Base, "~/") {
+					_, after, _ := strings.Cut(c.Base, "/")
+					s.Copy[i].Base = filepath.Clean(filepath.Join(home, after))
+				}
 			} else if filepath.IsLocal(c.Base) {
 				s.Copy[i].Base, err = filepath.Abs(filepath.Join(parent, c.Base))
 				if err != nil {
