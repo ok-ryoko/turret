@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	BusyBox = 1 << iota
+	BusyBox Manager = 1 << iota
 	Shadow
 )
 

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	APK = 1 << iota
+	APK Manager = 1 << iota
 	APT
 	DNF
 	Pacman

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	BSD = 1 << iota
+	BSD Finder = 1 << iota
 	BusyBox
 	GNU
 )
