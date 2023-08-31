@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/find"
@@ -228,54 +227,6 @@ type Port struct {
 // String returns a string representation of the port.
 func (p Port) String() string {
 	return fmt.Sprintf("%d/%s", p.Number, p.Protocol)
-}
-
-// Protocol is a unique identifier for a network protocol. The zero value
-// represents an unknown protocol.
-type Protocol uint
-
-const (
-	TCP Protocol = 1 << iota
-	UDP
-)
-
-// String returns a string containing the stylized name of the protocol.
-func (p Protocol) String() string {
-	var s string
-	switch p {
-	case TCP:
-		s = "tcp"
-	case UDP:
-		s = "udp"
-	default:
-		s = "unknown"
-	}
-	return s
-}
-
-// ProtocolWrapper wraps Protocol to facilitate its parsing from serialized data.
-type ProtocolWrapper struct {
-	Protocol
-}
-
-// UnmarshalText decodes the protocol from a string.
-func (w *ProtocolWrapper) UnmarshalText(text []byte) error {
-	var err error
-	w.Protocol, err = parseProtocolString(string(text))
-	return err
-}
-
-func parseProtocolString(s string) (Protocol, error) {
-	var p Protocol
-	switch strings.ToLower(s) {
-	case "tcp":
-		p = TCP
-	case "udp":
-		p = UDP
-	default:
-		return 0, fmt.Errorf("unsupported network protocol %q", s)
-	}
-	return p, nil
 }
 
 // Clear holds toggles for clearing configuration inherited from the base
