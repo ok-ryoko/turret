@@ -14,7 +14,7 @@ import (
 
 	"github.com/ok-ryoko/turret/pkg/builder"
 	"github.com/ok-ryoko/turret/pkg/container"
-	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/linux/user"
 	"github.com/ok-ryoko/turret/pkg/spec"
 
 	"github.com/containers/storage"
@@ -188,7 +188,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if spec.User != nil {
-				createUserOptions := usrgrp.CreateUserOptions{
+				createUserOptions := user.CreateUserOptions{
 					ID:         spec.User.ID,
 					UserGroup:  spec.User.UserGroup,
 					Groups:     spec.User.Groups,

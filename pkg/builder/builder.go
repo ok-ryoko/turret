@@ -14,7 +14,7 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
-	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/linux/user"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
@@ -35,7 +35,7 @@ type Builder struct {
 
 	// Pointer to an object that manages users and groups in the working
 	// container
-	UserGroupManager container.UserGroupManagerInterface
+	UserManager container.UserManagerInterface
 
 	// Object that creates commands for locating files in the working container
 	FinderCommandFactory find.CommandFactory
@@ -302,8 +302,8 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container,
 // assuming `name` is a nonempty string.
-func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
-	if err := b.UserGroupManager.CreateUser(&b.Container, name, options); err != nil {
+func (b *Builder) CreateUser(name string, options user.CreateUserOptions) error {
+	if err := b.UserManager.CreateUser(&b.Container, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -398,7 +398,7 @@ func New(
 	ctx context.Context,
 	distro linux.Distro,
 	packageManager pckg.Manager,
-	userManager usrgrp.Manager,
+	userManager user.Manager,
 	finder find.Finder,
 	imageRef string,
 	pull bool,
@@ -435,7 +435,7 @@ func New(
 		return Builder{}, fmt.Errorf("creating package management interface: %w", err)
 	}
 
-	um, err := container.NewUserGroupManager(userManager)
+	um, err := container.NewUserManager(userManager)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating user management interface: %w", err)
 	}
@@ -453,7 +453,7 @@ func New(
 	return Builder{
 		Container:            cntr,
 		PackageManager:       pm,
-		UserGroupManager:     um,
+		UserManager:          um,
 		FinderCommandFactory: f,
 	}, nil
 }

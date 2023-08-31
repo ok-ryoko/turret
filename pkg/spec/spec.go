@@ -12,7 +12,7 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
-	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/linux/user"
 
 	"github.com/containers/image/v5/docker/reference"
 )
@@ -499,7 +499,7 @@ type Backends struct {
 
 	// Identity of user-space utility for managing users and groups in the
 	// working container
-	User usrgrp.ManagerWrapper
+	User user.ManagerWrapper
 
 	// Identity of the implementation of the find utility in the working
 	// container

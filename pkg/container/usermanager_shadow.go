@@ -6,15 +6,15 @@ package container
 import (
 	"fmt"
 
-	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/linux/user"
 )
 
-type ShadowUserGroupManager struct {
-	UserGroupManager
+type ShadowUserManager struct {
+	UserManager
 }
 
 // CreateUser creates the sole unprivileged user of the working container.
-func (um *ShadowUserGroupManager) CreateUser(c *Container, name string, options usrgrp.CreateUserOptions) error {
+func (um *ShadowUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
 	cmd, capabilities := um.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
@@ -39,7 +39,7 @@ func (um *ShadowUserGroupManager) CreateUser(c *Container, name string, options 
 		)
 	}
 
-	errContext := fmt.Sprintf("creating user using %s", um.UserManager())
+	errContext := fmt.Sprintf("creating user using %s", um.UserManager.UserManager())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}

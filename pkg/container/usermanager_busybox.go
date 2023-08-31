@@ -6,19 +6,19 @@ package container
 import (
 	"fmt"
 
-	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+	"github.com/ok-ryoko/turret/pkg/linux/user"
 )
 
-type BusyBoxUserGroupManager struct {
-	UserGroupManager
+type BusyBoxUserManager struct {
+	UserManager
 }
 
 // CreateUser creates the sole unprivileged user of the working container.
-func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options usrgrp.CreateUserOptions) error {
+func (um *BusyBoxUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
 	cmd, capabilities := um.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	errMsg := fmt.Sprintf("creating user using %s", um.UserManager())
+	errMsg := fmt.Sprintf("creating user using %s", um.UserManager.UserManager())
 	if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -26,7 +26,7 @@ func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options
 	if options.UserGroup {
 		cmd, _ = um.NewAddUserToGroupCmd(name, name)
 		ro = c.DefaultRunOptions()
-		errMsg = fmt.Sprintf("adding user to group using %s", um.UserManager())
+		errMsg = fmt.Sprintf("adding user to group using %s", um.UserManager.UserManager())
 		if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -36,7 +36,7 @@ func (um *BusyBoxUserGroupManager) CreateUser(c *Container, name string, options
 		for _, g := range options.Groups {
 			cmd, _ = um.NewAddUserToGroupCmd(name, g)
 			ro = c.DefaultRunOptions()
-			errMsg = fmt.Sprintf("adding user to group using %s", um.UserManager())
+			errMsg = fmt.Sprintf("adding user to group using %s", um.UserManager.UserManager())
 			if err := c.runWithLogging(cmd, ro, errMsg); err != nil {
 				return fmt.Errorf("%w", err)
 			}
