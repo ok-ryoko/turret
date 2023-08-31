@@ -353,8 +353,7 @@ func Validate(s Spec) error {
 	}
 
 	if s.User != nil {
-		err := validateName(s.User.Name)
-		if err != nil {
+		if err := validateName(s.User.Name); err != nil {
 			return fmt.Errorf("invalid user name %q: %w", s.User.Name, err)
 		}
 
@@ -363,8 +362,7 @@ func Validate(s Spec) error {
 		}
 
 		for _, g := range s.User.Groups {
-			err := validateName(g)
-			if err != nil {
+			if err := validateName(g); err != nil {
 				return fmt.Errorf("invalid group name %q: %w", g, err)
 			}
 		}
@@ -398,19 +396,15 @@ func Validate(s Spec) error {
 		}
 	}
 
-	if a := s.Config.Annotations; len(a) > 0 {
-		for k := range a {
-			if !reReverseUnlimitedFQDN.MatchString(k) {
-				return fmt.Errorf("annotation key %q is not in reverse domain notation", k)
-			}
+	for k := range s.Config.Annotations {
+		if !reReverseUnlimitedFQDN.MatchString(k) {
+			return fmt.Errorf("annotation key %q is not in reverse domain notation", k)
 		}
 	}
 
-	if l := s.Config.Labels; len(l) > 0 {
-		for k := range l {
-			if !reReverseUnlimitedFQDN.MatchString(k) {
-				return fmt.Errorf("label key %q is not in reverse domain notation", k)
-			}
+	for k := range s.Config.Labels {
+		if !reReverseUnlimitedFQDN.MatchString(k) {
+			return fmt.Errorf("label key %q is not in reverse domain notation", k)
 		}
 	}
 

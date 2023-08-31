@@ -12,15 +12,13 @@ type ZypperCommandFactory struct{}
 
 func (c ZypperCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "clean", "--all"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c ZypperCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "install", "--no-recommends"}
 	cmd = append(cmd, packages...)
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c ZypperCommandFactory) NewListInstalledPackagesCmd() (
@@ -37,8 +35,6 @@ func (c ZypperCommandFactory) NewListInstalledPackagesCmd() (
 		"packages",
 		"--installed-only",
 	}
-
-	capabilities = []string{}
 
 	// expected line format: status | repo | name | version | arch
 	parse = func(lines []string) ([]string, error) {
@@ -57,7 +53,7 @@ func (c ZypperCommandFactory) NewListInstalledPackagesCmd() (
 		return result, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c ZypperCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -66,8 +62,7 @@ func (c ZypperCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 
 func (c ZypperCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "patch"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c ZypperCommandFactory) PackageManager() Manager {

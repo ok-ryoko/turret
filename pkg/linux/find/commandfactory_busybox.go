@@ -11,6 +11,5 @@ func (c BusyBoxCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) 
 		"-xdev",
 		"(", "-perm", "+2000", "-o", "-perm", "+4000", ")",
 	}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }

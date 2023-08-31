@@ -153,10 +153,8 @@ func (b *Builder) Configure(options ConfigureOptions) {
 	if options.ClearPorts {
 		b.Builder.ClearPorts()
 	}
-	if len(options.Ports) > 0 {
-		for _, p := range options.Ports {
-			b.Builder.SetPort(p)
-		}
+	for _, p := range options.Ports {
+		b.Builder.SetPort(p)
 	}
 
 	if options.WorkDir != "" {
@@ -448,6 +446,7 @@ func New(
 	if distro == linux.Debian {
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 	}
+
 	cntr.CommonOptions = options
 
 	return Builder{

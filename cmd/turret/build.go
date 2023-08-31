@@ -130,22 +130,17 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			distro := spec.This.Distro.Distro
-			packageManager := spec.Backends.Package.Manager
-			userManager := spec.Backends.User.Manager
-			finder := spec.Backends.Finder.Finder
-			refFrom := spec.From.Reference()
-			commonOptions := container.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
 				ctx,
 				store,
-				refFrom,
+				spec.From.Reference(),
 				logger,
 				cCtx.Bool("pull"),
 				distro,
-				packageManager,
-				userManager,
-				finder,
-				commonOptions,
+				spec.Backends.Package.Manager,
+				spec.Backends.User.Manager,
+				spec.Backends.Finder.Finder,
+				container.CommonOptions{LogCommands: v >= 4},
 			)
 			if err != nil {
 				return fmt.Errorf("creating %s Linux working container: %w", distro, err)

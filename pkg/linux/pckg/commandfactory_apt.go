@@ -12,7 +12,7 @@ func (c APTCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 		"CAP_DAC_OVERRIDE",
 		"CAP_FOWNER",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
@@ -25,7 +25,7 @@ func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 		"CAP_SETGID",
 		"CAP_SETUID",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c APTCommandFactory) NewListInstalledPackagesCmd() (
@@ -34,14 +34,13 @@ func (c APTCommandFactory) NewListInstalledPackagesCmd() (
 	parse func([]string) ([]string, error),
 ) {
 	cmd = []string{"apt-cache", "pkgnames"}
-	capabilities = []string{}
 
 	// expected line format: name
 	parse = func(lines []string) ([]string, error) {
 		return lines, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -53,7 +52,7 @@ func (c APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 		"CAP_SETGID",
 		"CAP_SETUID",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
@@ -65,7 +64,7 @@ func (c APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 		"CAP_SETGID",
 		"CAP_SETUID",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c APTCommandFactory) PackageManager() Manager {

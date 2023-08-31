@@ -12,8 +12,7 @@ type DNFCommandFactory struct{}
 
 func (c DNFCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--quiet", "clean", "all"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
@@ -24,7 +23,7 @@ func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 		"CAP_DAC_OVERRIDE",
 		"CAP_SETFCAP",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c DNFCommandFactory) NewListInstalledPackagesCmd() (
@@ -39,8 +38,6 @@ func (c DNFCommandFactory) NewListInstalledPackagesCmd() (
 		"list",
 		"--installed",
 	}
-
-	capabilities = []string{}
 
 	// expected line format: name.arch version repo
 	parse = func(lines []string) ([]string, error) {
@@ -63,7 +60,7 @@ func (c DNFCommandFactory) NewListInstalledPackagesCmd() (
 		return result, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c DNFCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -77,7 +74,7 @@ func (c DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 		"CAP_DAC_OVERRIDE",
 		"CAP_SETFCAP",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c DNFCommandFactory) PackageManager() Manager {

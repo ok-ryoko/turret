@@ -12,15 +12,14 @@ type XBPSCommandFactory struct{}
 
 func (c XBPSCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-remove", "--clean-cache", "--yes"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c XBPSCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--yes"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
-	return
+	return cmd, capabilities
 }
 
 func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (
@@ -29,7 +28,6 @@ func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (
 	parse func([]string) ([]string, error),
 ) {
 	cmd = []string{"xbps-query", "--list-pkgs"}
-	capabilities = []string{}
 
 	// expected line format: status name-version_revision description
 	parse = func(lines []string) ([]string, error) {
@@ -49,7 +47,7 @@ func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (
 		return result, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c XBPSCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -59,7 +57,7 @@ func (c XBPSCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 func (c XBPSCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--sync", "--update", "--yes"}
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
-	return
+	return cmd, capabilities
 }
 
 func (c XBPSCommandFactory) PackageManager() Manager {

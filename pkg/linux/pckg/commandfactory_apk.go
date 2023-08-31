@@ -17,8 +17,7 @@ func (c APKCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 func (c APKCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "add"}
 	cmd = append(cmd, packages...)
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c APKCommandFactory) NewListInstalledPackagesCmd() (
@@ -34,8 +33,6 @@ func (c APKCommandFactory) NewListInstalledPackagesCmd() (
 		"list",
 		"--installed",
 	}
-
-	capabilities = []string{}
 
 	// expected line format: name-version-revision arch {origin} (licenses) [status]
 	parse = func(lines []string) ([]string, error) {
@@ -59,7 +56,7 @@ func (c APKCommandFactory) NewListInstalledPackagesCmd() (
 		return result, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c APKCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -68,8 +65,7 @@ func (c APKCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 
 func (c APKCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "upgrade"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c APKCommandFactory) PackageManager() Manager {

@@ -38,13 +38,12 @@ func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserO
 		// editing /etc/passwd, /etc/shadow and /etc/group
 	}
 
-	return
+	return cmd, capabilities
 }
 
 func (c BusyBoxCommandFactory) NewAddUserToGroupCmd(name string, group string) (cmd, capabilities []string) {
 	cmd = []string{"addgroup", name, group}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c BusyBoxCommandFactory) UserManager() Manager {

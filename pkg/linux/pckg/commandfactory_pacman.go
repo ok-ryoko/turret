@@ -7,8 +7,7 @@ type PacmanCommandFactory struct{}
 
 func (c PacmanCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--clean", "--clean", "--noconfirm", "--quiet"}
-	capabilities = []string{}
-	return
+	return cmd, []string{}
 }
 
 func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
@@ -20,7 +19,7 @@ func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilitie
 		"CAP_FOWNER",
 		"CAP_SYS_CHROOT",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (
@@ -35,14 +34,12 @@ func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (
 		"--quiet",
 	}
 
-	capabilities = []string{}
-
 	// expected line format: name
 	parse = func(lines []string) ([]string, error) {
 		return lines, nil
 	}
 
-	return
+	return cmd, []string{}, parse
 }
 
 func (c PacmanCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
@@ -57,7 +54,7 @@ func (c PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 		"CAP_FOWNER",
 		"CAP_SYS_CHROOT",
 	}
-	return
+	return cmd, capabilities
 }
 
 func (c PacmanCommandFactory) PackageManager() Manager {

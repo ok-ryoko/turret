@@ -62,8 +62,7 @@ func (c *Container) DefaultRunOptions() buildah.RunOptions {
 // Remove removes the working container and destroys this Container, which
 // should not be used afterwards.
 func (c *Container) Remove() error {
-	err := c.Builder.Delete()
-	if err != nil {
+	if err := c.Builder.Delete(); err != nil {
 		return fmt.Errorf("deleting container %s: %w", c.ContainerID(), err)
 	}
 	*c = Container{}

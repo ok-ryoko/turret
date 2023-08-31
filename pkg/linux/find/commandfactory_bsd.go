@@ -12,5 +12,5 @@ func (c BSDCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
 		"-perm", "+u=s,g=s",
 	}
 	capabilities = []string{"CAP_DAC_READ_SEARCH"}
-	return
+	return cmd, capabilities
 }

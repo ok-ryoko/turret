@@ -58,7 +58,7 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 		// of files copied from /etc/skel to /home/user
 	}
 
-	return
+	return cmd, capabilities
 }
 
 func (c ShadowCommandFactory) NewAddUserToGroupCmd(user, group string) (cmd, capabilities []string) {

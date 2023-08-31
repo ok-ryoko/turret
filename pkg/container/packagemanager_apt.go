@@ -14,14 +14,12 @@ type APTPackageManager struct {
 }
 
 func (pm *APTPackageManager) Install(c *Container, packages []string) error {
-	pmDisplay := pm.PackageManager.PackageManager().String()
-
 	{
 		cmd, capabilities := pm.NewUpdateIndexCmd()
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("updating %s package index", pmDisplay)
+		errContext := fmt.Sprintf("updating %s package index", pm.PackageManager.PackageManager())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -32,7 +30,7 @@ func (pm *APTPackageManager) Install(c *Container, packages []string) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("installing %s packages", pmDisplay)
+		errContext := fmt.Sprintf("installing %s packages", pm.PackageManager.PackageManager())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -42,14 +40,12 @@ func (pm *APTPackageManager) Install(c *Container, packages []string) error {
 }
 
 func (pm *APTPackageManager) Upgrade(c *Container) error {
-	pmDisplay := pm.PackageManager.PackageManager().String()
-
 	{
 		cmd, capabilities := pm.NewUpdateIndexCmd()
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("updating %s package index", pmDisplay)
+		errContext := fmt.Sprintf("updating %s package index", pm.PackageManager.PackageManager())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -60,7 +56,7 @@ func (pm *APTPackageManager) Upgrade(c *Container) error {
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("upgrading pre-installed %s packages", pmDisplay)
+		errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager.PackageManager())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
