@@ -341,7 +341,7 @@ type User struct {
 	// to the user-space utility responsible for user creation.
 	//
 	// If not 0, then it must be an integer between 1000 and 60000, inclusive.
-	ID uint `toml:"id"`
+	ID uint32 `toml:"id"`
 
 	// Whether to create a user group
 	UserGroup bool `toml:"user-group"`
