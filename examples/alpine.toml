@@ -1,6 +1,6 @@
 [this]
 distro = "alpine"
-repository = "turret/alpine-base"
+repository = "localhost/hello-alpine"
 tag = "0.1.0"
 
 [from]

@@ -1,6 +1,6 @@
 [this]
 distro = "openSUSE"
-repository = "opensuse-base"
+repository = "localhost/hello-opensuse"
 tag = "0.1.0"
 
 [from]

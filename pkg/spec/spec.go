@@ -13,6 +13,8 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 	"github.com/ok-ryoko/turret/pkg/linux/usrgrp"
+
+	"github.com/containers/image/v5/docker/reference"
 )
 
 var (
@@ -29,7 +31,7 @@ type Spec struct {
 	This This
 
 	// Reference for the base image
-	From BaseImage
+	From From
 
 	// Instructions for the distro's canonical package manager
 	Packages Packages
@@ -65,6 +67,16 @@ type This struct {
 	// Whether to preserve the image history and timestamps of the files in the
 	// working container's file system
 	KeepHistory bool `toml:"keep-history"`
+}
+
+// Reference returns a string representation of the tagged reference for the
+// image we're building.
+func (t This) Reference() string {
+	ref := t.Repository
+	if t.Tag != "" {
+		ref += ":" + t.Tag
+	}
+	return ref
 }
 
 // Fill populates empty optional fields in a spec using information encoded
@@ -125,12 +137,20 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing image repository (name)")
 	}
 
+	if _, err := reference.Parse(s.This.Reference()); err != nil {
+		return fmt.Errorf("parsing image reference: %w", err)
+	}
+
 	if s.From.Repository == "" {
 		return fmt.Errorf("missing base image repository (name)")
 	}
 
-	if s.From.Tag == "" {
-		return fmt.Errorf("missing base image tag")
+	if s.From.Tag == "" && s.From.Digest == "" {
+		return fmt.Errorf("expected tag or digest for base image, found neither")
+	}
+
+	if _, err := reference.Parse(s.From.Reference()); err != nil {
+		return fmt.Errorf("parsing base image reference: %w", err)
 	}
 
 	if len(s.Packages.Install) > 0 {
@@ -247,18 +267,32 @@ func validateName(name string) error {
 	return nil
 }
 
-// BaseImage holds the components of the reference to the base image, plus
+// From holds the components of the canonical reference to the base image, plus
 // preprocessing instructions for the base image.
-type BaseImage struct {
+type From struct {
+	// Image name comprising a fully qualified domain and path
 	Repository string
-	Tag        string
-	Clear      Clear
+
+	// Human-readable identifier for a manifest in the repository
+	Tag string
+
+	// Unique identifer for the contents of the base image
+	Digest string
+
+	Clear Clear
 }
 
-// Reference returns the repository:tag string representation of the
-// reference to the base image.
-func (i BaseImage) Reference() string {
-	return fmt.Sprintf("%s:%s", i.Repository, i.Tag)
+// Reference returns a string representation of the canonical reference to the
+// base image.
+func (f From) Reference() string {
+	ref := f.Repository
+	if f.Tag != "" {
+		ref += ":" + f.Tag
+	}
+	if f.Digest != "" {
+		ref += "@" + f.Digest
+	}
+	return ref
 }
 
 // Clear holds toggles for clearing configuration inherited from the base

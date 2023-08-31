@@ -1,6 +1,6 @@
 [this]
 distro = "fedora"
-repository = "fedora-base"
+repository = "localhost/hello-fedora"
 tag = "0.1.0"
 
 [from]

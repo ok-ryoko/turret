@@ -1,6 +1,6 @@
 [this]
 distro = "debian"
-repository = "debian-base"
+repository = "localhost/hello-debian"
 tag = "0.1.0"
 
 [from]

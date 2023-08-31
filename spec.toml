@@ -26,8 +26,8 @@
 
 [from]
 
-# Name of the base image; must contain the fully qualified registry, e.g.,
-# registry.fedoraproject.org/fedora;
+# Name of the base image comprising a fully qualified domain and path;
+# e.g., registry.fedoraproject.org/fedora;
 # required
 #
 #repository = ""
@@ -36,6 +36,11 @@
 # required
 #
 #tag = ""
+
+# Unique content identifier;
+# e.g., sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+#
+#digest = ""
 
 [from.clear]
 

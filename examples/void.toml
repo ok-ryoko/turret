@@ -1,6 +1,6 @@
 [this]
 distro = "void"
-repository = "void-base"
+repository = "localhost/hello-void"
 tag = "0.1.0"
 
 [from]
