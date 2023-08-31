@@ -22,10 +22,6 @@ func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserO
 		cmd = append(cmd, "-h", fmt.Sprintf("/home/%s", name))
 	}
 
-	if options.Shell != "" {
-		cmd = append(cmd, "-s", options.Shell)
-	}
-
 	cmd = append(cmd, name)
 
 	// CAP_DAC_OVERRIDE and CAP_FSETID are elements of the adduser effective

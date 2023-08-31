@@ -29,10 +29,6 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 		cmd = append(cmd, "--create-home")
 	}
 
-	if options.Shell != "" {
-		cmd = append(cmd, "--shell", options.Shell)
-	}
-
 	if len(options.Groups) > 0 {
 		cmd = append(cmd, "--groups", strings.Join(options.Groups, ","))
 	}

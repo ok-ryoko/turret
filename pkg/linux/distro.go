@@ -26,24 +26,6 @@ const (
 	Void
 )
 
-// DefaultShell returns the known default shell for the distro.
-func (d Distro) DefaultShell() string {
-	var s string
-	switch d {
-	case Alpine:
-		s = "/bin/ash"
-	case Arch, Debian, Fedora, OpenSUSE:
-		s = "/bin/bash"
-	case Chimera:
-		s = "/bin/sh"
-	case Void:
-		s = "/bin/dash"
-	default:
-		s = ""
-	}
-	return s
-}
-
 // DefaultPackageManager returns the canonical package manager for the distro.
 func (d Distro) DefaultPackageManager() pckg.Manager {
 	var pm pckg.Manager

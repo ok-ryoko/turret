@@ -168,9 +168,6 @@ func (b *Builder) Configure(options ConfigureOptions) {
 		if options.WorkDir == "" && options.User.CreateHome {
 			b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
 		}
-		if len(options.Command) == 0 && len(options.Entrypoint) == 0 && options.User.Shell != "" {
-			b.Builder.SetCmd([]string{options.User.Shell})
-		}
 	}
 }
 
@@ -231,7 +228,6 @@ type ConfigureOptions struct {
 type ConfigureUserOptions struct {
 	Name       string
 	CreateHome bool
-	Shell      string
 }
 
 // CopyFiles copies one or more files on the host's file system to the working
@@ -307,18 +303,9 @@ type CopyFilesOptions struct {
 // CreateUser creates the sole unprivileged user of the working container,
 // assuming `name` is a nonempty string.
 func (b *Builder) CreateUser(name string, options usrgrp.CreateUserOptions) error {
-	if options.Shell != "" {
-		shell, err := b.ResolveExecutable(options.Shell)
-		if err != nil {
-			return fmt.Errorf("resolving shell: %w", err)
-		}
-		options.Shell = shell
-	}
-
 	if err := b.UserGroupManager.CreateUser(&b.Container, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
-
 	return nil
 }
 

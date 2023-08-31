@@ -42,5 +42,4 @@ type CreateUserOptions struct {
 	UserGroup  bool
 	Groups     []string
 	CreateHome bool
-	Shell      string
 }

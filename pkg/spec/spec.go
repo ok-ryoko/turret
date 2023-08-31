@@ -356,9 +356,6 @@ type User struct {
 
 	// Create a home directory for the user in /home
 	CreateHome bool `toml:"create-home"`
-
-	// Preferred interactive shell; must be a PATH-resolvable executable
-	Shell string
 }
 
 // Copy holds instructions and options for copying one or more files from the

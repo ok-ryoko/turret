@@ -194,7 +194,6 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 					Groups:     spec.User.Groups,
 					Comment:    spec.User.Comment,
 					CreateHome: spec.User.CreateHome,
-					Shell:      spec.User.Shell,
 				}
 				if err = b.CreateUser(spec.User.Name, createUserOptions); err != nil {
 					return fmt.Errorf("creating nonroot user: %w", err)
@@ -233,7 +232,6 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				configureUserOptions = builder.ConfigureUserOptions{
 					Name:       spec.User.Name,
 					CreateHome: spec.User.CreateHome,
-					Shell:      spec.User.Shell,
 				}
 			}
 

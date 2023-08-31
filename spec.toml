@@ -124,12 +124,6 @@
 #
 #create-home = false
 
-# User's interactive shell;
-# can be an absolute path or a PATH-resolvable command;
-# useful in development containers
-#
-#shell = ""
-
 [[copy]]
 
 # Context directory for the files to copy over to the working container;
