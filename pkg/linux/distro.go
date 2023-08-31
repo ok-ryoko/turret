@@ -12,10 +12,6 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/user"
 )
 
-// Distro is a unique identifier for an independent Linux-based distribution.
-// The zero value represents an unknown distro.
-type Distro int
-
 const (
 	Alpine Distro = 1 << iota
 	Arch
@@ -25,6 +21,10 @@ const (
 	OpenSUSE
 	Void
 )
+
+// Distro is a unique identifier for an independent Linux-based distribution.
+// The zero value represents an unknown distro.
+type Distro int
 
 // DefaultPackageManager returns the canonical package manager for the distro.
 func (d Distro) DefaultPackageManager() pckg.Manager {

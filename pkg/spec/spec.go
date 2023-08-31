@@ -79,6 +79,245 @@ func (t This) Reference() string {
 	return ref
 }
 
+// From holds the components of the canonical reference to the base image, plus
+// preprocessing instructions for the base image.
+type From struct {
+	// Image name comprising a fully qualified domain and path
+	Repository string
+
+	// Human-readable identifier for a manifest in the repository
+	Tag string
+
+	// Unique identifer for the contents of the base image
+	Digest string
+}
+
+// Reference returns a string representation of the canonical reference to the
+// base image.
+func (f From) Reference() string {
+	ref := f.Repository
+	if f.Tag != "" {
+		ref += ":" + f.Tag
+	}
+	if f.Digest != "" {
+		ref += "@" + f.Digest
+	}
+	return ref
+}
+
+// Packages contains instructions for the distro's canonical package manager.
+type Packages struct {
+	// Whether to upgrade pre-installed packages
+	Upgrade bool
+
+	// List of packages to install
+	Install []string
+
+	// Whether to clean package caches after upgrading or installing packages
+	Clean bool
+}
+
+// User holds information about a Linux user.
+type User struct {
+	// Human-readable identifier
+	Name string
+
+	// Linux user ID (UID)
+	//
+	// The default value of 0 tells the program to delegate the choice of UID
+	// to the user-space utility responsible for user creation.
+	//
+	// If not 0, then it must be an integer between 1000 and 60000, inclusive.
+	ID uint32 `toml:"id"`
+
+	// Whether to create a user group
+	UserGroup bool `toml:"user-group"`
+
+	// Groups to which to add the user
+	Groups []string
+
+	// GECOS field text commonly used to store a full display name
+	Comment *string
+
+	// Create a home directory for the user in /home
+	CreateHome bool `toml:"create-home"`
+}
+
+// Copy holds instructions and options for copying one or more files from the
+// host's file system to the working container's file system.
+type Copy struct {
+	// Context directory for the files to copy over to the working container
+	Base string
+
+	// Absolute path to the destination on the working container's file system
+	Destination string `toml:"dest"`
+
+	// Absolute or relative paths to source files on the host's file system;
+	// may contain gitignore-style glob patterns
+	Sources []string `toml:"srcs"`
+
+	// Source files in the base directory to exclude from the copy operation;
+	// may contain gitignore-style glob patterns
+	Excludes []string
+
+	// Set the mode of the copied files to this integer
+	Mode uint32
+
+	// Transfer ownership of the copied files to this user
+	Owner string
+
+	// Remove all SUID and SGID bits from the files copied to the working container
+	RemoveS bool `toml:"remove-s"`
+}
+
+// Security holds security-related options for the working container.
+type Security struct {
+	// Options for handling files with a SUID/SGID bit
+	SpecialFiles SpecialFiles `toml:"special-files"`
+}
+
+// SpecialFiles holds options for handling SUID/SGID bits.
+type SpecialFiles struct {
+	// Whether to remove all SUID/SGID bits automatically
+	RemoveS bool `toml:"remove-s"`
+
+	// Whether to preserve the SUID/SGID bit on one or more files
+	Excludes []string
+}
+
+// Configuration holds configuration options for the image to be built from the
+// working container, as defined in the OCI v1 Image Format specification.
+type Configuration struct {
+	// Set or update one or more annotations
+	Annotations map[string]string
+
+	// Provide contact information for the image maintainer
+	Author string
+
+	// Set the default command (or the parameters, if an entrypoint is set)
+	Command []string `toml:"cmd"`
+
+	// Describe how the image was built
+	CreatedBy string `toml:"created-by"`
+
+	// Set the entrypoint
+	Entrypoint []string `toml:"ep"`
+
+	// Set or update one or more environment variables
+	Environment map[string]string `toml:"env"`
+
+	// Set or update one or more labels
+	Labels map[string]string
+
+	// Expose one or more network ports
+	Ports []Port
+
+	// Set the default directory in which the entrypoint or command should run
+	WorkDir string `toml:"work-dir"`
+
+	// Toggles for clearing configuration inherited from the base image
+	Clear Clear
+}
+
+// Port holds a combination of a port number and network protocol.
+type Port struct {
+	Number   uint16
+	Protocol ProtocolWrapper
+}
+
+// String returns a string representation of the port.
+func (p Port) String() string {
+	return fmt.Sprintf("%d/%s", p.Number, p.Protocol)
+}
+
+// Protocol is a unique identifier for a network protocol. The zero value
+// represents an unknown protocol.
+type Protocol uint
+
+const (
+	TCP Protocol = 1 << iota
+	UDP
+)
+
+// String returns a string containing the stylized name of the protocol.
+func (p Protocol) String() string {
+	var s string
+	switch p {
+	case TCP:
+		s = "tcp"
+	case UDP:
+		s = "udp"
+	default:
+		s = "unknown"
+	}
+	return s
+}
+
+// ProtocolWrapper wraps Protocol to facilitate its parsing from serialized data.
+type ProtocolWrapper struct {
+	Protocol
+}
+
+// UnmarshalText decodes the protocol from a string.
+func (w *ProtocolWrapper) UnmarshalText(text []byte) error {
+	var err error
+	w.Protocol, err = parseProtocolString(string(text))
+	return err
+}
+
+func parseProtocolString(s string) (Protocol, error) {
+	var p Protocol
+	switch strings.ToLower(s) {
+	case "tcp":
+		p = TCP
+	case "udp":
+		p = UDP
+	default:
+		return 0, fmt.Errorf("unsupported network protocol %q", s)
+	}
+	return p, nil
+}
+
+// Clear holds toggles for clearing configuration inherited from the base
+// image.
+type Clear struct {
+	// Clear all annotations
+	Annotations bool
+
+	// Clear the author
+	Author bool
+
+	// Clear the command
+	Command bool `toml:"cmd"`
+
+	// Unset all environment variables
+	Environment bool `toml:"env"`
+
+	// Clear the entrypoint
+	Entrypoint bool `toml:"ep"`
+
+	// Clear all labels
+	Labels bool
+
+	// Close all exposed ports
+	Ports bool
+}
+
+// Backends holds the choices of implementations of operations in the working
+// container
+type Backends struct {
+	// Identity of the package manager in the working container
+	Package pckg.ManagerWrapper
+
+	// Identity of user-space utility for managing users and groups in the
+	// working container
+	User user.ManagerWrapper
+
+	// Identity of the implementation of the find utility in the working
+	// container
+	Finder find.FinderWrapper
+}
+
 // Fill populates empty optional fields in a spec using information encoded
 // by required fields in the spec.
 func Fill(s Spec) Spec {
@@ -265,243 +504,4 @@ func validateName(name string) error {
 	}
 
 	return nil
-}
-
-// From holds the components of the canonical reference to the base image, plus
-// preprocessing instructions for the base image.
-type From struct {
-	// Image name comprising a fully qualified domain and path
-	Repository string
-
-	// Human-readable identifier for a manifest in the repository
-	Tag string
-
-	// Unique identifer for the contents of the base image
-	Digest string
-}
-
-// Reference returns a string representation of the canonical reference to the
-// base image.
-func (f From) Reference() string {
-	ref := f.Repository
-	if f.Tag != "" {
-		ref += ":" + f.Tag
-	}
-	if f.Digest != "" {
-		ref += "@" + f.Digest
-	}
-	return ref
-}
-
-// Clear holds toggles for clearing configuration inherited from the base
-// image.
-type Clear struct {
-	// Clear all annotations
-	Annotations bool
-
-	// Clear the author
-	Author bool
-
-	// Clear the command
-	Command bool `toml:"cmd"`
-
-	// Unset all environment variables
-	Environment bool `toml:"env"`
-
-	// Clear the entrypoint
-	Entrypoint bool `toml:"ep"`
-
-	// Clear all labels
-	Labels bool
-
-	// Close all exposed ports
-	Ports bool
-}
-
-// Packages contains instructions for the distro's canonical package manager.
-type Packages struct {
-	// Whether to upgrade pre-installed packages
-	Upgrade bool
-
-	// List of packages to install
-	Install []string
-
-	// Whether to clean package caches after upgrading or installing packages
-	Clean bool
-}
-
-// User holds information about a Linux user.
-type User struct {
-	// Human-readable identifier
-	Name string
-
-	// Linux user ID (UID)
-	//
-	// The default value of 0 tells the program to delegate the choice of UID
-	// to the user-space utility responsible for user creation.
-	//
-	// If not 0, then it must be an integer between 1000 and 60000, inclusive.
-	ID uint32 `toml:"id"`
-
-	// Whether to create a user group
-	UserGroup bool `toml:"user-group"`
-
-	// Groups to which to add the user
-	Groups []string
-
-	// GECOS field text commonly used to store a full display name
-	Comment *string
-
-	// Create a home directory for the user in /home
-	CreateHome bool `toml:"create-home"`
-}
-
-// Copy holds instructions and options for copying one or more files from the
-// host's file system to the working container's file system.
-type Copy struct {
-	// Context directory for the files to copy over to the working container
-	Base string
-
-	// Absolute path to the destination on the working container's file system
-	Destination string `toml:"dest"`
-
-	// Absolute or relative paths to source files on the host's file system;
-	// may contain gitignore-style glob patterns
-	Sources []string `toml:"srcs"`
-
-	// Source files in the base directory to exclude from the copy operation;
-	// may contain gitignore-style glob patterns
-	Excludes []string
-
-	// Set the mode of the copied files to this integer
-	Mode uint32
-
-	// Transfer ownership of the copied files to this user
-	Owner string
-
-	// Remove all SUID and SGID bits from the files copied to the working container
-	RemoveS bool `toml:"remove-s"`
-}
-
-// Security holds security-related options for the working container.
-type Security struct {
-	// Options for handling files with a SUID/SGID bit
-	SpecialFiles SpecialFiles `toml:"special-files"`
-}
-
-// SpecialFiles holds options for handling SUID/SGID bits.
-type SpecialFiles struct {
-	// Whether to remove all SUID/SGID bits automatically
-	RemoveS bool `toml:"remove-s"`
-
-	// Whether to preserve the SUID/SGID bit on one or more files
-	Excludes []string
-}
-
-// Configuration holds configuration options for the image to be built from the
-// working container, as defined in the OCI v1 Image Format specification.
-type Configuration struct {
-	// Set or update one or more annotations
-	Annotations map[string]string
-
-	// Provide contact information for the image maintainer
-	Author string
-
-	// Set the default command (or the parameters, if an entrypoint is set)
-	Command []string `toml:"cmd"`
-
-	// Describe how the image was built
-	CreatedBy string `toml:"created-by"`
-
-	// Set the entrypoint
-	Entrypoint []string `toml:"ep"`
-
-	// Set or update one or more environment variables
-	Environment map[string]string `toml:"env"`
-
-	// Set or update one or more labels
-	Labels map[string]string
-
-	// Expose one or more network ports
-	Ports []Port
-
-	// Set the default directory in which the entrypoint or command should run
-	WorkDir string `toml:"work-dir"`
-
-	// Toggles for clearing configuration inherited from the base image
-	Clear Clear
-}
-
-// Port holds a combination of a port number and network protocol.
-type Port struct {
-	Number   uint16
-	Protocol ProtocolWrapper
-}
-
-// String returns a string representation of the port.
-func (p Port) String() string {
-	return fmt.Sprintf("%d/%s", p.Number, p.Protocol)
-}
-
-// Protocol is a unique identifier for a network protocol. The zero value
-// represents an unknown protocol.
-type Protocol uint
-
-const (
-	TCP Protocol = 1 << iota
-	UDP
-)
-
-// String returns a string containing the stylized name of the protocol.
-func (p Protocol) String() string {
-	var s string
-	switch p {
-	case TCP:
-		s = "tcp"
-	case UDP:
-		s = "udp"
-	default:
-		s = "unknown"
-	}
-	return s
-}
-
-// ProtocolWrapper wraps Protocol to facilitate its parsing from serialized data.
-type ProtocolWrapper struct {
-	Protocol
-}
-
-// UnmarshalText decodes the protocol from a string.
-func (w *ProtocolWrapper) UnmarshalText(text []byte) error {
-	var err error
-	w.Protocol, err = parseProtocolString(string(text))
-	return err
-}
-
-func parseProtocolString(s string) (Protocol, error) {
-	var p Protocol
-	switch strings.ToLower(s) {
-	case "tcp":
-		p = TCP
-	case "udp":
-		p = UDP
-	default:
-		return 0, fmt.Errorf("unsupported network protocol %q", s)
-	}
-	return p, nil
-}
-
-// Backends holds the choices of implementations of operations in the working
-// container
-type Backends struct {
-	// Identity of the package manager in the working container
-	Package pckg.ManagerWrapper
-
-	// Identity of user-space utility for managing users and groups in the
-	// working container
-	User user.ManagerWrapper
-
-	// Identity of the implementation of the find utility in the working
-	// container
-	Finder find.FinderWrapper
 }

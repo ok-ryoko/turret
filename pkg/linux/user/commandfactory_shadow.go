@@ -21,16 +21,16 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 		cmd = append(cmd, "--user-group")
 	}
 
+	if len(options.Groups) > 0 {
+		cmd = append(cmd, "--groups", strings.Join(options.Groups, ","))
+	}
+
 	if options.Comment != nil {
 		cmd = append(cmd, "--comment", *options.Comment)
 	}
 
 	if options.CreateHome {
 		cmd = append(cmd, "--create-home")
-	}
-
-	if len(options.Groups) > 0 {
-		cmd = append(cmd, "--groups", strings.Join(options.Groups, ","))
 	}
 
 	cmd = append(cmd, name)

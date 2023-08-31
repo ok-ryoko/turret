@@ -137,14 +137,14 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			commonOptions := container.CommonOptions{LogCommands: v >= 4}
 			b, err := builder.New(
 				ctx,
+				store,
+				refFrom,
+				logger,
+				cCtx.Bool("pull"),
 				distro,
 				packageManager,
 				userManager,
 				finder,
-				refFrom,
-				cCtx.Bool("pull"),
-				store,
-				logger,
 				commonOptions,
 			)
 			if err != nil {
@@ -227,17 +227,17 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				spec.Config.Annotations["org.github.ok-ryoko.turret.spec.digest"] = digest
 			}
 
+			ports := make([]string, len(spec.Config.Ports))
+			for i, p := range spec.Config.Ports {
+				ports[i] = p.String()
+			}
+
 			var configureUserOptions builder.ConfigureUserOptions
 			if spec.User != nil {
 				configureUserOptions = builder.ConfigureUserOptions{
 					Name:       spec.User.Name,
 					CreateHome: spec.User.CreateHome,
 				}
-			}
-
-			ports := make([]string, len(spec.Config.Ports))
-			for i, p := range spec.Config.Ports {
-				ports[i] = p.String()
 			}
 
 			configureOptions := builder.ConfigureOptions{

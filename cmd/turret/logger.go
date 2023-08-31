@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const iso8601 = "2006-01-02T15:04:05Z"
+
 func newLogger() *logrus.Logger {
 	logger := logrus.New()
 	logger.SetFormatter(utcFormatter{
@@ -21,8 +23,6 @@ func newLogger() *logrus.Logger {
 	})
 	return logger
 }
-
-const iso8601 = "2006-01-02T15:04:05Z"
 
 type utcFormatter struct {
 	logrus.Formatter

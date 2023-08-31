@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-// Manager is a unique identifier for a package manager for Linux-based
-// distros. The zero value represents an unknown package manager.
-type Manager int
-
 const (
 	APK = 1 << iota
 	APT
@@ -20,6 +16,27 @@ const (
 	XBPS
 	Zypper
 )
+
+// Manager is a unique identifier for a package manager for Linux-based
+// distros. The zero value represents an unknown package manager.
+type Manager int
+
+// RePackageName returns a regular expression to match valid package names for
+// the package manager's ecosystem.
+func (m Manager) RePackageName() string {
+	var r string
+	switch m {
+	case APT:
+		r = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
+	case APK, Pacman:
+		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
+	case DNF, XBPS, Zypper:
+		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
+	default:
+		r = ""
+	}
+	return r
+}
 
 // String returns a string containing the stylized name of the package manager.
 func (m Manager) String() string {
@@ -41,23 +58,6 @@ func (m Manager) String() string {
 		s = "unknown"
 	}
 	return s
-}
-
-// RePackageName returns a regular expression to match valid package names for
-// the package manager's ecosystem.
-func (m Manager) RePackageName() string {
-	var r string
-	switch m {
-	case APT:
-		r = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
-	case APK, Pacman:
-		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
-	case DNF, XBPS, Zypper:
-		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
-	default:
-		r = ""
-	}
-	return r
 }
 
 // ManagerWrapper wraps Manager to facilitate its parsing from serialized data.

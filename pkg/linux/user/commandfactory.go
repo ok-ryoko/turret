@@ -21,6 +21,14 @@ type CommandFactory interface {
 	UserManager() Manager
 }
 
+type CreateUserOptions struct {
+	ID         uint32
+	UserGroup  bool
+	Groups     []string
+	Comment    *string
+	CreateHome bool
+}
+
 // NewCommandFactory creates a new CommandFactory that manufactures user and
 // group management commands for execution in a shell.
 func NewCommandFactory(m Manager) (CommandFactory, error) {
@@ -34,12 +42,4 @@ func NewCommandFactory(m Manager) (CommandFactory, error) {
 		return nil, fmt.Errorf("unrecognized user management utility %v", m)
 	}
 	return result, nil
-}
-
-type CreateUserOptions struct {
-	ID         uint32
-	Comment    *string
-	UserGroup  bool
-	Groups     []string
-	CreateHome bool
 }

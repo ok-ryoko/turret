@@ -396,14 +396,14 @@ func (b *Builder) UpgradePackages() error {
 // based distro, package manager, and user/group management utility.
 func New(
 	ctx context.Context,
+	store storage.Store,
+	imageRef string,
+	logger *logrus.Logger,
+	pull bool,
 	distro linux.Distro,
 	packageManager pckg.Manager,
 	userManager user.Manager,
 	finder find.Finder,
-	imageRef string,
-	pull bool,
-	store storage.Store,
-	logger *logrus.Logger,
 	options container.CommonOptions,
 ) (Builder, error) {
 	bo := buildah.BuilderOptions{
@@ -412,11 +412,11 @@ func New(
 		Isolation:    buildah.IsolationOCIRootless,
 		PullPolicy:   buildah.PullNever,
 	}
-	if pull {
-		bo.PullPolicy = buildah.PullIfMissing
-	}
 	if options.LogCommands {
 		bo.Logger = logger
+	}
+	if pull {
+		bo.PullPolicy = buildah.PullIfMissing
 	}
 
 	b, err := buildah.NewBuilder(ctx, store, bo)

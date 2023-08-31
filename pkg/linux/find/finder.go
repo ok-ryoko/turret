@@ -8,15 +8,15 @@ import (
 	"strings"
 )
 
-// Finder is a unique identifier for an implementation of Unix's find utility.
-// The zero value represents an unknown implementation.
-type Finder int
-
 const (
 	BSD = 1 << iota
 	BusyBox
 	GNU
 )
+
+// Finder is a unique identifier for an implementation of Unix's find utility.
+// The zero value represents an unknown implementation.
+type Finder int
 
 // String returns a string containing the stylized name of the implementation.
 func (f Finder) String() string {

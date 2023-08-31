@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// Manager is a unique identifier for a user/group management utility for
-// Linux-based distros. The zero value represents an unknown program.
-type Manager int
-
 const (
 	BusyBox = 1 << iota
 	Shadow
 )
+
+// Manager is a unique identifier for a user/group management utility for
+// Linux-based distros. The zero value represents an unknown program.
+type Manager int
 
 // String returns a string containing the stylized name of the user/group
 // management utility.
