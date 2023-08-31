@@ -278,8 +278,6 @@ type From struct {
 
 	// Unique identifer for the contents of the base image
 	Digest string
-
-	Clear Clear
 }
 
 // Reference returns a string representation of the canonical reference to the
@@ -429,6 +427,9 @@ type Configuration struct {
 
 	// Set the default directory in which the entrypoint or command should run
 	WorkDir string `toml:"work-dir"`
+
+	// Toggles for clearing configuration inherited from the base image
+	Clear Clear
 }
 
 // Port holds a combination of a port number and network protocol.
