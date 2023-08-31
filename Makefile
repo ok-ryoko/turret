@@ -7,7 +7,6 @@ SHELL := /bin/sh
 .DEFAULT_GOAL := help
 .SUFFIXES:
 
-GIT := git
 GO := go
 
 .PHONY: all #? Format, check and compile all Go code
@@ -15,7 +14,7 @@ all: fmt check build
 
 .PHONY: setup #? Prepare the development environment
 setup: setup.formatter setup.linters
-	$(GIT) config --local core.hooksPath .githooks
+	git config --local core.hooksPath .githooks
 
 .PHONY: setup.formatter
 setup.formatter:
