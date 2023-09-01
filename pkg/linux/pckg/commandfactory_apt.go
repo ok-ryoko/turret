@@ -5,7 +5,7 @@ package pckg
 
 type APTCommandFactory struct{}
 
-func (c APTCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f APTCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "clean"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -15,7 +15,7 @@ func (c APTCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "--yes", "install"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -28,7 +28,7 @@ func (c APTCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 	return cmd, capabilities
 }
 
-func (c APTCommandFactory) NewListInstalledPackagesCmd() (
+func (f APTCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -43,7 +43,7 @@ func (c APTCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "update"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -55,7 +55,7 @@ func (c APTCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (c APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"apt", "--quiet", "--yes", "upgrade"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -67,6 +67,6 @@ func (c APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (c APTCommandFactory) PackageManager() Manager {
+func (f APTCommandFactory) PackageManager() Manager {
 	return APT
 }

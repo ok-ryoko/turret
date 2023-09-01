@@ -14,8 +14,8 @@ type ShadowUserManager struct {
 }
 
 // CreateUser creates the sole unprivileged user of the working container.
-func (um *ShadowUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
-	cmd, capabilities := um.NewCreateUserCmd(name, options)
+func (m *ShadowUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
+	cmd, capabilities := m.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 
@@ -39,7 +39,7 @@ func (um *ShadowUserManager) CreateUser(c *Container, name string, options user.
 		)
 	}
 
-	errContext := fmt.Sprintf("creating user using %s", um.UserManager.UserManager())
+	errContext := fmt.Sprintf("creating user using %s", m.UserManager.UserManager())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}

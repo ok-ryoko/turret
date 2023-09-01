@@ -5,7 +5,7 @@ package find
 
 type BSDCommandFactory struct{}
 
-func (c BSDCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
+func (f BSDCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
 	cmd = []string{
 		"find", "-x",
 		"/",

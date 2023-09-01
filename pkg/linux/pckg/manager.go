@@ -66,9 +66,9 @@ type ManagerWrapper struct {
 }
 
 // UnmarshalText decodes the package manager from a string.
-func (mw *ManagerWrapper) UnmarshalText(text []byte) error {
+func (w *ManagerWrapper) UnmarshalText(text []byte) error {
 	var err error
-	mw.Manager, err = parseManagerString(string(text))
+	w.Manager, err = parseManagerString(string(text))
 	return err
 }
 

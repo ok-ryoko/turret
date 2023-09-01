@@ -98,25 +98,25 @@ func (pm *PackageManager) Upgrade(c *Container) error {
 
 // NewPackageManager creates a new PackageManager for a particular package
 // manager.
-func NewPackageManager(pm pckg.Manager) (PackageManagerInterface, error) {
-	cf, err := pckg.NewCommandFactory(pm)
+func NewPackageManager(manager pckg.Manager) (PackageManagerInterface, error) {
+	factory, err := pckg.NewCommandFactory(manager)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	var tpm PackageManagerInterface
-	switch pm {
+	var result PackageManagerInterface
+	switch manager {
 	case pckg.APT:
-		tpm = &APTPackageManager{PackageManager{cf}}
+		result = &APTPackageManager{PackageManager{factory}}
 	case
 		pckg.APK,
 		pckg.DNF,
 		pckg.Pacman,
 		pckg.XBPS,
 		pckg.Zypper:
-		tpm = &PackageManager{cf}
+		result = &PackageManager{factory}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager %v", pm)
+		return nil, fmt.Errorf("unrecognized package manager %v", manager)
 	}
-	return tpm, nil
+	return result, nil
 }

@@ -28,39 +28,39 @@ type Distro int
 
 // DefaultPackageManager returns the canonical package manager for the distro.
 func (d Distro) DefaultPackageManager() pckg.Manager {
-	var pm pckg.Manager
+	var m pckg.Manager
 	switch d {
 	case Alpine, Chimera:
-		pm = pckg.APK
+		m = pckg.APK
 	case Arch:
-		pm = pckg.Pacman
+		m = pckg.Pacman
 	case Debian:
-		pm = pckg.APT
+		m = pckg.APT
 	case Fedora:
-		pm = pckg.DNF
+		m = pckg.DNF
 	case OpenSUSE:
-		pm = pckg.Zypper
+		m = pckg.Zypper
 	case Void:
-		pm = pckg.XBPS
+		m = pckg.XBPS
 	default:
-		pm = 0
+		m = 0
 	}
-	return pm
+	return m
 }
 
 // DefaultUserManager returns the canonical user and group management utility
 // for the distro.
 func (d Distro) DefaultUserManager() user.Manager {
-	var um user.Manager
+	var m user.Manager
 	switch d {
 	case Alpine:
-		um = user.BusyBox
+		m = user.BusyBox
 	case Arch, Chimera, Debian, Fedora, OpenSUSE, Void:
-		um = user.Shadow
+		m = user.Shadow
 	default:
-		um = 0
+		m = 0
 	}
-	return um
+	return m
 }
 
 // DefaultFinder returns the canonical implementation of the find utility for
@@ -110,9 +110,9 @@ type DistroWrapper struct {
 }
 
 // UnmarshalText decodes the distro from a string.
-func (dw *DistroWrapper) UnmarshalText(text []byte) error {
+func (w *DistroWrapper) UnmarshalText(text []byte) error {
 	var err error
-	dw.Distro, err = parseDistroString(string(text))
+	w.Distro, err = parseDistroString(string(text))
 	return err
 }
 

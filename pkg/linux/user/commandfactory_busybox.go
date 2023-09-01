@@ -7,7 +7,7 @@ import "fmt"
 
 type BusyBoxCommandFactory struct{}
 
-func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
+func (f BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
 	cmd = []string{"adduser", "-D"}
 
 	if options.ID > 0 {
@@ -41,11 +41,11 @@ func (c BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserO
 	return cmd, capabilities
 }
 
-func (c BusyBoxCommandFactory) NewAddUserToGroupCmd(name string, group string) (cmd, capabilities []string) {
+func (f BusyBoxCommandFactory) NewAddUserToGroupCmd(name string, group string) (cmd, capabilities []string) {
 	cmd = []string{"addgroup", name, group}
 	return cmd, []string{}
 }
 
-func (c BusyBoxCommandFactory) UserManager() Manager {
+func (f BusyBoxCommandFactory) UserManager() Manager {
 	return BusyBox
 }

@@ -10,7 +10,7 @@ import (
 
 type ShadowCommandFactory struct{}
 
-func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
+func (f ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
 	cmd = []string{"useradd"}
 
 	if options.ID > 0 {
@@ -61,10 +61,10 @@ func (c ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOp
 	return cmd, capabilities
 }
 
-func (c ShadowCommandFactory) NewAddUserToGroupCmd(user, group string) (cmd, capabilities []string) {
+func (f ShadowCommandFactory) NewAddUserToGroupCmd(user, group string) (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c ShadowCommandFactory) UserManager() Manager {
+func (f ShadowCommandFactory) UserManager() Manager {
 	return Shadow
 }

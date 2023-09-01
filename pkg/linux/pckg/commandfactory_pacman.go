@@ -5,12 +5,12 @@ package pckg
 
 type PacmanCommandFactory struct{}
 
-func (c PacmanCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f PacmanCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--clean", "--clean", "--noconfirm", "--quiet"}
 	return cmd, []string{}
 }
 
-func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--noconfirm", "--noprogressbar", "--quiet"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -22,7 +22,7 @@ func (c PacmanCommandFactory) NewInstallCmd(packages []string) (cmd, capabilitie
 	return cmd, capabilities
 }
 
-func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (
+func (f PacmanCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -42,11 +42,11 @@ func (c PacmanCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c PacmanCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f PacmanCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"pacman", "--sync", "--sysupgrade", "--refresh", "--noconfirm", "--noprogressbar", "--quiet"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -57,6 +57,6 @@ func (c PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (c PacmanCommandFactory) PackageManager() Manager {
+func (f PacmanCommandFactory) PackageManager() Manager {
 	return Pacman
 }

@@ -24,20 +24,20 @@ type UserManager struct {
 
 // NewUserManager creates a new UserManager for a particular user and
 // group management utility.
-func NewUserManager(um user.Manager) (UserManagerInterface, error) {
-	cf, err := user.NewCommandFactory(um)
+func NewUserManager(manager user.Manager) (UserManagerInterface, error) {
+	factory, err := user.NewCommandFactory(manager)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	var tum UserManagerInterface
-	switch um {
+	var result UserManagerInterface
+	switch manager {
 	case user.BusyBox:
-		tum = &BusyBoxUserManager{UserManager{cf}}
+		result = &BusyBoxUserManager{UserManager{factory}}
 	case user.Shadow:
-		tum = &ShadowUserManager{UserManager{cf}}
+		result = &ShadowUserManager{UserManager{factory}}
 	default:
-		return nil, fmt.Errorf("unrecognized user management utility %v", um)
+		return nil, fmt.Errorf("unrecognized user management utility %v", manager)
 	}
-	return tum, nil
+	return result, nil
 }

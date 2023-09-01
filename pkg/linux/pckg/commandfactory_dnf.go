@@ -10,12 +10,12 @@ import (
 
 type DNFCommandFactory struct{}
 
-func (c DNFCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f DNFCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--quiet", "clean", "all"}
 	return cmd, []string{}
 }
 
-func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--assumeyes", "--quiet", "--setopt=install_weak_deps=False", "install"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{
@@ -26,7 +26,7 @@ func (c DNFCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities [
 	return cmd, capabilities
 }
 
-func (c DNFCommandFactory) NewListInstalledPackagesCmd() (
+func (f DNFCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -63,11 +63,11 @@ func (c DNFCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c DNFCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f DNFCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"dnf", "--assumeyes", "--quiet", "--refresh", "upgrade"}
 	capabilities = []string{
 		"CAP_CHOWN",
@@ -77,6 +77,6 @@ func (c DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (c DNFCommandFactory) PackageManager() Manager {
+func (f DNFCommandFactory) PackageManager() Manager {
 	return DNF
 }

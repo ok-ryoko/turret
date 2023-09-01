@@ -10,18 +10,18 @@ import (
 
 type ZypperCommandFactory struct{}
 
-func (c ZypperCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f ZypperCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "clean", "--all"}
 	return cmd, []string{}
 }
 
-func (c ZypperCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f ZypperCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "install", "--no-recommends"}
 	cmd = append(cmd, packages...)
 	return cmd, []string{}
 }
 
-func (c ZypperCommandFactory) NewListInstalledPackagesCmd() (
+func (f ZypperCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -56,15 +56,15 @@ func (c ZypperCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c ZypperCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f ZypperCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c ZypperCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f ZypperCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"zypper", "--non-interactive", "--quiet", "patch"}
 	return cmd, []string{}
 }
 
-func (c ZypperCommandFactory) PackageManager() Manager {
+func (f ZypperCommandFactory) PackageManager() Manager {
 	return Zypper
 }

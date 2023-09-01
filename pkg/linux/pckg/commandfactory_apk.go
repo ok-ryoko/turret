@@ -10,17 +10,17 @@ import (
 
 type APKCommandFactory struct{}
 
-func (c APKCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f APKCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c APKCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f APKCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "add"}
 	cmd = append(cmd, packages...)
 	return cmd, []string{}
 }
 
-func (c APKCommandFactory) NewListInstalledPackagesCmd() (
+func (f APKCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -59,15 +59,15 @@ func (c APKCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c APKCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f APKCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c APKCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f APKCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"apk", "--no-cache", "--no-progress", "--quiet", "upgrade"}
 	return cmd, []string{}
 }
 
-func (c APKCommandFactory) PackageManager() Manager {
+func (f APKCommandFactory) PackageManager() Manager {
 	return APK
 }

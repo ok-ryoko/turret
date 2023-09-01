@@ -5,7 +5,7 @@ package find
 
 type BusyBoxCommandFactory struct{}
 
-func (c BusyBoxCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
+func (f BusyBoxCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
 	cmd = []string{
 		"find", "/",
 		"-xdev",

@@ -114,8 +114,8 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				return fmt.Errorf("creating store: %w", err)
 			}
 			defer func() {
-				layers, shutdownErr := store.Shutdown(false)
-				if shutdownErr != nil {
+				layers, errShutdown := store.Shutdown(false)
+				if errShutdown != nil {
 					logger.Warnln("failed releasing driver resources")
 					logger.Infoln(
 						"the following layers may still be mounted:",

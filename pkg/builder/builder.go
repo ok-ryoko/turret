@@ -423,17 +423,17 @@ func New(
 	}
 	logger.Debugf("created working container from image %s", imageRef)
 
-	cntr := container.Container{
+	c := container.Container{
 		Builder: b,
 		Logger:  logger,
 	}
 
-	pm, err := container.NewPackageManager(packageManager)
+	p, err := container.NewPackageManager(packageManager)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating package management interface: %w", err)
 	}
 
-	um, err := container.NewUserManager(userManager)
+	u, err := container.NewUserManager(userManager)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating user management interface: %w", err)
 	}
@@ -447,12 +447,12 @@ func New(
 		options.Env = append(options.Env, "DEBIAN_FRONTEND=noninteractive")
 	}
 
-	cntr.CommonOptions = options
+	c.CommonOptions = options
 
 	return Builder{
-		Container:            cntr,
-		PackageManager:       pm,
-		UserManager:          um,
+		Container:            c,
+		PackageManager:       p,
+		UserManager:          u,
 		FinderCommandFactory: f,
 	}, nil
 }

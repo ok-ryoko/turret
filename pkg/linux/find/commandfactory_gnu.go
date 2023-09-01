@@ -5,7 +5,7 @@ package find
 
 type GNUCommandFactory struct{}
 
-func (c GNUCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
+func (f GNUCommandFactory) NewFindSpecialCmd() (cmd, capabilities []string) {
 	cmd = []string{
 		"find", "/",
 		"-xdev",

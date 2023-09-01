@@ -10,19 +10,19 @@ import (
 
 type XBPSCommandFactory struct{}
 
-func (c XBPSCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
+func (f XBPSCommandFactory) NewCleanCacheCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-remove", "--clean-cache", "--yes"}
 	return cmd, []string{}
 }
 
-func (c XBPSCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
+func (f XBPSCommandFactory) NewInstallCmd(packages []string) (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--yes"}
 	cmd = append(cmd, packages...)
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
 	return cmd, capabilities
 }
 
-func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (
+func (f XBPSCommandFactory) NewListInstalledPackagesCmd() (
 	cmd []string,
 	capabilities []string,
 	parse func([]string) ([]string, error),
@@ -50,16 +50,16 @@ func (c XBPSCommandFactory) NewListInstalledPackagesCmd() (
 	return cmd, []string{}, parse
 }
 
-func (c XBPSCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
+func (f XBPSCommandFactory) NewUpdateIndexCmd() (cmd, capabilities []string) {
 	return []string{}, []string{}
 }
 
-func (c XBPSCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
+func (f XBPSCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	cmd = []string{"xbps-install", "--sync", "--update", "--yes"}
 	capabilities = []string{"CAP_DAC_OVERRIDE"}
 	return cmd, capabilities
 }
 
-func (c XBPSCommandFactory) PackageManager() Manager {
+func (f XBPSCommandFactory) PackageManager() Manager {
 	return XBPS
 }
