@@ -36,7 +36,7 @@ type Builder struct {
 
 	// Pointer to an object that manages users and groups in the working
 	// container
-	UserManager container.UserManagerInterface
+	UserFrontend container.UserFrontendInterface
 
 	// Object that creates commands for locating files in the working container
 	FinderCommandFactory find.CommandFactory
@@ -313,7 +313,7 @@ type CopyFilesOptions struct {
 // CreateUser creates the sole unprivileged user of the working container,
 // assuming `name` is a nonempty string.
 func (b *Builder) CreateUser(name string, options user.Options) error {
-	if err := b.UserManager.CreateUser(&b.Container, name, options); err != nil {
+	if err := b.UserFrontend.CreateUser(&b.Container, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -412,7 +412,7 @@ func New(
 	pull bool,
 	distro linux.Distro,
 	packageManager pckg.Manager,
-	userManager user.Manager,
+	userBackend user.Backend,
 	finder find.Finder,
 	options container.CommonOptions,
 ) (Builder, error) {
@@ -445,7 +445,7 @@ func New(
 		return Builder{}, fmt.Errorf("creating package management interface: %w", err)
 	}
 
-	u, err := container.NewUserManager(userManager)
+	u, err := container.NewUserFrontend(userBackend)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating user management interface: %w", err)
 	}
@@ -464,7 +464,7 @@ func New(
 	return Builder{
 		Container:            c,
 		PackageManager:       p,
-		UserManager:          u,
+		UserFrontend:         u,
 		FinderCommandFactory: f,
 	}, nil
 }

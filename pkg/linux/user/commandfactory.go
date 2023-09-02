@@ -16,9 +16,9 @@ type CommandFactory interface {
 	// the Linux capabilities needed by that command.
 	NewCreateUserCmd(name string, options Options) (cmd, capabilities []string)
 
-	// UserManager returns a constant representing the user and group management
+	// Backend returns a constant representing the user and group management
 	// utility for which this factory makes commands.
-	UserManager() Manager
+	Backend() Backend
 }
 
 // Options holds options for a Linux user.
@@ -41,15 +41,15 @@ type Options struct {
 
 // NewCommandFactory creates an object that manufactures user and group
 // management commands for execution in a shell.
-func NewCommandFactory(m Manager) (CommandFactory, error) {
-	var result CommandFactory
-	switch m {
+func NewCommandFactory(b Backend) (CommandFactory, error) {
+	var factory CommandFactory
+	switch b {
 	case BusyBox:
-		result = &BusyBoxCommandFactory{}
+		factory = &BusyBoxCommandFactory{}
 	case Shadow:
-		result = &ShadowCommandFactory{}
+		factory = &ShadowCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized user management utility %v", m)
+		return nil, fmt.Errorf("unrecognized user and group management utility %v", b)
 	}
-	return result, nil
+	return factory, nil
 }

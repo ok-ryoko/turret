@@ -65,6 +65,6 @@ func (f ShadowCommandFactory) NewAddUserToGroupCmd(user, group string) (cmd, cap
 	return []string{}, []string{}
 }
 
-func (f ShadowCommandFactory) UserManager() Manager {
+func (f ShadowCommandFactory) Backend() Backend {
 	return Shadow
 }

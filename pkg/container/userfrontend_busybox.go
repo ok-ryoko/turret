@@ -9,25 +9,25 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/user"
 )
 
-type BusyBoxUserManager struct {
-	UserManager
+type BusyBoxUserFrontend struct {
+	UserFrontend
 }
 
-func (m *BusyBoxUserManager) CreateUser(c *Container, name string, options user.Options) error {
+func (f *BusyBoxUserFrontend) CreateUser(c *Container, name string, options user.Options) error {
 	{
-		cmd, capabilities := m.NewCreateUserCmd(name, options)
+		cmd, capabilities := f.NewCreateUserCmd(name, options)
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
-		errContext := fmt.Sprintf("creating user using %s", m.UserManager.UserManager())
+		errContext := fmt.Sprintf("creating user using %s", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
 
 	if options.UserGroup {
-		cmd, _ := m.NewAddUserToGroupCmd(name, name)
+		cmd, _ := f.NewAddUserToGroupCmd(name, name)
 		ro := c.DefaultRunOptions()
-		errContext := fmt.Sprintf("adding user to group using %s", m.UserManager.UserManager())
+		errContext := fmt.Sprintf("adding user to group using %s", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -35,9 +35,9 @@ func (m *BusyBoxUserManager) CreateUser(c *Container, name string, options user.
 
 	if len(options.Groups) > 0 {
 		for _, g := range options.Groups {
-			cmd, _ := m.NewAddUserToGroupCmd(name, g)
+			cmd, _ := f.NewAddUserToGroupCmd(name, g)
 			ro := c.DefaultRunOptions()
-			errContext := fmt.Sprintf("adding user to group using %s", m.UserManager.UserManager())
+			errContext := fmt.Sprintf("adding user to group using %s", f.Backend())
 			if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 				return fmt.Errorf("%w", err)
 			}

@@ -277,7 +277,7 @@ type Backends struct {
 
 	// Identity of the user-space utility for managing users and groups in the
 	// working container
-	User user.ManagerWrapper
+	User user.BackendWrapper
 
 	// Identity of the implementation of the find utility in the working
 	// container
@@ -291,8 +291,8 @@ func Fill(s Spec) Spec {
 		s.Backends.Package.Manager = s.From.Distro.DefaultPackageManager()
 	}
 
-	if s.Backends.User.Manager == 0 {
-		s.Backends.User.Manager = s.From.Distro.DefaultUserManager()
+	if s.Backends.User.Backend == 0 {
+		s.Backends.User.Backend = s.From.Distro.DefaultUserBackend()
 	}
 
 	if s.Backends.Finder.Finder == 0 {
@@ -331,7 +331,7 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing package management backend")
 	}
 
-	if s.Backends.User.Manager == 0 {
+	if s.Backends.User.Backend == 0 {
 		return fmt.Errorf("missing user management backend")
 	}
 

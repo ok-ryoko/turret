@@ -46,6 +46,6 @@ func (f BusyBoxCommandFactory) NewAddUserToGroupCmd(name string, group string) (
 	return cmd, []string{}
 }
 
-func (f BusyBoxCommandFactory) UserManager() Manager {
+func (f BusyBoxCommandFactory) Backend() Backend {
 	return BusyBox
 }

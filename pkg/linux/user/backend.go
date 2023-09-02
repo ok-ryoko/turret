@@ -9,19 +9,19 @@ import (
 )
 
 const (
-	BusyBox Manager = 1 << iota
+	BusyBox Backend = 1 << iota
 	Shadow
 )
 
-// Manager is a unique identifier for a user and group management utility for
+// Backend is a unique identifier for a user and group management utility for
 // Linux-based distros. The zero value represents an unknown utility.
-type Manager int
+type Backend int
 
 // String returns a string containing the stylized name of the user and group
 // management utility.
-func (m Manager) String() string {
+func (b Backend) String() string {
 	var s string
-	switch m {
+	switch b {
 	case BusyBox:
 		s = "BusyBox"
 	case Shadow:
@@ -32,28 +32,28 @@ func (m Manager) String() string {
 	return s
 }
 
-// ManagerWrapper wraps Manager to facilitate its parsing from serialized data.
-type ManagerWrapper struct {
-	Manager
+// BackendWrapper wraps Backend to facilitate its parsing from serialized data.
+type BackendWrapper struct {
+	Backend
 }
 
 // UnmarshalText decodes the user and group management utility from a
 // UTF-8-encoded string.
-func (w *ManagerWrapper) UnmarshalText(text []byte) error {
+func (w *BackendWrapper) UnmarshalText(text []byte) error {
 	var err error
-	w.Manager, err = parseManagerString(string(text))
+	w.Backend, err = parseBackendString(string(text))
 	return err
 }
 
-func parseManagerString(s string) (Manager, error) {
-	var m Manager
+func parseBackendString(s string) (Backend, error) {
+	var b Backend
 	switch strings.ToLower(s) {
 	case "busybox":
-		m = BusyBox
+		b = BusyBox
 	case "shadow", "shadow-utils":
-		m = Shadow
+		b = Shadow
 	default:
 		return 0, fmt.Errorf("unsupported user management utility %q", s)
 	}
-	return m, nil
+	return b, nil
 }

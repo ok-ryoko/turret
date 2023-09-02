@@ -9,12 +9,12 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/user"
 )
 
-type ShadowUserManager struct {
-	UserManager
+type ShadowUserFrontend struct {
+	UserFrontend
 }
 
-func (m *ShadowUserManager) CreateUser(c *Container, name string, options user.Options) error {
-	cmd, capabilities := m.NewCreateUserCmd(name, options)
+func (f *ShadowUserFrontend) CreateUser(c *Container, name string, options user.Options) error {
+	cmd, capabilities := f.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 
@@ -38,7 +38,7 @@ func (m *ShadowUserManager) CreateUser(c *Container, name string, options user.O
 		)
 	}
 
-	errContext := fmt.Sprintf("creating user using %s", m.UserManager.UserManager())
+	errContext := fmt.Sprintf("creating user using %s", f.Backend())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}

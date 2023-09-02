@@ -48,19 +48,19 @@ func (d Distro) DefaultPackageManager() pckg.Manager {
 	return m
 }
 
-// DefaultUserManager returns the canonical user and group management utility
+// DefaultUserBackend returns the canonical user and group management utility
 // for the distro.
-func (d Distro) DefaultUserManager() user.Manager {
-	var m user.Manager
+func (d Distro) DefaultUserBackend() user.Backend {
+	var b user.Backend
 	switch d {
 	case Alpine:
-		m = user.BusyBox
+		b = user.BusyBox
 	case Arch, Chimera, Debian, Fedora, OpenSUSE, Void:
-		m = user.Shadow
+		b = user.Shadow
 	default:
-		m = 0
+		b = 0
 	}
-	return m
+	return b
 }
 
 // DefaultFinder returns the canonical implementation of the find utility for
