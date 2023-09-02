@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	maxCommentLength = 255
-	maxNameLength    = 32
-	maxUID           = 60000
-	minUID           = 1000
+	maxCommentLength int    = 255
+	maxNameLength    int    = 32
+	maxUID           uint32 = 60000
+	minUID           uint32 = 1000
 )
 
 var (
