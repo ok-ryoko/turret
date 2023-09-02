@@ -139,7 +139,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				distro,
 				spec.Backends.Package.Manager,
 				spec.Backends.User.Backend,
-				spec.Backends.Finder.Finder,
+				spec.Backends.Find.Backend,
 				container.CommonOptions{LogCommands: v >= 4},
 			)
 			if err != nil {

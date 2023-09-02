@@ -15,17 +15,17 @@ type CommandFactory interface {
 
 // NewCommandFactory creates an object that manufactures find commands for
 // execution in a shell.
-func NewCommandFactory(f Finder) (CommandFactory, error) {
-	var result CommandFactory
-	switch f {
+func NewCommandFactory(b Backend) (CommandFactory, error) {
+	var factory CommandFactory
+	switch b {
 	case BSD:
-		result = &BSDCommandFactory{}
+		factory = &BSDCommandFactory{}
 	case BusyBox:
-		result = &BusyBoxCommandFactory{}
+		factory = &BusyBoxCommandFactory{}
 	case GNU:
-		result = &GNUCommandFactory{}
+		factory = &GNUCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized find implementation %v", f)
+		return nil, fmt.Errorf("unrecognized find implementation %v", b)
 	}
-	return result, nil
+	return factory, nil
 }

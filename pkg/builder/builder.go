@@ -39,7 +39,7 @@ type Builder struct {
 	UserFrontend container.UserFrontendInterface
 
 	// Object that creates commands for locating files in the working container
-	FinderCommandFactory find.CommandFactory
+	FindCommandFactory find.CommandFactory
 }
 
 // CleanPackageCaches cleans the package caches in the working container.
@@ -337,7 +337,7 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	var targets []string
 
 	{
-		cmd, capabilities := b.FinderCommandFactory.NewFindSpecialCmd()
+		cmd, capabilities := b.FindCommandFactory.NewFindSpecialCmd()
 		ro := b.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		outText, errText, err := b.Run(cmd, ro)
@@ -413,7 +413,7 @@ func New(
 	distro linux.Distro,
 	packageManager pckg.Manager,
 	userBackend user.Backend,
-	finder find.Finder,
+	finder find.Backend,
 	options container.CommonOptions,
 ) (Builder, error) {
 	bo := buildah.BuilderOptions{
@@ -462,9 +462,9 @@ func New(
 	c.CommonOptions = options
 
 	return Builder{
-		Container:            c,
-		PackageManager:       p,
-		UserFrontend:         u,
-		FinderCommandFactory: f,
+		Container:          c,
+		PackageManager:     p,
+		UserFrontend:       u,
+		FindCommandFactory: f,
 	}, nil
 }

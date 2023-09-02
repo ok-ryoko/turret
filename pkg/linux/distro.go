@@ -63,21 +63,21 @@ func (d Distro) DefaultUserBackend() user.Backend {
 	return b
 }
 
-// DefaultFinder returns the canonical implementation of the find utility for
-// the distro.
-func (d Distro) DefaultFinder() find.Finder {
-	var f find.Finder
+// DefaultFindBackend returns the canonical implementation of the find utility
+// for the distro.
+func (d Distro) DefaultFindBackend() find.Backend {
+	var b find.Backend
 	switch d {
 	case Alpine:
-		f = find.BusyBox
+		b = find.BusyBox
 	case Chimera:
-		f = find.BSD
+		b = find.BSD
 	case Arch, Debian, Fedora, OpenSUSE, Void:
-		f = find.GNU
+		b = find.GNU
 	default:
-		f = 0
+		b = 0
 	}
-	return f
+	return b
 }
 
 // String returns a string containing the stylized name of the distro.

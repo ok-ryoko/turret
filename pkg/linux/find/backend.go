@@ -9,19 +9,19 @@ import (
 )
 
 const (
-	BSD Finder = 1 << iota
+	BSD Backend = 1 << iota
 	BusyBox
 	GNU
 )
 
-// Finder is a unique identifier for an implementation of Unix's find utility.
+// Backend is a unique identifier for an implementation of Unix's find utility.
 // The zero value represents an unknown implementation.
-type Finder int
+type Backend int
 
 // String returns a string containing the stylized name of the implementation.
-func (f Finder) String() string {
+func (b Backend) String() string {
 	var s string
-	switch f {
+	switch b {
 	case BSD:
 		s = "BSD"
 	case BusyBox:
@@ -34,29 +34,29 @@ func (f Finder) String() string {
 	return s
 }
 
-// FinderWrapper wraps Finder to facilitate its parsing from serialized data.
-type FinderWrapper struct {
-	Finder
+// BackendWrapper wraps Backend to facilitate its parsing from serialized data.
+type BackendWrapper struct {
+	Backend
 }
 
 // UnmarshalText decodes the finder from a UTF-8-encoded string.
-func (w *FinderWrapper) UnmarshalText(text []byte) error {
+func (w *BackendWrapper) UnmarshalText(text []byte) error {
 	var err error
-	w.Finder, err = parseFinderString(string(text))
+	w.Backend, err = parseBackendString(string(text))
 	return err
 }
 
-func parseFinderString(s string) (Finder, error) {
-	var f Finder
+func parseBackendString(s string) (Backend, error) {
+	var b Backend
 	switch strings.ToLower(s) {
 	case "bsd":
-		f = BSD
+		b = BSD
 	case "busybox":
-		f = BusyBox
+		b = BusyBox
 	case "gnu":
-		f = GNU
+		b = GNU
 	default:
 		return 0, fmt.Errorf("unsupported find implementation %q", s)
 	}
-	return f, nil
+	return b, nil
 }

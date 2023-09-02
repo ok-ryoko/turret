@@ -281,7 +281,7 @@ type Backends struct {
 
 	// Identity of the implementation of the find utility in the working
 	// container
-	Finder find.FinderWrapper
+	Find find.BackendWrapper
 }
 
 // Fill populates empty optional fields in a spec using information encoded
@@ -295,8 +295,8 @@ func Fill(s Spec) Spec {
 		s.Backends.User.Backend = s.From.Distro.DefaultUserBackend()
 	}
 
-	if s.Backends.Finder.Finder == 0 {
-		s.Backends.Finder.Finder = s.From.Distro.DefaultFinder()
+	if s.Backends.Find.Backend == 0 {
+		s.Backends.Find.Backend = s.From.Distro.DefaultFindBackend()
 	}
 
 	if s.Config.Annotations == nil {
@@ -335,7 +335,7 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing user management backend")
 	}
 
-	if s.Backends.Finder.Finder == 0 {
+	if s.Backends.Find.Backend == 0 {
 		return fmt.Errorf("missing find implementation")
 	}
 

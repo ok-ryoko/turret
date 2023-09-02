@@ -247,4 +247,4 @@
 # one of "bsd", "busybox" and "gnu";
 # case-insensitive
 #
-#finder = ""
+#find = ""
