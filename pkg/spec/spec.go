@@ -17,9 +17,10 @@ import (
 )
 
 const (
-	maxNameLength = 32
-	maxUID        = 60000
-	minUID        = 1000
+	maxCommentLength = 255
+	maxNameLength    = 32
+	maxUID           = 60000
+	minUID           = 1000
 )
 
 var (
@@ -381,6 +382,12 @@ func Validate(s Spec) error {
 				return fmt.Errorf("invalid group name %q: %w", g, err)
 			}
 		}
+
+		if s.User.Comment != nil {
+			if len(*s.User.Comment) > maxCommentLength {
+				return fmt.Errorf("comment is longer than %d characters", maxCommentLength)
+			}
+		}
 	}
 
 	for _, c := range s.Copy {
@@ -409,6 +416,10 @@ func Validate(s Spec) error {
 				return fmt.Errorf("source %q has a scheme", src)
 			}
 		}
+
+		if err := validateName(c.Owner); err != nil {
+			return fmt.Errorf("invalid owner %q for destination %q", c.Owner, c.Destination)
+		}
 	}
 
 	for k := range s.Config.Annotations {
@@ -429,6 +440,12 @@ func Validate(s Spec) error {
 		}
 		if p.Protocol.Protocol == 0 {
 			return fmt.Errorf("unknown network protocol for port %d", p.Number)
+		}
+	}
+
+	if s.Config.WorkDir != "" {
+		if !filepath.IsAbs(s.Config.WorkDir) {
+			return fmt.Errorf("working directory %q is not an absolute path", s.Config.WorkDir)
 		}
 	}
 

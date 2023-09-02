@@ -83,7 +83,8 @@
 #
 #groups = []
 
-# GECOS field text
+# GECOS field text;
+# must be no longer than 255 characters
 #
 #comment = ""
 
@@ -174,7 +175,8 @@
 #
 #labels = {}
 
-# Set the default directory in which the entrypoint or command should run
+# Set the default directory in which the entrypoint or command should run;
+# must be an absolute path
 #
 #work-dir = ""
 
