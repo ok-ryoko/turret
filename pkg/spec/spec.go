@@ -16,6 +16,12 @@ import (
 	"github.com/containers/image/v5/docker/reference"
 )
 
+const (
+	maxNameLength = 32
+	maxUID        = 60000
+	minUID        = 1000
+)
+
 var (
 	reDigits                    = regexp.MustCompile(`^[0-9]+$`)
 	reNotPOSIXPortableCharacter = regexp.MustCompile(`[^-.0-9A-Z_a-z]`)
@@ -366,8 +372,8 @@ func Validate(s Spec) error {
 			return fmt.Errorf("invalid user name %q: %w", s.User.Name, err)
 		}
 
-		if s.User.ID != 0 && (s.User.ID < 1000 || s.User.ID > 60000) {
-			return fmt.Errorf("UID %d outside allowed range [1000-60000]", s.User.ID)
+		if s.User.ID != 0 && (s.User.ID < minUID || s.User.ID > maxUID) {
+			return fmt.Errorf("UID %d outside allowed range [%d-%d]", s.User.ID, minUID, maxUID)
 		}
 
 		for _, g := range s.User.Groups {
@@ -441,8 +447,8 @@ func validateName(name string) error {
 		return fmt.Errorf("the name \"root\" is reserved")
 	}
 
-	if len(name) > 32 {
-		return fmt.Errorf("name is longer than 32 characters")
+	if len(name) > maxNameLength {
+		return fmt.Errorf("name is longer than %d characters", maxNameLength)
 	}
 
 	if reNotPOSIXPortableCharacter.MatchString(name) {
