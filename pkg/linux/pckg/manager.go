@@ -27,11 +27,11 @@ func (m Manager) RePackageName() string {
 	var r string
 	switch m {
 	case APT:
-		r = `^[0-9a-z][+-\.0-9a-z]*[0-9a-z]$`
+		r = `^[0-9a-z][+\-.0-9a-z]*[0-9a-z]$`
 	case APK, Pacman:
-		r = `^[0-9a-z][+-\._0-9a-z]*[0-9a-z]$`
+		r = `^[0-9a-z][+\-.0-9_a-z]*[0-9a-z]$`
 	case DNF, XBPS, Zypper:
-		r = `^[0-9A-Za-z][+-\._0-9A-Za-z]*[0-9A-Za-z]$`
+		r = `^[0-9A-Za-z][+\-.0-9A-Z_a-z]*[0-9A-Za-z]$`
 	default:
 		r = ""
 	}
