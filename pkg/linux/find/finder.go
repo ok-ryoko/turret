@@ -39,7 +39,7 @@ type FinderWrapper struct {
 	Finder
 }
 
-// UnmarshalText decodes the finder from a string.
+// UnmarshalText decodes the finder from a UTF-8-encoded string.
 func (w *FinderWrapper) UnmarshalText(text []byte) error {
 	var err error
 	w.Finder, err = parseFinderString(string(text))

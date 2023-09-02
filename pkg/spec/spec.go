@@ -26,16 +26,17 @@ var (
 
 // Spec holds the options for the build and defines the structure of spec files.
 type Spec struct {
-	// Commit options for the image to be built according to the spec
+	// Information about the image we'll be committing
 	This This
 
-	// Reference for the base image
+	// Components of the canonical reference for the base image
 	From From
 
-	// Instructions for the distro's canonical package manager
+	// Instructions for the package management backend
 	Packages Packages
 
-	// Sole unprivileged user in the working container
+	// Information about the sole unprivileged Linux user in the working
+	// container
 	User *User
 
 	// Instructions and options for copying one or more files from the host's
@@ -52,24 +53,23 @@ type Spec struct {
 	Backends Backends
 }
 
-// This holds commit options for the image to be built according to the spec.
+// This holds information about the image we'll be committing.
 type This struct {
 	// Linux-based distro for this image
 	Distro linux.DistroWrapper
 
-	// Fully qualified name for the image we're building
+	// Desired image name comprising a fully qualified domain and path
 	Repository string
 
-	// Tag for the image we're building
+	// Human-readable identifier for the image
 	Tag string
 
-	// Whether to preserve the image history and timestamps of the files in the
-	// working container's file system
+	// Preserve the image history and timestamps of the files in the working
+	// container's file system
 	KeepHistory bool `toml:"keep-history"`
 }
 
-// Reference returns a string representation of the tagged reference for the
-// image we're building.
+// Reference returns a string representation of the image's tagged reference.
 func (t This) Reference() string {
 	ref := t.Repository
 	if t.Tag != "" {
@@ -78,8 +78,7 @@ func (t This) Reference() string {
 	return ref
 }
 
-// From holds the components of the canonical reference to the base image, plus
-// preprocessing instructions for the base image.
+// From holds the components of the canonical reference to the base image.
 type From struct {
 	// Image name comprising a fully qualified domain and path
 	Repository string
@@ -104,19 +103,20 @@ func (f From) Reference() string {
 	return ref
 }
 
-// Packages contains instructions for the distro's canonical package manager.
+// Packages contains instructions for the package management backend.
 type Packages struct {
-	// Whether to upgrade pre-installed packages
+	// Upgrade pre-installed packages
 	Upgrade bool
 
-	// List of packages to install
+	// Install one or more packages
 	Install []string
 
-	// Whether to clean package caches after upgrading or installing packages
+	// Clean package caches after upgrading or installing packages
 	Clean bool
 }
 
-// User holds information about a Linux user.
+// User holds information about the sole unprivileged Linux user to be created
+// in the working container.
 type User struct {
 	// Human-readable identifier
 	Name string
@@ -129,13 +129,16 @@ type User struct {
 	// If not 0, then it must be an integer between 1000 and 60000, inclusive.
 	ID uint32 `toml:"id"`
 
-	// Whether to create a user group
+	// Create a user group
 	UserGroup bool `toml:"user-group"`
 
 	// Groups to which to add the user
 	Groups []string
 
-	// GECOS field text commonly used to store a full display name
+	// GECOS field text
+	//
+	// The default value of nil tells the program to defer the choice of content
+	// to the user-space utility responsible for user creation.
 	Comment *string
 
 	// Create a home directory for the user in /home
@@ -151,8 +154,8 @@ type Copy struct {
 	// Absolute path to the destination on the working container's file system
 	Destination string `toml:"dest"`
 
-	// Absolute or relative paths to source files on the host's file system;
-	// may contain gitignore-style glob patterns
+	// Paths to source files on the host's file system; may contain
+	// gitignore-style glob patterns
 	Sources []string `toml:"srcs"`
 
 	// Source files in the base directory to exclude from the copy operation;
@@ -171,21 +174,22 @@ type Copy struct {
 
 // Security holds security-related options for the working container.
 type Security struct {
-	// Options for handling files with a SUID/SGID bit
+	// Options for handling real files with a SUID or SGID bit
 	SpecialFiles SpecialFiles `toml:"special-files"`
 }
 
-// SpecialFiles holds options for handling SUID/SGID bits.
+// SpecialFiles holds options for handling real files in the working container
+// that carry a SUID or SGID bit.
 type SpecialFiles struct {
-	// Whether to remove all SUID/SGID bits automatically
+	// Unset the SUID and SGID bits on all files that have one
 	RemoveS bool `toml:"remove-s"`
 
-	// Whether to preserve the SUID/SGID bit on one or more files
+	// Absolute paths to files whose SUID and SGID bits should be preserved
 	Excludes []string
 }
 
 // Configuration holds configuration options for the image to be built from the
-// working container, as defined in the OCI v1 Image Format specification.
+// working container, as defined in the OCIv1 Image Format specification.
 type Configuration struct {
 	// Set or update one or more annotations
 	Annotations map[string]string
@@ -218,9 +222,13 @@ type Configuration struct {
 	Clear Clear
 }
 
-// Port holds a combination of a port number and network protocol.
+// Port holds a combination of a port number and choice of transport-layer
+// network protocol.
 type Port struct {
-	Number   uint16
+	// Port number
+	Number uint16
+
+	// Choice of transport-layer network protocol
 	Protocol ProtocolWrapper
 }
 
@@ -255,12 +263,12 @@ type Clear struct {
 }
 
 // Backends holds the choices of implementations of operations in the working
-// container
+// container.
 type Backends struct {
 	// Identity of the package manager in the working container
 	Package pckg.ManagerWrapper
 
-	// Identity of user-space utility for managing users and groups in the
+	// Identity of the user-space utility for managing users and groups in the
 	// working container
 	User user.ManagerWrapper
 
@@ -305,7 +313,8 @@ func Fill(s Spec) Spec {
 	return s
 }
 
-// Validate asserts that a spec is suitable for ingestion by a builder.
+// Validate asserts that a spec is complete and satisfies domain-specific
+// constraints.
 func Validate(s Spec) error {
 	if s.This.Distro.Distro == 0 {
 		return fmt.Errorf("missing distro")

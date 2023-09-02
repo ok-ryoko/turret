@@ -27,7 +27,7 @@ type PackageManagerInterface interface {
 	Upgrade(c *Container) error
 }
 
-// PackageManager provides a high-level front end for Buildah for managing
+// PackageManager provides a high-level frontend for Buildah for managing
 // packages in a Linux builder container.
 type PackageManager struct {
 	pckg.CommandFactory
@@ -96,8 +96,7 @@ func (pm *PackageManager) Upgrade(c *Container) error {
 	return nil
 }
 
-// NewPackageManager creates a new PackageManager for a particular package
-// manager.
+// NewPackageManager creates a frontend for a particular package manager.
 func NewPackageManager(manager pckg.Manager) (PackageManagerInterface, error) {
 	factory, err := pckg.NewCommandFactory(manager)
 	if err != nil {

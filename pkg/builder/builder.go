@@ -25,9 +25,10 @@ import (
 
 const manifestType string = "application/vnd.oci.image.manifest.v1+json"
 
-// Builder provides a high-level front end for Buildah for configuring and
+// Builder provides a high-level frontend for Buildah for configuring and
 // building container images of diverse Linux-based distros.
 type Builder struct {
+	// Embedded representation of the working container
 	container.Container
 
 	// Pointer to an object that manages packages in the working container
@@ -91,9 +92,15 @@ func (b *Builder) Commit(
 	return imageID, nil
 }
 
+// CommitOptions holds options for committing an image from the working
+// container to storage.
 type CommitOptions struct {
+	// Preserve the image history and timestamps of the files in the working
+	// container's file system
 	KeepHistory bool
-	Latest      bool
+
+	// Ensure that the `latest` tag is created
+	Latest bool
 }
 
 // Configure alters the metadata on and execution of the working container.
@@ -210,7 +217,7 @@ type ConfigureOptions struct {
 	// Set or update one or more labels
 	Labels map[string]string
 
-	// Close all exposed ports inherited from the base image
+	// Close all exposed network ports inherited from the base image
 	ClearPorts bool
 
 	// Expose one or more network ports
@@ -223,8 +230,13 @@ type ConfigureOptions struct {
 	WorkDir string
 }
 
+// ConfigureUserOptions holds configuration options for the user as whom the
+// working container's entrypoint or command should run.
 type ConfigureUserOptions struct {
-	Name       string
+	// Unique human-readable identifier
+	Name string
+
+	// Create a home directory for the user in /home
 	CreateHome bool
 }
 
@@ -315,12 +327,12 @@ func (b *Builder) InstallPackages(packages []string) error {
 	return nil
 }
 
-// UnsetSpecialBits removes the SUID/SGID bit from files in the working
-// container, assuming the availability of the chmod and find core
-// utilities and searching only real (non-device) file systems.
+// UnsetSpecialBits removes the SUID and SGID bits from files in the working
+// container, assuming the availability of the chmod and find core utilities
+// and searching only real (non-device) file systems.
 //
 // `excludes` is a slice of absolute paths to real files in the working
-// container for which to keep the SUID/SGID bit.
+// container for which to keep SUID and SGID bits.
 func (b *Builder) UnsetSpecialBits(excludes []string) error {
 	var targets []string
 
@@ -390,8 +402,8 @@ func (b *Builder) UpgradePackages() error {
 	return nil
 }
 
-// NewBuilder creates a new Builder for a given combination of a Linux-
-// based distro, package manager, and user/group management utility.
+// NewBuilder creates a new builder for a given combination of a Linux-based
+// distro and package management, user management and search backends.
 func New(
 	ctx context.Context,
 	store storage.Store,

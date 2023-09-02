@@ -14,13 +14,13 @@ import (
 
 // Container represents a working container.
 type Container struct {
-	// Pointer to the underlying Buildah builder instance
+	// Pointer to the underlying Buildah builder
 	Builder *buildah.Builder
 
-	// Pointer to the underlying logger
+	// Pointer to a logger for errors and container processes
 	Logger *logrus.Logger
 
-	// Common options for the execution of any container process
+	// Common options for the execution of all container processes
 	CommonOptions CommonOptions
 }
 
@@ -30,7 +30,7 @@ type CommonOptions struct {
 	// container, represented as a slice of "KEY=VALUE"s
 	Env []string
 
-	// Whether to log the output and error streams of container processes
+	// Log the output and error streams of container processes
 	LogCommands bool
 }
 
@@ -39,7 +39,7 @@ func (c *Container) ContainerID() string {
 	return buildah.GetBuildInfo(c.Builder).ContainerID
 }
 
-// defaultRunOptions instantiates a buildah.RunOptions from the container's
+// DefaultRunOptions instantiates a buildah.RunOptions from the container's
 // common execution options.
 func (c *Container) DefaultRunOptions() buildah.RunOptions {
 	ro := buildah.RunOptions{
@@ -69,7 +69,7 @@ func (c *Container) Remove() error {
 	return nil
 }
 
-// resolveExecutable returns the absolute path of an executable in the working
+// ResolveExecutable returns the absolute path of an executable in the working
 // container if it can be found and an error otherwise, assuming `command` can
 // be resolved.
 func (c *Container) ResolveExecutable(executable string) (string, error) {

@@ -13,8 +13,8 @@ const (
 	UDP
 )
 
-// Protocol is a unique identifier for a network protocol. The zero value
-// represents an unknown protocol.
+// Protocol is a unique identifier for a transport-layer network protocol. The
+// zero value represents an unknown protocol.
 type Protocol uint
 
 // String returns a string containing the stylized name of the protocol.
@@ -36,7 +36,7 @@ type ProtocolWrapper struct {
 	Protocol
 }
 
-// UnmarshalText decodes the protocol from a string.
+// UnmarshalText decodes the protocol from a UTF-8-encoded string.
 func (w *ProtocolWrapper) UnmarshalText(text []byte) error {
 	var err error
 	w.Protocol, err = parseProtocolString(string(text))

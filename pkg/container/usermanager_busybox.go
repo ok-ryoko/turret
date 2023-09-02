@@ -13,7 +13,6 @@ type BusyBoxUserManager struct {
 	UserManager
 }
 
-// CreateUser creates the sole unprivileged user of the working container.
 func (m *BusyBoxUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
 	{
 		cmd, capabilities := m.NewCreateUserCmd(name, options)

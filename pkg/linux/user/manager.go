@@ -13,11 +13,11 @@ const (
 	Shadow
 )
 
-// Manager is a unique identifier for a user/group management utility for
-// Linux-based distros. The zero value represents an unknown program.
+// Manager is a unique identifier for a user and group management utility for
+// Linux-based distros. The zero value represents an unknown utility.
 type Manager int
 
-// String returns a string containing the stylized name of the user/group
+// String returns a string containing the stylized name of the user and group
 // management utility.
 func (m Manager) String() string {
 	var s string
@@ -37,7 +37,8 @@ type ManagerWrapper struct {
 	Manager
 }
 
-// UnmarshalText decodes the user/group management utility from a string.
+// UnmarshalText decodes the user and group management utility from a
+// UTF-8-encoded string.
 func (w *ManagerWrapper) UnmarshalText(text []byte) error {
 	var err error
 	w.Manager, err = parseManagerString(string(text))

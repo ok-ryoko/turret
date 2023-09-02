@@ -16,14 +16,14 @@ type UserManagerInterface interface {
 	CreateUser(c *Container, name string, options user.CreateUserOptions) error
 }
 
-// UserManager provides a high-level front end for Buildah for managing
-// users and groups in a Linux builder container.
+// UserManager provides a high-level frontend for Buildah for managing users and
+// groups in a Linux builder container.
 type UserManager struct {
 	user.CommandFactory
 }
 
-// NewUserManager creates a new UserManager for a particular user and
-// group management utility.
+// NewUserManager creates a frontend for a particular user and group management
+// utility.
 func NewUserManager(manager user.Manager) (UserManagerInterface, error) {
 	factory, err := user.NewCommandFactory(manager)
 	if err != nil {

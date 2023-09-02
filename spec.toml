@@ -2,37 +2,38 @@
 
 [this]
 
-# distro is the Linux-based distro in the base image;
+# Linux-based distro in the base image;
 # one of "alpine", "arch", "chimera", "debian", "fedora", "opensuse" and "void";
 # required;
 # case-insensitive
 #
 #distro = ""
 
-# Name for the image that we'll be committing;
+# Name for the image we'll be committing;
+# comprises a fully qualified domain and path;
 # required;
-# will be resolved with respect to `localhost`
 #
 #repository = ""
 
-# Tag for the image that we'll be committing;
-# if blank, only `latest` will be created
+# Human-readable identifier for the image we'll be committing;
+# when blank, only the `latest` tag will be created
 #
 #tag = ""
 
-# Whether to preserve the image history and file timestamps
+# Preserve the image history and file timestamps
 #
 #keep-history = false
 
 [from]
 
-# Name of the base image comprising a fully qualified domain and path;
+# Name of the base image;
+# comprises a fully qualified domain and path;
 # e.g., registry.fedoraproject.org/fedora;
 # required
 #
 #repository = ""
 
-# Tag of the base image;
+# Human-readable identifier for a manifest in the repository;
 # required
 #
 #tag = ""
@@ -44,15 +45,15 @@
 
 [packages]
 
-# Whether to upgrade pre-installed packages
+# Upgrade pre-installed packages
 #
 #upgrade = false
 
-# List of packages to install
+# Install one or more packages
 #
 #install = []
 
-# Whether to clean package caches after upgrading or installing packages
+# Clean package caches after upgrading or installing packages
 #
 #clean = false
 
@@ -61,10 +62,11 @@
 # User's unique human-readable identifier;
 # must contain only digits, letters, hyphens, periods and underscores;
 # can't start or end with a special character;
-# can't consist entirely of numbers;
-# can't be equal to "." or ".."
+# can't consist entirely of digits;
+# must not be longer than 32 characters;
+# required when the user table is present in the spec
 #
-#name = "user"
+#name = ""
 
 # User's unique numeric identifier;
 # either 0 or an integer from 1000 to 60000, inclusive;
@@ -72,16 +74,16 @@
 #
 #id = 0
 
-# Whether to create a user group that has the same name as the user and whose
-# GID is equal to the user's UID
+# Create a user group that has the same name as the user and whose GID is equal
+# to the user's UID
 #
 #user-group = false
 
-# List of additional groups of which the user should be a member
+# Groups to which to add the user
 #
 #groups = []
 
-# GECOS field text (usually a generic descriptor or full name)
+# GECOS field text
 #
 #comment = ""
 
@@ -95,7 +97,7 @@
 # if a relative path, then it must be local to the containing directory;
 # if equal to "~" or starts with "~/", then the tilde is expanded to the home
 # directory of the user invoking the program;
-# if omitted, then the base is the containing directory
+# when blank, the base is the containing directory
 #
 #base = ""
 
@@ -104,7 +106,7 @@
 #
 #dest = ""
 
-# Absolute or relative paths to source files on the host's file system;
+# Paths to source files on the host's file system;
 # required (must contain one or more nonempty sources);
 # may contain gitignore-style glob patterns
 #
@@ -129,13 +131,14 @@
 
 [security.special-files]
 
-# Whether to unset the SUID and SGID bits on all files in the working container
-# that have one, searching only real (non-device) file systems
+# Unset the SUID and SGID bits on all files in the working container that have
+# one, searching only real (non-device) file systems
 #
 #remove-s = false
 
-# List of absolute paths to files whose SUID/SGID bit should be preserved (a
-# file need not possess a special bit to be listed)
+# Absolute paths to files in the working container whose SUID and SGID bits
+# should be preserved;
+# a file need not possess a special bit to be listed
 #
 #excludes = []
 
@@ -182,10 +185,10 @@
 #
 #number = 0
 
-# Use this protocol;
+# Use this transport-layer protocol;
 # one of "tcp" and "udp";
 # case-insensitive;
-# when omitted, defaults to TCP
+# when blank, defaults to "tcp"
 #
 #protocol = ""
 

@@ -5,8 +5,8 @@ package pckg
 
 import "fmt"
 
-// CommandFactory provides a simple layer of abstraction over common package
-// manager operations.
+// CommandFactory provides a layer of abstraction over package management
+// operations.
 type CommandFactory interface {
 	// NewCleanCacheCmd returns (1) a command that cleans the package cache and
 	// (2) the Linux capabilities needed by that command.
@@ -36,8 +36,8 @@ type CommandFactory interface {
 	PackageManager() Manager
 }
 
-// NewCommandFactory creates a new CommandFactory that manufactures package
-// manager commands for execution in a shell.
+// NewCommandFactory creates an object that manufactures package management
+// commands for execution in a shell.
 func NewCommandFactory(m Manager) (CommandFactory, error) {
 	var result CommandFactory
 	switch m {

@@ -109,7 +109,7 @@ type DistroWrapper struct {
 	Distro
 }
 
-// UnmarshalText decodes the distro from a string.
+// UnmarshalText decodes the distro from a UTF-8-encoded string.
 func (w *DistroWrapper) UnmarshalText(text []byte) error {
 	var err error
 	w.Distro, err = parseDistroString(string(text))

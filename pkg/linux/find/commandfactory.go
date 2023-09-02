@@ -5,8 +5,7 @@ package find
 
 import "fmt"
 
-// CommandFactory provides a simple layer of abstraction over search
-// operations.
+// CommandFactory provides a layer of abstraction over search operations.
 type CommandFactory interface {
 	// NewFindSpecialCmd returns (1) a command that finds all files with a
 	// SUID and/or SGID bit in real (non-device) file systems, and (2) the
@@ -14,8 +13,8 @@ type CommandFactory interface {
 	NewFindSpecialCmd() (cmd, capabilities []string)
 }
 
-// NewCommandFactory creates a new CommandFactory that manufactures find
-// commands for execution in a shell.
+// NewCommandFactory creates an object that manufactures find commands for
+// execution in a shell.
 func NewCommandFactory(f Finder) (CommandFactory, error) {
 	var result CommandFactory
 	switch f {
