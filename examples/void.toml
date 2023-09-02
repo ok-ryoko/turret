@@ -1,11 +1,11 @@
-[this]
-distro = "void"
-repository = "localhost/hello-void"
-tag = "0.1.0"
-
 [from]
 repository = "ghcr.io/void-linux/void-linux"
 tag = "20230204RC01-full-x86_64"
+distro = "void"
+
+[this]
+repository = "localhost/hello-void"
+tag = "0.1.0"
 
 [user]
 name = "user"

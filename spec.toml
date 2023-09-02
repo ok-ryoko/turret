@@ -1,29 +1,5 @@
 # Turret spec reference
 
-[this]
-
-# Linux-based distro in the base image;
-# one of "alpine", "arch", "chimera", "debian", "fedora", "opensuse" and "void";
-# required;
-# case-insensitive
-#
-#distro = ""
-
-# Name for the image we'll be committing;
-# comprises a fully qualified domain and path;
-# required;
-#
-#repository = ""
-
-# Human-readable identifier for the image we'll be committing;
-# when blank, only the `latest` tag will be created
-#
-#tag = ""
-
-# Preserve the image history and file timestamps
-#
-#keep-history = false
-
 [from]
 
 # Name of the base image;
@@ -42,6 +18,30 @@
 # e.g., sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
 #
 #digest = ""
+
+# Linux-based distro in the base image;
+# one of "alpine", "arch", "chimera", "debian", "fedora", "opensuse" and "void";
+# required;
+# case-insensitive
+#
+#distro = ""
+
+[this]
+
+# Name for the image we'll be committing;
+# comprises a fully qualified domain and path;
+# required;
+#
+#repository = ""
+
+# Human-readable identifier for the image we'll be committing;
+# when blank, only the `latest` tag will be created
+#
+#tag = ""
+
+# Preserve the image history and file timestamps
+#
+#keep-history = false
 
 [packages]
 

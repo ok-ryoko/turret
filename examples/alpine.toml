@@ -1,11 +1,11 @@
-[this]
-distro = "alpine"
-repository = "localhost/hello-alpine"
-tag = "0.1.0"
-
 [from]
 repository = "docker.io/library/alpine"
 tag = "3.17.3"
+distro = "alpine"
+
+[this]
+repository = "localhost/hello-alpine"
+tag = "0.1.0"
 
 [user]
 name = "user"

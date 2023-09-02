@@ -1,11 +1,11 @@
-[this]
-distro = "arch"
-repository = "localhost/hello-arch"
-tag = "0.1.0"
-
 [from]
 repository = "docker.io/library/archlinux"
 tag = "base-20230514.0.150299"
+distro = "arch"
+
+[this]
+repository = "localhost/hello-arch"
+tag = "0.1.0"
 
 [user]
 name = "user"

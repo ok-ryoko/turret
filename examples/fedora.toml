@@ -1,11 +1,11 @@
-[this]
-distro = "fedora"
-repository = "localhost/hello-fedora"
-tag = "0.1.0"
-
 [from]
 repository = "registry.fedoraproject.org/fedora"
 tag = "38-x86_64"
+distro = "fedora"
+
+[this]
+repository = "localhost/hello-fedora"
+tag = "0.1.0"
 
 [user]
 name = "user"

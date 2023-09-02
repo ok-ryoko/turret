@@ -1,11 +1,11 @@
-[this]
-distro = "openSUSE"
-repository = "localhost/hello-opensuse"
-tag = "0.1.0"
-
 [from]
 repository = "registry.opensuse.org/opensuse/leap"
 tag = "15.5"
+distro = "openSUSE"
+
+[this]
+repository = "localhost/hello-opensuse"
+tag = "0.1.0"
 
 [user]
 name = "user"

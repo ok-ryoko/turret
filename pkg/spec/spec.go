@@ -33,11 +33,11 @@ var (
 
 // Spec holds the options for the build and defines the structure of spec files.
 type Spec struct {
+	// Information about the base image
+	From From
+
 	// Information about the image we'll be committing
 	This This
-
-	// Components of the canonical reference for the base image
-	From From
 
 	// Instructions for the package management backend
 	Packages Packages
@@ -60,11 +60,36 @@ type Spec struct {
 	Backends Backends
 }
 
-// This holds information about the image we'll be committing.
-type This struct {
+// From holds information about the base image.
+type From struct {
+	// Image name comprising a fully qualified domain and path
+	Repository string
+
+	// Human-readable identifier for a manifest in the repository
+	Tag string
+
+	// Unique identifer for the contents of the base image
+	Digest string
+
 	// Linux-based distro for this image
 	Distro linux.DistroWrapper
+}
 
+// Reference returns a string representation of the canonical reference to the
+// base image.
+func (f From) Reference() string {
+	ref := f.Repository
+	if f.Tag != "" {
+		ref += ":" + f.Tag
+	}
+	if f.Digest != "" {
+		ref += "@" + f.Digest
+	}
+	return ref
+}
+
+// This holds information about the image we'll be committing.
+type This struct {
 	// Desired image name comprising a fully qualified domain and path
 	Repository string
 
@@ -81,31 +106,6 @@ func (t This) Reference() string {
 	ref := t.Repository
 	if t.Tag != "" {
 		ref += ":" + t.Tag
-	}
-	return ref
-}
-
-// From holds the components of the canonical reference to the base image.
-type From struct {
-	// Image name comprising a fully qualified domain and path
-	Repository string
-
-	// Human-readable identifier for a manifest in the repository
-	Tag string
-
-	// Unique identifer for the contents of the base image
-	Digest string
-}
-
-// Reference returns a string representation of the canonical reference to the
-// base image.
-func (f From) Reference() string {
-	ref := f.Repository
-	if f.Tag != "" {
-		ref += ":" + f.Tag
-	}
-	if f.Digest != "" {
-		ref += "@" + f.Digest
 	}
 	return ref
 }
@@ -288,15 +288,15 @@ type Backends struct {
 // by required fields in the spec.
 func Fill(s Spec) Spec {
 	if s.Backends.Package.Manager == 0 {
-		s.Backends.Package.Manager = s.This.Distro.DefaultPackageManager()
+		s.Backends.Package.Manager = s.From.Distro.DefaultPackageManager()
 	}
 
 	if s.Backends.User.Manager == 0 {
-		s.Backends.User.Manager = s.This.Distro.DefaultUserManager()
+		s.Backends.User.Manager = s.From.Distro.DefaultUserManager()
 	}
 
 	if s.Backends.Finder.Finder == 0 {
-		s.Backends.Finder.Finder = s.This.Distro.DefaultFinder()
+		s.Backends.Finder.Finder = s.From.Distro.DefaultFinder()
 	}
 
 	if s.Config.Annotations == nil {
@@ -323,7 +323,7 @@ func Fill(s Spec) Spec {
 // Validate asserts that a spec is complete and satisfies domain-specific
 // constraints.
 func Validate(s Spec) error {
-	if s.This.Distro.Distro == 0 {
+	if s.From.Distro.Distro == 0 {
 		return fmt.Errorf("missing distro")
 	}
 

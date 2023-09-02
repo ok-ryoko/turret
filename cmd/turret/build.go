@@ -129,7 +129,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				return fmt.Errorf("image %s already exists", refThis)
 			}
 
-			distro := spec.This.Distro.Distro
+			distro := spec.From.Distro.Distro
 			b, err := builder.New(
 				ctx,
 				store,

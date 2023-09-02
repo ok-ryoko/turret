@@ -1,11 +1,11 @@
-[this]
-distro = "debian"
-repository = "localhost/hello-debian"
-tag = "0.1.0"
-
 [from]
 repository = "docker.io/library/debian"
 tag = "11.7-slim"
+distro = "debian"
+
+[this]
+repository = "localhost/hello-debian"
+tag = "0.1.0"
 
 [user]
 name = "user"
