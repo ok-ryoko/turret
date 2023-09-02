@@ -60,6 +60,6 @@ func (f XBPSCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (f XBPSCommandFactory) PackageManager() Manager {
+func (f XBPSCommandFactory) Backend() Backend {
 	return XBPS
 }

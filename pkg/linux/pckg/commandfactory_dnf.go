@@ -77,6 +77,6 @@ func (f DNFCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (f DNFCommandFactory) PackageManager() Manager {
+func (f DNFCommandFactory) Backend() Backend {
 	return DNF
 }

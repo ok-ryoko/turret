@@ -67,6 +67,6 @@ func (f APTCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (f APTCommandFactory) PackageManager() Manager {
+func (f APTCommandFactory) Backend() Backend {
 	return APT
 }

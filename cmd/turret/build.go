@@ -137,7 +137,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				logger,
 				cCtx.Bool("pull"),
 				distro,
-				spec.Backends.Package.Manager,
+				spec.Backends.Package.Backend,
 				spec.Backends.User.Backend,
 				spec.Backends.Find.Backend,
 				container.CommonOptions{LogCommands: v >= 4},

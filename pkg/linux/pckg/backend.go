@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	APK Manager = 1 << iota
+	APK Backend = 1 << iota
 	APT
 	DNF
 	Pacman
@@ -17,15 +17,15 @@ const (
 	Zypper
 )
 
-// Manager is a unique identifier for a package manager for Linux-based
-// distros. The zero value represents an unknown package manager.
-type Manager int
+// Backend is a unique identifier for a package manager for Linux-based distros.
+// The zero value represents an unknown package manager.
+type Backend int
 
 // RePackageName returns a regular expression to match valid package names for
 // the package manager's ecosystem.
-func (m Manager) RePackageName() string {
+func (b Backend) RePackageName() string {
 	var r string
-	switch m {
+	switch b {
 	case APT:
 		r = `^[0-9a-z][+\-.0-9a-z]*[0-9a-z]$`
 	case APK, Pacman:
@@ -39,9 +39,9 @@ func (m Manager) RePackageName() string {
 }
 
 // String returns a string containing the stylized name of the package manager.
-func (m Manager) String() string {
+func (b Backend) String() string {
 	var s string
-	switch m {
+	switch b {
 	case APK:
 		s = "APK"
 	case APT:
@@ -60,35 +60,35 @@ func (m Manager) String() string {
 	return s
 }
 
-// ManagerWrapper wraps Manager to facilitate its parsing from serialized data.
-type ManagerWrapper struct {
-	Manager
+// BackendWrapper wraps Backend to facilitate its parsing from serialized data.
+type BackendWrapper struct {
+	Backend
 }
 
 // UnmarshalText decodes the package manager from a UTF-8-encoded string.
-func (w *ManagerWrapper) UnmarshalText(text []byte) error {
+func (w *BackendWrapper) UnmarshalText(text []byte) error {
 	var err error
-	w.Manager, err = parseManagerString(string(text))
+	w.Backend, err = parseBackendString(string(text))
 	return err
 }
 
-func parseManagerString(s string) (Manager, error) {
-	var m Manager
+func parseBackendString(s string) (Backend, error) {
+	var b Backend
 	switch strings.ToLower(s) {
 	case "apk":
-		m = APK
+		b = APK
 	case "apt":
-		m = APT
+		b = APT
 	case "dnf":
-		m = DNF
+		b = DNF
 	case "pacman":
-		m = Pacman
+		b = Pacman
 	case "xbps":
-		m = XBPS
+		b = XBPS
 	case "zypper":
-		m = Zypper
+		b = Zypper
 	default:
 		return 0, fmt.Errorf("unsupported package manager %q", s)
 	}
-	return m, nil
+	return b, nil
 }

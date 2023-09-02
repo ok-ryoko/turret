@@ -9,28 +9,28 @@ import (
 	"github.com/containers/buildah"
 )
 
-type APTPackageManager struct {
-	PackageManager
+type APTPackageFrontend struct {
+	PackageFrontend
 }
 
-func (m *APTPackageManager) Install(c *Container, packages []string) error {
+func (f *APTPackageFrontend) Install(c *Container, packages []string) error {
 	{
-		cmd, capabilities := m.NewUpdateIndexCmd()
+		cmd, capabilities := f.NewUpdateIndexCmd()
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("updating %s package index", m.PackageManager.PackageManager())
+		errContext := fmt.Sprintf("updating %s package index", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
 
 	{
-		cmd, capabilities := m.NewInstallCmd(packages)
+		cmd, capabilities := f.NewInstallCmd(packages)
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("installing %s packages", m.PackageManager.PackageManager())
+		errContext := fmt.Sprintf("installing %s packages", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -39,24 +39,24 @@ func (m *APTPackageManager) Install(c *Container, packages []string) error {
 	return nil
 }
 
-func (pm *APTPackageManager) Upgrade(c *Container) error {
+func (f *APTPackageFrontend) Upgrade(c *Container) error {
 	{
-		cmd, capabilities := pm.NewUpdateIndexCmd()
+		cmd, capabilities := f.NewUpdateIndexCmd()
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("updating %s package index", pm.PackageManager.PackageManager())
+		errContext := fmt.Sprintf("updating %s package index", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
 
 	{
-		cmd, capabilities := pm.NewUpgradeCmd()
+		cmd, capabilities := f.NewUpgradeCmd()
 		ro := c.DefaultRunOptions()
 		ro.AddCapabilities = capabilities
 		ro.ConfigureNetwork = buildah.NetworkEnabled
-		errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager.PackageManager())
+		errContext := fmt.Sprintf("upgrading pre-installed %s packages", f.Backend())
 		if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 			return fmt.Errorf("%w", err)
 		}

@@ -31,30 +31,30 @@ type CommandFactory interface {
 	// and (2) the Linux capabilities needed by that command.
 	NewUpgradeCmd() (cmd, capabilities []string)
 
-	// PackageManager returns a constant representing the package manager for
-	// which this factory makes commands.
-	PackageManager() Manager
+	// Backend returns a constant representing the package manager for which
+	// this factory makes commands.
+	Backend() Backend
 }
 
 // NewCommandFactory creates an object that manufactures package management
 // commands for execution in a shell.
-func NewCommandFactory(m Manager) (CommandFactory, error) {
-	var result CommandFactory
-	switch m {
+func NewCommandFactory(b Backend) (CommandFactory, error) {
+	var factory CommandFactory
+	switch b {
 	case APK:
-		result = &APKCommandFactory{}
+		factory = &APKCommandFactory{}
 	case APT:
-		result = &APTCommandFactory{}
+		factory = &APTCommandFactory{}
 	case DNF:
-		result = &DNFCommandFactory{}
+		factory = &DNFCommandFactory{}
 	case Pacman:
-		result = &PacmanCommandFactory{}
+		factory = &PacmanCommandFactory{}
 	case XBPS:
-		result = &XBPSCommandFactory{}
+		factory = &XBPSCommandFactory{}
 	case Zypper:
-		result = &ZypperCommandFactory{}
+		factory = &ZypperCommandFactory{}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager %v", m)
+		return nil, fmt.Errorf("unrecognized package manager %v", b)
 	}
-	return result, nil
+	return factory, nil
 }

@@ -65,6 +65,6 @@ func (f ZypperCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, []string{}
 }
 
-func (f ZypperCommandFactory) PackageManager() Manager {
+func (f ZypperCommandFactory) Backend() Backend {
 	return Zypper
 }

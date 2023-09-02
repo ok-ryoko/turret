@@ -68,6 +68,6 @@ func (f APKCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, []string{}
 }
 
-func (f APKCommandFactory) PackageManager() Manager {
+func (f APKCommandFactory) Backend() Backend {
 	return APK
 }

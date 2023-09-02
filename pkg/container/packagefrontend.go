@@ -11,9 +11,9 @@ import (
 	"github.com/ok-ryoko/turret/pkg/linux/pckg"
 )
 
-// PackageManagerInterface is the interface implemented by a PackageManager
+// PackageFrontendInterface is the interface implemented by a PackageFrontend
 // for a particular package manager.
-type PackageManagerInterface interface {
+type PackageFrontendInterface interface {
 	// CleanCaches cleans the package caches in the working container.
 	CleanCaches(c *Container) error
 
@@ -27,18 +27,18 @@ type PackageManagerInterface interface {
 	Upgrade(c *Container) error
 }
 
-// PackageManager provides a high-level frontend for Buildah for managing
+// PackageFrontend provides a high-level frontend for Buildah for managing
 // packages in a Linux builder container.
-type PackageManager struct {
+type PackageFrontend struct {
 	pckg.CommandFactory
 }
 
 // CleanCaches cleans the package caches in the working container.
-func (pm *PackageManager) CleanCaches(c *Container) error {
-	cmd, capabilities := pm.NewCleanCacheCmd()
+func (f *PackageFrontend) CleanCaches(c *Container) error {
+	cmd, capabilities := f.NewCleanCacheCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
-	errContext := fmt.Sprintf("cleaning %s package caches", pm.PackageManager())
+	errContext := fmt.Sprintf("cleaning %s package caches", f.Backend())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -46,12 +46,12 @@ func (pm *PackageManager) CleanCaches(c *Container) error {
 }
 
 // Install installs one or more packages to the working container.
-func (pm *PackageManager) Install(c *Container, packages []string) error {
-	cmd, capabilities := pm.NewInstallCmd(packages)
+func (f *PackageFrontend) Install(c *Container, packages []string) error {
+	cmd, capabilities := f.NewInstallCmd(packages)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errContext := fmt.Sprintf("installing %s packages", pm.PackageManager())
+	errContext := fmt.Sprintf("installing %s packages", f.Backend())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -59,14 +59,14 @@ func (pm *PackageManager) Install(c *Container, packages []string) error {
 }
 
 // List lists the packages installed in the working container.
-func (pm *PackageManager) List(c *Container) ([]string, error) {
-	cmd, capabilities, parse := pm.NewListInstalledPackagesCmd()
+func (f *PackageFrontend) List(c *Container) ([]string, error) {
+	cmd, capabilities, parse := f.NewListInstalledPackagesCmd()
 
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 
 	outText, errText, err := c.Run(cmd, ro)
-	errContext := fmt.Sprintf("listing installed %s packages", pm.PackageManager())
+	errContext := fmt.Sprintf("listing installed %s packages", f.Backend())
 	if err != nil {
 		if errText != "" {
 			errContext = fmt.Sprintf("%s (%q)", errContext, errText)
@@ -84,38 +84,38 @@ func (pm *PackageManager) List(c *Container) ([]string, error) {
 }
 
 // Upgrade upgrades the packages in the working container.
-func (pm *PackageManager) Upgrade(c *Container) error {
-	cmd, capabilities := pm.NewUpgradeCmd()
+func (f *PackageFrontend) Upgrade(c *Container) error {
+	cmd, capabilities := f.NewUpgradeCmd()
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities
 	ro.ConfigureNetwork = buildah.NetworkEnabled
-	errContext := fmt.Sprintf("upgrading pre-installed %s packages", pm.PackageManager())
+	errContext := fmt.Sprintf("upgrading pre-installed %s packages", f.Backend())
 	if err := c.runWithLogging(cmd, ro, errContext); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
 }
 
-// NewPackageManager creates a frontend for a particular package manager.
-func NewPackageManager(manager pckg.Manager) (PackageManagerInterface, error) {
-	factory, err := pckg.NewCommandFactory(manager)
+// NewPackageFrontend creates a frontend for a particular package manager.
+func NewPackageFrontend(backend pckg.Backend) (PackageFrontendInterface, error) {
+	factory, err := pckg.NewCommandFactory(backend)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	var result PackageManagerInterface
-	switch manager {
+	var result PackageFrontendInterface
+	switch backend {
 	case pckg.APT:
-		result = &APTPackageManager{PackageManager{factory}}
+		result = &APTPackageFrontend{PackageFrontend{factory}}
 	case
 		pckg.APK,
 		pckg.DNF,
 		pckg.Pacman,
 		pckg.XBPS,
 		pckg.Zypper:
-		result = &PackageManager{factory}
+		result = &PackageFrontend{factory}
 	default:
-		return nil, fmt.Errorf("unrecognized package manager %v", manager)
+		return nil, fmt.Errorf("unrecognized package manager %v", backend)
 	}
 	return result, nil
 }

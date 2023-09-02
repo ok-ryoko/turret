@@ -57,6 +57,6 @@ func (f PacmanCommandFactory) NewUpgradeCmd() (cmd, capabilities []string) {
 	return cmd, capabilities
 }
 
-func (f PacmanCommandFactory) PackageManager() Manager {
+func (f PacmanCommandFactory) Backend() Backend {
 	return Pacman
 }

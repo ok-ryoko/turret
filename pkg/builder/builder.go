@@ -32,7 +32,7 @@ type Builder struct {
 	container.Container
 
 	// Pointer to an object that manages packages in the working container
-	PackageManager container.PackageManagerInterface
+	PackageFrontend container.PackageFrontendInterface
 
 	// Pointer to an object that manages users and groups in the working
 	// container
@@ -44,7 +44,7 @@ type Builder struct {
 
 // CleanPackageCaches cleans the package caches in the working container.
 func (b *Builder) CleanPackageCaches() error {
-	if err := b.PackageManager.CleanCaches(&b.Container); err != nil {
+	if err := b.PackageFrontend.CleanCaches(&b.Container); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -321,7 +321,7 @@ func (b *Builder) CreateUser(name string, options user.Options) error {
 
 // InstallPackages installs one or more packages to the working container.
 func (b *Builder) InstallPackages(packages []string) error {
-	if err := b.PackageManager.Install(&b.Container, packages); err != nil {
+	if err := b.PackageFrontend.Install(&b.Container, packages); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -396,7 +396,7 @@ func (b *Builder) UnsetSpecialBits(excludes []string) error {
 
 // UpgradePackages upgrades the packages in the working container.
 func (b *Builder) UpgradePackages() error {
-	if err := b.PackageManager.Upgrade(&b.Container); err != nil {
+	if err := b.PackageFrontend.Upgrade(&b.Container); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 	return nil
@@ -411,7 +411,7 @@ func New(
 	logger *logrus.Logger,
 	pull bool,
 	distro linux.Distro,
-	packageManager pckg.Manager,
+	packageBackend pckg.Backend,
 	userBackend user.Backend,
 	finder find.Backend,
 	options container.CommonOptions,
@@ -440,7 +440,7 @@ func New(
 		Logger:  logger,
 	}
 
-	p, err := container.NewPackageManager(packageManager)
+	p, err := container.NewPackageFrontend(packageBackend)
 	if err != nil {
 		return Builder{}, fmt.Errorf("creating package management interface: %w", err)
 	}
@@ -463,7 +463,7 @@ func New(
 
 	return Builder{
 		Container:          c,
-		PackageManager:     p,
+		PackageFrontend:    p,
 		UserFrontend:       u,
 		FindCommandFactory: f,
 	}, nil

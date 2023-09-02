@@ -273,7 +273,7 @@ type Clear struct {
 // container.
 type Backends struct {
 	// Identity of the package manager in the working container
-	Package pckg.ManagerWrapper
+	Package pckg.BackendWrapper
 
 	// Identity of the user-space utility for managing users and groups in the
 	// working container
@@ -287,8 +287,8 @@ type Backends struct {
 // Fill populates empty optional fields in a spec using information encoded
 // by required fields in the spec.
 func Fill(s Spec) Spec {
-	if s.Backends.Package.Manager == 0 {
-		s.Backends.Package.Manager = s.From.Distro.DefaultPackageManager()
+	if s.Backends.Package.Backend == 0 {
+		s.Backends.Package.Backend = s.From.Distro.DefaultPackageBackend()
 	}
 
 	if s.Backends.User.Backend == 0 {
@@ -327,7 +327,7 @@ func Validate(s Spec) error {
 		return fmt.Errorf("missing distro")
 	}
 
-	if s.Backends.Package.Manager == 0 {
+	if s.Backends.Package.Backend == 0 {
 		return fmt.Errorf("missing package management backend")
 	}
 

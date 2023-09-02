@@ -26,26 +26,26 @@ const (
 // The zero value represents an unknown distro.
 type Distro int
 
-// DefaultPackageManager returns the canonical package manager for the distro.
-func (d Distro) DefaultPackageManager() pckg.Manager {
-	var m pckg.Manager
+// DefaultPackageBackend returns the canonical package manager for the distro.
+func (d Distro) DefaultPackageBackend() pckg.Backend {
+	var b pckg.Backend
 	switch d {
 	case Alpine, Chimera:
-		m = pckg.APK
+		b = pckg.APK
 	case Arch:
-		m = pckg.Pacman
+		b = pckg.Pacman
 	case Debian:
-		m = pckg.APT
+		b = pckg.APT
 	case Fedora:
-		m = pckg.DNF
+		b = pckg.DNF
 	case OpenSUSE:
-		m = pckg.Zypper
+		b = pckg.Zypper
 	case Void:
-		m = pckg.XBPS
+		b = pckg.XBPS
 	default:
-		m = 0
+		b = 0
 	}
-	return m
+	return b
 }
 
 // DefaultUserBackend returns the canonical user and group management utility
