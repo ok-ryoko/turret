@@ -312,7 +312,7 @@ type CopyFilesOptions struct {
 
 // CreateUser creates the sole unprivileged user of the working container,
 // assuming `name` is a nonempty string.
-func (b *Builder) CreateUser(name string, options user.CreateUserOptions) error {
+func (b *Builder) CreateUser(name string, options user.Options) error {
 	if err := b.UserManager.CreateUser(&b.Container, name, options); err != nil {
 		return fmt.Errorf("%w", err)
 	}

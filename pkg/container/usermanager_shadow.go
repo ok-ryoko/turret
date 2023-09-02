@@ -13,7 +13,7 @@ type ShadowUserManager struct {
 	UserManager
 }
 
-func (m *ShadowUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
+func (m *ShadowUserManager) CreateUser(c *Container, name string, options user.Options) error {
 	cmd, capabilities := m.NewCreateUserCmd(name, options)
 	ro := c.DefaultRunOptions()
 	ro.AddCapabilities = capabilities

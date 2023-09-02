@@ -10,7 +10,7 @@ import (
 
 type ShadowCommandFactory struct{}
 
-func (f ShadowCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
+func (f ShadowCommandFactory) NewCreateUserCmd(name string, options Options) (cmd, capabilities []string) {
 	cmd = []string{"useradd"}
 
 	if options.ID > 0 {

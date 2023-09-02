@@ -13,7 +13,7 @@ type BusyBoxUserManager struct {
 	UserManager
 }
 
-func (m *BusyBoxUserManager) CreateUser(c *Container, name string, options user.CreateUserOptions) error {
+func (m *BusyBoxUserManager) CreateUser(c *Container, name string, options user.Options) error {
 	{
 		cmd, capabilities := m.NewCreateUserCmd(name, options)
 		ro := c.DefaultRunOptions()

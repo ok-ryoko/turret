@@ -14,15 +14,15 @@ type CommandFactory interface {
 
 	// NewCreateUserCmd returns (1) a command that creates a new user and (2)
 	// the Linux capabilities needed by that command.
-	NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string)
+	NewCreateUserCmd(name string, options Options) (cmd, capabilities []string)
 
 	// UserManager returns a constant representing the user and group management
 	// utility for which this factory makes commands.
 	UserManager() Manager
 }
 
-// CreateUserOptions holds options for a Linux user.
-type CreateUserOptions struct {
+// Options holds options for a Linux user.
+type Options struct {
 	// Linux user ID
 	ID uint32
 

@@ -7,7 +7,7 @@ import "fmt"
 
 type BusyBoxCommandFactory struct{}
 
-func (f BusyBoxCommandFactory) NewCreateUserCmd(name string, options CreateUserOptions) (cmd, capabilities []string) {
+func (f BusyBoxCommandFactory) NewCreateUserCmd(name string, options Options) (cmd, capabilities []string) {
 	cmd = []string{"adduser", "-D"}
 
 	if options.ID > 0 {

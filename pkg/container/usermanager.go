@@ -13,7 +13,7 @@ import (
 // for a particular user and group management utility.
 type UserManagerInterface interface {
 	// CreateUser creates the sole unprivileged user of the working container.
-	CreateUser(c *Container, name string, options user.CreateUserOptions) error
+	CreateUser(c *Container, name string, options user.Options) error
 }
 
 // UserManager provides a high-level frontend for Buildah for managing users and

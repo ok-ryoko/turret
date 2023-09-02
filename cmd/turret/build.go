@@ -183,7 +183,7 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 
 			if spec.User != nil {
-				createUserOptions := user.CreateUserOptions{
+				createUserOptions := user.Options{
 					ID:         spec.User.ID,
 					UserGroup:  spec.User.UserGroup,
 					Groups:     spec.User.Groups,
