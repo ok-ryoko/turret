@@ -16,7 +16,7 @@ const (
 
 // Backend is a unique identifier for an implementation of Unix's find utility.
 // The zero value represents an unknown implementation.
-type Backend int
+type Backend uint
 
 // String returns a string containing the stylized name of the implementation.
 func (b Backend) String() string {

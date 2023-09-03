@@ -15,7 +15,7 @@ const (
 
 // Backend is a unique identifier for a user and group management utility for
 // Linux-based distros. The zero value represents an unknown utility.
-type Backend int
+type Backend uint
 
 // String returns a string containing the stylized name of the user and group
 // management utility.

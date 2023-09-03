@@ -24,7 +24,7 @@ const (
 
 // Distro is a unique identifier for an independent Linux-based distribution.
 // The zero value represents an unknown distro.
-type Distro int
+type Distro uint
 
 // DefaultPackageBackend returns the canonical package manager for the distro.
 func (d Distro) DefaultPackageBackend() pckg.Backend {

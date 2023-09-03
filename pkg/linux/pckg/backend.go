@@ -19,7 +19,7 @@ const (
 
 // Backend is a unique identifier for a package manager for Linux-based distros.
 // The zero value represents an unknown package manager.
-type Backend int
+type Backend uint
 
 // RePackageName returns a regular expression to match valid package names for
 // the package manager's ecosystem.
