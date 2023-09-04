@@ -22,7 +22,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const manifestType string = "application/vnd.oci.image.manifest.v1+json"
+const (
+	digestKey    string = "com.github.ok-ryoko.turret.spec.digest"
+	manifestType string = "application/vnd.oci.image.manifest.v1+json"
+)
 
 // Execute runs the build pipeline.
 func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options ExecuteOptions) error {
@@ -166,7 +169,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 	}
 
 	if options.Digest != "" {
-		s.Config.Annotations["org.github.ok-ryoko.turret.spec.digest"] = options.Digest
+		s.Config.Annotations[digestKey] = options.Digest
 	}
 
 	ports := make([]string, len(s.Config.Ports))
