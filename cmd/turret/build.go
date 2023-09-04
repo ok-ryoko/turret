@@ -227,14 +227,6 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				ports[i] = p.String()
 			}
 
-			var configureUserOptions builder.ConfigureUserOptions
-			if spec.User != nil {
-				configureUserOptions = builder.ConfigureUserOptions{
-					Name:       spec.User.Name,
-					CreateHome: spec.User.CreateHome,
-				}
-			}
-
 			configureOptions := builder.ConfigureOptions{
 				ClearAnnotations: spec.Config.Clear.Annotations,
 				Annotations:      spec.Config.Annotations,
@@ -251,8 +243,10 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				Labels:           spec.Config.Labels,
 				ClearPorts:       spec.Config.Clear.Ports,
 				Ports:            ports,
-				User:             &configureUserOptions,
 				WorkDir:          spec.Config.WorkDir,
+			}
+			if spec.User != nil {
+				configureOptions.User = spec.User.Name
 			}
 			b.Configure(configureOptions)
 			logger.Debugln("configured image")

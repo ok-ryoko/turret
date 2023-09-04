@@ -6,7 +6,6 @@ package builder
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -168,11 +167,8 @@ func (b *Builder) Configure(options ConfigureOptions) {
 		b.Builder.SetWorkDir(options.WorkDir)
 	}
 
-	if options.User != nil {
-		b.Builder.SetUser(options.User.Name)
-		if options.WorkDir == "" && options.User.CreateHome {
-			b.Builder.SetWorkDir(filepath.Join("/home", options.User.Name))
-		}
+	if options.User != "" {
+		b.Builder.SetUser(options.User)
 	}
 }
 
@@ -224,20 +220,10 @@ type ConfigureOptions struct {
 	Ports []string
 
 	// Set the user as whom the entrypoint or command should run
-	User *ConfigureUserOptions
+	User string
 
 	// Set the default directory in which the entrypoint or command should run
 	WorkDir string
-}
-
-// ConfigureUserOptions holds configuration options for the user as whom the
-// working container's entrypoint or command should run.
-type ConfigureUserOptions struct {
-	// Unique human-readable identifier
-	Name string
-
-	// Create a home directory for the user in /home
-	CreateHome bool
 }
 
 // CopyFiles copies one or more files on the host's file system to the working
