@@ -90,9 +90,9 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			}
 			setLoggerLevel(logger, verbosity)
 
-			specPath, err := processPath(cCtx.Args().First())
+			specPath, err := filepath.Abs(cCtx.Args().First())
 			if err != nil {
-				return fmt.Errorf("processing spec path: %w", err)
+				return fmt.Errorf("canonicalizing spec path: %w", err)
 			}
 			logger.Debugln("processed spec path")
 
@@ -117,34 +117,6 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 			return nil
 		},
 	}
-}
-
-// Resolve the absolute path of `p`, assuming `p` refers to a regular file
-// and asserting the absolute path is rooted in both the user's home directory
-// and the current working directory on the host.
-func processPath(p string) (string, error) {
-	p, err := filepath.Abs(p)
-	if err != nil {
-		return "", fmt.Errorf("canonicalizing spec path: %w", err)
-	}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("getting user home directory: %w", err)
-	}
-	if !strings.HasPrefix(p, home) {
-		return "", fmt.Errorf("path isn't a child of the home directory")
-	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("getting working directory: %w", err)
-	}
-	if !strings.HasPrefix(p, wd) {
-		return "", fmt.Errorf("path isn't a child of the working directory")
-	}
-
-	return p, nil
 }
 
 // createSpec decodes the contents of the TOML file at the absolute path `p`
