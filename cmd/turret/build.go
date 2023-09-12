@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ok-ryoko/turret/pkg/build"
-	"github.com/ok-ryoko/turret/pkg/spec"
+	"github.com/ok-ryoko/turret/internal/build"
+	"github.com/ok-ryoko/turret/internal/spec"
 
 	"github.com/containers/storage/pkg/unshare"
 	"github.com/pelletier/go-toml/v2"

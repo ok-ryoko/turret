@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ok-ryoko/turret/pkg/container"
+	"github.com/ok-ryoko/turret/internal/container"
+	"github.com/ok-ryoko/turret/internal/spec"
 	"github.com/ok-ryoko/turret/pkg/linux"
 	"github.com/ok-ryoko/turret/pkg/linux/find"
 	"github.com/ok-ryoko/turret/pkg/linux/user"
-	"github.com/ok-ryoko/turret/pkg/spec"
 
 	"github.com/containers/buildah"
 	is "github.com/containers/image/v5/storage"
