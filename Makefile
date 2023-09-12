@@ -14,7 +14,7 @@ all: fmt check build
 
 .PHONY: setup #? Prepare the development environment
 setup: setup.formatter setup.linters
-	git config --local core.hooksPath .githooks
+	git config --local core.hooksPath githooks
 
 .PHONY: setup.formatter
 setup.formatter:
@@ -55,4 +55,4 @@ clean:
 
 .PHONY: help #? Describe all targets documented in the Makefile
 help:
-	@awk --posix --exec ./hack/make_help.awk ./Makefile
+	@awk --posix --exec ./scripts/make_help.awk ./Makefile

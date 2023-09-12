@@ -1,6 +1,6 @@
 <p align="center">
   <img
-    src="./docs/img/icon.svg"
+    src="./assets/icon.svg"
     title="Turret"
     alt="minimalistic and isometric view of a red–brown castle turret superposed onto a clear blue sky during the day"
     height="128"
