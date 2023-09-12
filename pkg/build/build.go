@@ -466,7 +466,7 @@ func copyFiles(c *container.Container, base string, dest string, srcs []string, 
 	}
 
 	if options.mode != 0 {
-		aco.Chmod = fmt.Sprint(options.mode)
+		aco.Chmod = fmt.Sprintf("%o", options.mode)
 	}
 
 	if options.removeSpecial {
