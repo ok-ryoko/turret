@@ -4,13 +4,13 @@ on:
     branches:
       - main
     paths:
-      - '.githooks/**'
+      - 'githooks/**'
 
   pull_request:
     branches:
       - main
     paths:
-      - '.githooks/**'
+      - 'githooks/**'
 
 permissions:
   contents: read
@@ -28,4 +28,4 @@ jobs:
         run: shellcheck --version
 
       - name: Lint shell scripts
-        run: shellcheck --format=gcc --shell=sh .githooks/**
+        run: shellcheck --format=gcc --shell=sh githooks/**

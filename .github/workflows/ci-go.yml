@@ -9,6 +9,7 @@ on:
       - 'cmd/**.go'
       - 'go.mod'
       - 'go.sum'
+      - 'internal/**.go'
       - 'pkg/**.go'
 
   pull_request:
@@ -20,6 +21,7 @@ on:
       - 'cmd/**.go'
       - 'go.mod'
       - 'go.sum'
+      - 'internal/**.go'
       - 'pkg/**.go'
 
   workflow_dispatch:
