@@ -110,9 +110,12 @@ func newBuildCmd(logger *logrus.Logger) *cli.Command {
 				LogCommands: verbosity >= 4,
 				Pull:        cCtx.Bool("pull"),
 			}
-			if err := build.Execute(ctx, spec, logger, options); err != nil {
+
+			imageID, err := build.Execute(ctx, spec, logger, options)
+			if err != nil {
 				return fmt.Errorf("building image according to given spec: %w", err)
 			}
+			fmt.Println(imageID)
 
 			return nil
 		},

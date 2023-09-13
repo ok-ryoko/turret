@@ -28,14 +28,14 @@ const (
 )
 
 // Execute runs the build pipeline.
-func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options ExecuteOptions) error {
+func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options ExecuteOptions) (string, error) {
 	storeOptions, err := storage.DefaultStoreOptionsAutoDetectUID()
 	if err != nil {
 		storeOptions = storage.StoreOptions{}
 	}
 	store, err := storage.GetStore(storeOptions)
 	if err != nil {
-		return fmt.Errorf("creating store: %w", err)
+		return "", fmt.Errorf("creating store: %w", err)
 	}
 	defer func() {
 		layers, errShutdown := store.Shutdown(false)
@@ -49,7 +49,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 	}()
 
 	if refThis := s.This.Reference(); store.Exists(refThis) && !options.Force {
-		return fmt.Errorf("image %s already exists", refThis)
+		return "", fmt.Errorf("image %s already exists", refThis)
 	}
 
 	buildahOptions := buildah.BuilderOptions{
@@ -67,7 +67,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 
 	buildahBuilder, err := buildah.NewBuilder(ctx, store, buildahOptions)
 	if err != nil {
-		return fmt.Errorf("creating Buildah builder: %w", err)
+		return "", fmt.Errorf("creating Buildah builder: %w", err)
 	}
 	logger.Debugf("created working container from image %s", buildahOptions.FromImage)
 
@@ -86,7 +86,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 	logger.Debugf("created %s Linux working container", s.From.Distro)
 
 	if ctr.Builder.OS() != "linux" {
-		return fmt.Errorf("expected 'linux' image, got '%s' image", ctr.Builder.OS())
+		return "", fmt.Errorf("expected 'linux' image, got '%s' image", ctr.Builder.OS())
 	}
 
 	ctr.CommonOptions.LogCommands = options.LogCommands
@@ -96,23 +96,23 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 
 	pckgFrontend, err := container.NewPackageFrontend(s.Backends.Package.Backend)
 	if err != nil {
-		return fmt.Errorf("creating package management interface: %w", err)
+		return "", fmt.Errorf("creating package management interface: %w", err)
 	}
 
 	userFrontend, err := container.NewUserFrontend(s.Backends.User.Backend)
 	if err != nil {
-		return fmt.Errorf("creating user management interface: %w", err)
+		return "", fmt.Errorf("creating user management interface: %w", err)
 	}
 
 	findCmdFactory, err := find.NewCommandFactory(s.Backends.Find.Backend)
 	if err != nil {
-		return fmt.Errorf("creating find command factory: %w", err)
+		return "", fmt.Errorf("creating find command factory: %w", err)
 	}
 
 	if s.Packages.Upgrade {
 		logger.Debugln("upgrading packages in the working container...")
 		if err := upgradePackages(&ctr, pckgFrontend); err != nil {
-			return fmt.Errorf("upgrading packages: %w", err)
+			return "", fmt.Errorf("upgrading packages: %w", err)
 		}
 		logger.Debugln("upgrade command ran successfully")
 	}
@@ -120,14 +120,14 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 	if len(s.Packages.Install) > 0 {
 		logger.Debugln("installing packages to the working container...")
 		if err := installPackages(&ctr, pckgFrontend, s.Packages.Install); err != nil {
-			return fmt.Errorf("installing packages: %w", err)
+			return "", fmt.Errorf("installing packages: %w", err)
 		}
 		logger.Debugln("install command ran successfully")
 	}
 
 	if s.Packages.Clean {
 		if err := cleanPackageCaches(&ctr, pckgFrontend); err != nil {
-			return fmt.Errorf("cleaning package caches: %w", err)
+			return "", fmt.Errorf("cleaning package caches: %w", err)
 		}
 		logger.Debugln("clean command ran successfully")
 	}
@@ -141,7 +141,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 			CreateHome: s.User.CreateHome,
 		}
 		if err := createUser(&ctr, userFrontend, s.User.Name, createUserOptions); err != nil {
-			return fmt.Errorf("creating nonroot user: %w", err)
+			return "", fmt.Errorf("creating nonroot user: %w", err)
 		}
 		logger.Debugf("created nonroot user")
 	}
@@ -155,7 +155,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 				removeSpecial: cp.RemoveS,
 			}
 			if err := copyFiles(&ctr, cp.Base, cp.Destination, cp.Sources, copyFilesOptions); err != nil {
-				return fmt.Errorf("copying files: %w", err)
+				return "", fmt.Errorf("copying files: %w", err)
 			}
 		}
 		logger.Debugln("file copy command(s) ran successfully")
@@ -163,7 +163,7 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 
 	if s.Security.SpecialFiles.RemoveS {
 		if err := unsetSpecialBits(&ctr, findCmdFactory, s.Security.SpecialFiles.Excludes); err != nil {
-			return fmt.Errorf("removing SUID and SGID bits from files: %w", err)
+			return "", fmt.Errorf("removing SUID and SGID bits from files: %w", err)
 		}
 		logger.Debugln("command to remove SUID and SGID bits from files ran successfully")
 	}
@@ -215,11 +215,10 @@ func Execute(ctx context.Context, s spec.Spec, logger *logrus.Logger, options Ex
 		commitOptions,
 	)
 	if err != nil {
-		return fmt.Errorf("committing image: %w", err)
+		return "", fmt.Errorf("committing image: %w", err)
 	}
-	logger.Infoln(imageID)
 
-	return nil
+	return imageID, nil
 }
 
 // ExecuteOptions holds options for the build pipeline.
